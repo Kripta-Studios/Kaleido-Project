@@ -1,0 +1,558 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  spanish,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.1cm,right=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={Datos y datasets},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={KaleidoBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={KaleidoBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Datos y datasets}
+\author{}
+\date{15 julio 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Datos y datasets}\label{datos-y-datasets}
+
+\subsection{Regla principal}\label{regla-principal}
+
+Los datasets publicos sirven para desarrollar loaders, schemas y
+baselines. Solo los datos de Kaleido pueden demostrar valor para
+Kaleido.
+
+\subsection{Prioridad A - datos internos del
+piloto}\label{prioridad-a---datos-internos-del-piloto}
+
+\subsubsection{A1. Trace Port}\label{a1-trace-port}
+
+Campos solicitados:
+
+\begin{itemize}
+\tightlist
+\item
+  proyecto, operacion, turno y revision de plan;
+\item
+  packing list/unidades de carga;
+\item
+  evento/estado y timestamp;
+\item
+  responsable/equipo/recurso por rol;
+\item
+  cantidad/peso/unidad;
+\item
+  notas, incidencia y referencia de foto;
+\item
+  inicio/fin/pausas;
+\item
+  outcome y desviacion;
+\item
+  export/API version y zona horaria.
+\end{itemize}
+
+Uso: caso principal de tiempo restante y riesgo de desviacion.
+
+\subsubsection{A2. Shipping Board}\label{a2-shipping-board}
+
+\begin{itemize}
+\tightlist
+\item
+  expedicion/recepcion;
+\item
+  milestones, documentos y alertas;
+\item
+  transportista y ventanas;
+\item
+  timestamps planificados/reales;
+\item
+  incidencias y entrega final.
+\end{itemize}
+
+Uso: transferencia del mismo modelo de prefijos a flujos de
+instalaciones.
+
+\subsubsection{A3. Freight Intelligence}\label{a3-freight-intelligence}
+
+\begin{itemize}
+\tightlist
+\item
+  contenedor, viaje, buque y carrier;
+\item
+  milestones DCSA-like;
+\item
+  ETA original y revisiones;
+\item
+  AIS/posicion o referencias;
+\item
+  alertas y excepciones;
+\item
+  timestamps de consulta y de ocurrencia.
+\end{itemize}
+
+Uso: ETA/excepcion, no mezclar con eventos de terminal sin mapping.
+
+\subsubsection{A4. Coste y
+planificacion}\label{a4-coste-y-planificacion}
+
+\begin{itemize}
+\tightlist
+\item
+  plan original y revisiones;
+\item
+  horas/recurso;
+\item
+  overtime, espera, demurrage/detention cuando aplique;
+\item
+  SLA/penalizacion;
+\item
+  coste de inspeccion y falsa alarma.
+\end{itemize}
+
+Uso: convertir metricas en utilidad. Opcional para el primer modelo,
+necesario para un business case cuantitativo.
+
+\subsection{Prioridad B - contexto
+externo}\label{prioridad-b---contexto-externo}
+
+\subsubsection{DCSA Track \& Trace y Port
+Call}\label{dcsa-track--trace-y-port-call}
+
+Estandar de procesos, eventos y APIs para transporte de contenedores.
+Usar como referencia semantica, no asumir que Trace Port usa exactamente
+DCSA.
+
+\begin{itemize}
+\tightlist
+\item
+  \url{https://dcsa.org/standards/track-and-trace/standard-documentation-track-and-trace}
+\item
+  \url{https://developer.dcsa.org/}
+\item
+  \url{https://reference.dcsa.org/content/standards/industry-blueprint/v2026-q1/industry-blueprint-2026-q1}
+\end{itemize}
+
+\subsubsection{OCEL 2.0 / XES}\label{ocel-20--xes}
+
+OCEL es preferible para proyecto-operacion-turno-carga-recurso. XES se
+puede exportar para herramientas clasicas de process mining.
+
+\begin{itemize}
+\tightlist
+\item
+  \url{https://www.ocel-standard.org/}
+\item
+  \url{https://www.tf-pm.org/resources/xes-standard/about-xes}
+\end{itemize}
+
+\subsubsection{Meteo y oceanografia}\label{meteo-y-oceanografia}
+
+\begin{itemize}
+\tightlist
+\item
+  Puertos del Estado/Portuscopia: oleaje, nivel, corrientes,
+  temperatura, mareografos y meteo portuaria.
+\item
+  AEMET OpenData: observaciones/predicciones meteorologicas.
+\end{itemize}
+
+Fuentes:
+
+\begin{itemize}
+\tightlist
+\item
+  \url{https://portuscopia.puertos.es/}
+\item
+  \url{https://www.puertos.es/en/services/oceanography}
+\item
+  \url{https://www.aemet.es/en/datos_abiertos/AEMET_OpenData}
+\end{itemize}
+
+Verificar licencia, estacion, latencia, revision y timestamp de
+publicacion. Una prediccion historica solo puede usar el forecast
+disponible en ese momento, no la observacion futura.
+
+\subsubsection{AIS}\label{ais}
+
+NOAA MarineCadastre publica AIS de EE. UU. sin restricciones de acceso
+para planificacion costera. Es util para desarrollar pipelines de
+trayectoria y port-call context, no representa Vigo ni prueba el caso
+Kaleido.
+
+\begin{itemize}
+\tightlist
+\item
+  \url{https://www.fisheries.noaa.gov/inport/item/77594}
+\item
+  \url{https://marinecadastre.gov/ais/}
+\end{itemize}
+
+Para Vigo se necesita una fuente legal/contractual disponible para
+Kaleido.
+
+\subsection{Prioridad C - datasets publicos para
+desarrollo}\label{prioridad-c---datasets-publicos-para-desarrollo}
+
+\subsubsection{Container Logistics Object-centric Event Log
+(2026)}\label{container-logistics-object-centric-event-log-2026}
+
+Log artificial OCEL 2.0 de coordinacion de pedido, documento, recogida,
+terminal y envio. Incluye modelo CPN y SQLite/XML.
+
+\begin{itemize}
+\tightlist
+\item
+  Uso: tests de object graph, import OCEL, process discovery y CI.
+\item
+  No uso: metricas comerciales o afirmacion de generalizacion real.
+\item
+  Fuente: \url{https://zenodo.org/records/18373888}.
+\end{itemize}
+
+\subsubsection{BPI Challenge 2019}\label{bpi-challenge-2019}
+
+Log real de purchase-to-pay con 251.734 items, 1.595.923 eventos y 42
+actividades, anonimizado y XES.
+
+\begin{itemize}
+\tightlist
+\item
+  Uso: escalabilidad, remaining time/next-event y baselines PPM.
+\item
+  No uso: evidencia portuaria.
+\item
+  DOI:
+  \url{https://doi.org/10.4121/uuid:d06aff4b-79f0-45e6-8ec8-e19730c248f1}.
+\end{itemize}
+
+\subsubsection{Outbound Warehouse
+Processes}\label{outbound-warehouse-processes}
+
+Caso de 2025 con 169.523 trazas de un proceso real de almacen outbound.
+El paper indica disponibilidad publica; antes de descargar se debe
+localizar el release oficial, version y licencia.
+
+\begin{itemize}
+\tightlist
+\item
+  Uso: comparacion boosting vs deep PPM.
+\item
+  Fuente primaria: \url{https://arxiv.org/abs/2509.18986}.
+\end{itemize}
+
+\subsubsection{LaDe}\label{lade}
+
+Dataset industrial de last-mile con paquetes y task events multi-ciudad.
+
+\begin{itemize}
+\tightlist
+\item
+  Uso: generalizacion espaciotemporal/last-mile opcional.
+\item
+  No uso: terminal portuaria.
+\item
+  Fuente: \url{https://arxiv.org/abs/2306.10675}.
+\end{itemize}
+
+\subsubsection{BPI logs adicionales}\label{bpi-logs-adicionales}
+
+Solo para pretraining/benchmark de event encoders. Separar por dataset y
+no presentar un promedio que oculte fallos por log.
+
+\begin{itemize}
+\tightlist
+\item
+  \url{https://www.tf-pm.org/resources/logs}
+\end{itemize}
+
+\subsection{Datos sinteticos}\label{datos-sinteticos}
+
+La simulacion discreta y el CPN pueden producir eventos para:
+
+\begin{itemize}
+\tightlist
+\item
+  tests y fixtures;
+\item
+  fallos raros controlados;
+\item
+  comprobar invariantes y escenarios;
+\item
+  pretraining experimental claramente etiquetado.
+\end{itemize}
+
+No se usan para estimar precision real, ROI ni frecuencia de
+incidencias.
+
+\subsection{Manifest obligatorio}\label{manifest-obligatorio}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{dataset\_id}\KeywordTok{:}\AttributeTok{ trace\_port\_export\_v1}
+\FunctionTok{owner}\KeywordTok{:}\AttributeTok{ kaleido}
+\FunctionTok{source\_system}\KeywordTok{:}\AttributeTok{ trace\_port}
+\FunctionTok{export\_version}\KeywordTok{:}\AttributeTok{ unknown}
+\FunctionTok{access\_date}\KeywordTok{:}\AttributeTok{ YYYY{-}MM{-}DD}
+\FunctionTok{license\_or\_agreement}\KeywordTok{:}\AttributeTok{ pending}
+\FunctionTok{timezone\_source}\KeywordTok{:}\AttributeTok{ Europe/Madrid}
+\FunctionTok{rows}\KeywordTok{:}\AttributeTok{ measured}
+\FunctionTok{operations}\KeywordTok{:}\AttributeTok{ measured}
+\FunctionTok{projects}\KeywordTok{:}\AttributeTok{ measured}
+\FunctionTok{date\_min}\KeywordTok{:}\AttributeTok{ measured}
+\FunctionTok{date\_max}\KeywordTok{:}\AttributeTok{ measured}
+\FunctionTok{sha256}\KeywordTok{:}\AttributeTok{ measured}
+\FunctionTok{contains\_personal\_data}\KeywordTok{:}\AttributeTok{ unknown}
+\FunctionTok{contains\_photos}\KeywordTok{:}\AttributeTok{ }\CharTok{false}
+\FunctionTok{plan\_revisions\_available}\KeywordTok{:}\AttributeTok{ unknown}
+\FunctionTok{outcomes\_available}\KeywordTok{:}\AttributeTok{ unknown}
+\FunctionTok{action\_columns}\KeywordTok{:}\AttributeTok{ }\KeywordTok{[]}
+\FunctionTok{context\_columns}\KeywordTok{:}\AttributeTok{ }\KeywordTok{[]}
+\FunctionTok{observation\_columns}\KeywordTok{:}\AttributeTok{ }\KeywordTok{[]}
+\FunctionTok{outcome\_columns}\KeywordTok{:}\AttributeTok{ }\KeywordTok{[]}
+\FunctionTok{forbidden\_columns}\KeywordTok{:}\AttributeTok{ }\KeywordTok{[]}
+\FunctionTok{known\_limitations}\KeywordTok{:}\AttributeTok{ }\KeywordTok{[]}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{Quality gates}\label{quality-gates}
+
+\begin{itemize}
+\tightlist
+\item
+  IDs estables y cobertura de relaciones;
+\item
+  timezone y orden temporal;
+\item
+  duplicados/reintentos;
+\item
+  plan vs actual distinguibles;
+\item
+  granularidad/event vocabulary;
+\item
+  missingness por proyecto y periodo;
+\item
+  outcome y censura;
+\item
+  accion/context audit;
+\item
+  riesgo de leakage;
+\item
+  representatividad por carga/cliente/puerto;
+\item
+  consentimiento/licencia/retencion.
+\end{itemize}
+
+\subsection{Presupuesto de datos para
+go/no-go}\label{presupuesto-de-datos-para-gono-go}
+
+No se exige un numero magico. La decision usa:
+
+\begin{itemize}
+\tightlist
+\item
+  operaciones completas;
+\item
+  diversidad de variantes;
+\item
+  numero de eventos por prefijo;
+\item
+  cobertura de plan y outcome;
+\item
+  suficientes desviaciones/incidencias;
+\item
+  estabilidad de IDs;
+\item
+  separacion temporal disponible.
+\end{itemize}
+
+Si faltan outcomes, el piloto pasa a \texttt{instrument-first}: process
+mining, simulacion y plan de captura, sin clasificador de riesgo.
+
+\end{document}

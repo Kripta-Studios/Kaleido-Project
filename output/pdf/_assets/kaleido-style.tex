@@ -1,0 +1,83 @@
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother

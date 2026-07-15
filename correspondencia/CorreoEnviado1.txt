@@ -1,0 +1,39 @@
+Contacto vía Xosé Martínez — piloto técnico con world models para Kaleido Tech
+
+
+Hola Manuel:
+ 
+Soy Álvaro Schwiedop Souto, responsable de IA en EVOCON Solutions.
+ 
+Te escribo porque Peter Schwiedop, de EVOCON, habló con Xosé Martínez sobre un MVP de IA aplicada a operaciones logísticas, y Xosé nos indicó que contactásemos contigo como responsable de Kaleido Tech.
+ 
+Estamos desarrollando un enfoque basado en World Models para operaciones industriales y logísticas: modelos que aprenden el comportamiento esperado de un proceso a partir de datos históricos y detectan cuándo una operación empieza a desviarse de su patrón normal.
+ 
+Para Kaleido no plantearía empezar con algo amplio, sino con un caso muy concreto, por ejemplo: predecir y explicar desviaciones en un flujo de carga/descarga, preparación, transporte o trazabilidad, usando históricos de eventos, tiempos, estados e incidencias.
+ 
+La idea sería hacer un piloto offline y read-only, sin integración inicial con sistemas productivos:
+
+    Seleccionar un proceso o flujo operativo concreto.
+    Analizar los datos históricos disponibles.
+    Entrenar un baseline y un modelo predictivo de la operación.
+    Medir si el modelo anticipa desviaciones, retrasos o incidencias antes de que sean evidentes.
+    Entregar un dashboard sencillo con scoring de riesgo, alertas principales y conclusiones técnicas.
+
+El objetivo es comprobar en pocas semanas si vuestros datos contienen señal suficiente para construir una herramienta útil de alerta temprana y apoyo a la toma de decisiones.
+
+Adjunto: adjuntos/Industrial_World_Model_MVP_es.pdf
+
+¿Te vendría bien un Teams esta semana o la próxima para enseñarte el enfoque y ver si hay un caso concreto donde tenga sentido probarlo?
+ 
+Adjunto un PDF resumen del enfoque por si te resulta útil antes de la llamada.
+ 
+Mis datos de contacto son: alvaro.schwiedop@evocon-solutions.com , +34 644 75 95 48
+ 
+Un saludo,
+ 
+Álvaro Schwiedop Souto
+Industrial AI & Predictive Quality Lead
+EVOCON Solutions GmbH
+Hamburg · Santiago de Compostela
+alvaro.schwiedop@evocon-solutions.com, +34 644 75 95 48 
+

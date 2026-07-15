@@ -1,0 +1,535 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  spanish,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.1cm,right=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={SOTA 2026: world models{,} JEPA y procesos operativos},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={KaleidoBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={KaleidoBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{SOTA 2026: world models, JEPA y procesos operativos}
+\author{}
+\date{15 julio 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{SOTA 2026: world models, JEPA y procesos
+operativos}\label{sota-2026-world-models-jepa-y-procesos-operativos}
+
+Fecha de corte: 15-07-2026. \texttt{SOTA} describe el estado de la
+literatura, no el estado de FlowTwin. FlowTwin no tiene resultados.
+
+\subsection{Tesis principal}\label{tesis-principal}
+
+El avance 2026 no es un unico modelo ganador. Hay cinco tendencias:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  prediccion en estado latente en lugar de reconstruccion completa;
+\item
+  regularizacion explicita contra colapso;
+\item
+  acciones y horizontes multiples para convertir representacion en
+  dinamica;
+\item
+  jerarquia, prefijos y planners para evitar rollouts largos costosos;
+\item
+  incertidumbre, fisica y adaptacion para despliegue bajo cambio.
+\end{enumerate}
+
+Para Kaleido, el SOTA de video/robotica aporta principios, no un modelo
+que se pueda aplicar directamente. El dato es una secuencia de eventos
+multiobjeto, irregular y parcialmente observada. Por ello el stack
+inicial debe combinar process mining, prediccion de tiempo restante,
+survival/boosting y un encoder de eventos. El modulo JEPA es una
+hipotesis de valor incremental.
+
+\subsection{Mapa de los 29 trabajos
+indicados}\label{mapa-de-los-29-trabajos-indicados}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Grupo & Trabajos & Leccion para FlowTwin \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Teoria SSL & Spectral SSL \texttt{2205.11508} & la relacion entre
+vistas/eventos es supervision; una mala definicion aprende atajos \\
+Features visuales & DINOv2 \texttt{2304.07193}, DINOv3
+\texttt{2508.10104}, PatchCore \texttt{2106.08265} & usar backbones
+congelados para fotos de incidencias; no entrenar vision desde cero \\
+JEPA base & posicion H-JEPA \texttt{BZ5a1r-kVsf}, I-JEPA
+\texttt{2301.08243} & predecir representaciones compatibles y separar
+niveles temporales \\
+Anticolapso & LeJEPA \texttt{2511.08544}, VISReg \texttt{2606.02572} &
+medir varianza, rango, isotropia y probes; no confiar solo en loss \\
+Incertidumbre & Var-JEPA \texttt{2603.20111} & futuros multimodales e
+intervalos; comparar con conformal/ensembles simples \\
+Temporal & TDV \texttt{2606.15956}, V-JEPA 2 \texttt{2506.09985}, V-JEPA
+2.1 \texttt{2603.14482} & el tiempo y las acciones convierten features
+en estado; features densas importan para localizacion \\
+Fisica intuitiva & \texttt{2502.11831} & surprise puede detectar
+violaciones, pero no prueba causalidad ni leyes explicitas \\
+Implementacion & EB-JEPA \texttt{2602.03604} & componentes modulares y
+small/single-GPU; util como referencia de tests \\
+World model end-to-end & LeWorldModel \texttt{2603.19312},
+identifiability \texttt{2605.26379} & una receta compacta es posible;
+las garantias dependen de hipotesis que un proceso logistico no
+satisface automaticamente \\
+Rollouts & On Training in Imagination \texttt{2605.06732} & error de
+dinamica y de coste se propaga; evaluar decisiones, no solo one-step
+loss \\
+Largo horizonte & HWM \texttt{2604.03208}, FF-JEPA \texttt{2606.09311},
+Fast-LeWM \texttt{2606.26217} & jerarquia proyecto-turno-evento y
+prediccion paralela por horizontes son mas utiles que rollout
+autoregresivo profundo \\
+Adaptacion & AdaJEPA \texttt{2606.32026} & recalibrar con transiciones
+nuevas, pero conservar referencia congelada y trust region \\
+Robotica & WorldDP \texttt{2606.08775}, SkyJEPA \texttt{2606.23444} &
+separar plan de alto nivel y ejecucion; usar probes fisicos/operativos
+interpretables \\
+Generativo & MIRA, ahora arXiv \texttt{2607.05352} & la generacion
+visual interactiva es cara y no necesaria para el MVP logistico \\
+Multimodal & VL-JEPA \texttt{2512.10942}, MJEPA \texttt{2606.25225} &
+texto/foto/audio pueden apoyar incidentes; cross-modal loss solo si hay
+alineacion real \\
+Ciencia & JEPA-DNA \texttt{2602.17162}, Phys-JEPA \texttt{2606.16076},
+Neuro-JEPA \texttt{2606.14957} & objetivos hibridos, estado
+fisico+residual, MoE y baselines simples; relevancia metodologica, no
+transferencia directa \\
+\end{longtable}
+}
+
+\subsection{Que aporta cada bloque}\label{que-aporta-cada-bloque}
+
+\subsubsection{Representacion}\label{representacion}
+
+I-JEPA muestra que ocultar bloques grandes y predecir embeddings puede
+aprender semantica sin reconstruir pixeles. DINOv2/3 establece un
+baseline visual mas practico para fotos de danos. En el MVP, la
+fotografia es una modalidad opcional: se extraen features congeladas y
+se prueba si anaden valor a eventos y notas. No se entrena un V-JEPA
+sobre datos de Kaleido en fase 1.
+
+\subsubsection{Dinamica}\label{dinamica}
+
+Un encoder no es un world model. El salto requiere:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{state\_t + verified\_action\_t + context\_t + horizon {-}\textgreater{} distribution(state\_future)}
+\end{Highlighting}
+\end{Shaded}
+
+Las variables de receta, buque o tipo de carga son contexto. Asignar
+equipo, cambiar secuencia, abrir un turno o reubicar un recurso pueden
+ser acciones si estan timestamped y son intervenibles.
+
+\subsubsection{Estabilidad}\label{estabilidad}
+
+LeJEPA y LeWorldModel proponen regularizacion hacia una geometria
+gaussiana. VISReg separa control de escala y forma. FlowTwin debe
+registrar:
+
+\begin{itemize}
+\tightlist
+\item
+  desviacion estandar minima/media;
+\item
+  rango efectivo y participation ratio;
+\item
+  vecinos y separacion por proyecto;
+\item
+  probes congelados;
+\item
+  sensibilidad a shuffled actions/timestamps;
+\item
+  estabilidad por seed.
+\end{itemize}
+
+Una perdida predictiva baja puede coexistir con colapso o atajos.
+
+\subsubsection{Horizonte}\label{horizonte}
+
+Los proyectos logisticos son jerarquicos:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{evento {-}\textgreater{} tarea {-}\textgreater{} operacion {-}\textgreater{} turno {-}\textgreater{} proyecto {-}\textgreater{} cadena}
+\end{Highlighting}
+\end{Shaded}
+
+HWM/FF-JEPA/Fast-LeWM justifican modelar escalas y horizontes de forma
+directa. La primera implementacion debe predecir 2/4/8 horas y fin de
+operacion en paralelo. No necesita CEM ni planificar cientos de acciones
+continuas.
+
+\subsubsection{Adaptacion}\label{adaptacion}
+
+AdaJEPA es atractiva para puertos, clientes y cargas diferentes. Sin
+embargo, adaptar el unico modelo puede convertir retraso cronico en
+normalidad. La arquitectura requerida es:
+
+\begin{itemize}
+\tightlist
+\item
+  referencia congelada;
+\item
+  adaptador/shadow por terminal o proceso;
+\item
+  gate de incertidumbre y distancia de update;
+\item
+  replay;
+\item
+  rollback/versionado;
+\item
+  reinicio explicito ante cambio de procedimiento.
+\end{itemize}
+
+\subsubsection{Incertidumbre}\label{incertidumbre}
+
+Var-JEPA aporta una formulacion probabilistica, pero no es la unica
+opcion. En un MVP data-poor deben compararse:
+
+\begin{itemize}
+\tightlist
+\item
+  quantile regression;
+\item
+  conformal prediction por grupos;
+\item
+  deep ensemble pequeno;
+\item
+  survival model con censura;
+\item
+  Var-JEPA solo si mejora calibracion/decision.
+\end{itemize}
+
+\subsection{SOTA mas cercano al dato de Kaleido: predictive process
+monitoring}\label{sota-mas-cercano-al-dato-de-kaleido-predictive-process-monitoring}
+
+El campo directamente aplicable es Predictive Process Monitoring (PPM):
+predice siguiente actividad, siguiente timestamp, outcome y tiempo
+restante desde prefijos de event logs.
+
+Referencias de 2024-2026:
+
+\begin{itemize}
+\tightlist
+\item
+  PGTNet transforma logs a grafos y predice remaining time sobre 20
+  logs: \url{https://arxiv.org/abs/2404.06267}.
+\item
+  La comparacion object-centric vs clasica resalta el valor de OCEL en
+  procesos logisticos multiobjeto:
+  \url{https://link.springer.com/article/10.1007/s10115-025-02461-y}.
+\item
+  Object-centric graph embeddings predicen next activity/time:
+  \url{https://arxiv.org/abs/2507.15411}.
+\item
+  Un foundation model in-context para logs heterogeneos propone
+  adaptacion con un pequeno support set, relevante para cold start:
+  \url{https://doi.org/10.1109/ACCESS.2026.3658877}.
+\item
+  Un caso real de almacen outbound con 169.523 traces encuentra que deep
+  models ganan en precision, pero boosting es competitivo con menor
+  coste: \url{https://arxiv.org/abs/2509.18986}.
+\item
+  La version retrieval-augmented publicada como preprint el 09-07-2026
+  es prometedora pero no peer-reviewed:
+  \url{https://www.preprints.org/manuscript/202607.0705}.
+\end{itemize}
+
+Decision: implementar primero baselines de PPM y object-centric graph.
+Evaluar un encoder JEPA de eventos despues. No llamar foundation model a
+un Transformer pequeno entrenado sobre un solo log.
+
+\subsection{Arquitectura SOTA-target, no SOTA
+claim}\label{arquitectura-sota-target-no-sota-claim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OCEL{-}like event graph}
+\NormalTok{  {-}\textgreater{} categorical/time/value encoders}
+\NormalTok{  {-}\textgreater{} object{-}centric temporal graph state}
+\NormalTok{  {-}\textgreater{} multi{-}horizon heads: remaining time, deviation, next event}
+\NormalTok{  {-}\textgreater{} optional JEPA target: future operation{-}state embedding}
+\NormalTok{  {-}\textgreater{} calibrated uncertainty}
+\NormalTok{  {-}\textgreater{} advisory scenario ranking over approved actions}
+\end{Highlighting}
+\end{Shaded}
+
+Loss candidata:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{L = L\_remaining\_quantile}
+\NormalTok{  + lambda\_risk * L\_risk}
+\NormalTok{  + lambda\_next * L\_next\_event}
+\NormalTok{  + lambda\_jepa * L\_future\_embedding}
+\NormalTok{  + lambda\_cal * L\_calibration}
+\NormalTok{  + lambda\_reg * L\_anticollapse}
+\end{Highlighting}
+\end{Shaded}
+
+El termino JEPA se activa solo tras demostrar señal y volumen. Cada
+termino se abla por separado.
+
+\subsection{Lo que no demuestra la
+literatura}\label{lo-que-no-demuestra-la-literatura}
+
+\begin{itemize}
+\tightlist
+\item
+  Que un JEPA mejore automaticamente datos logisticos tabulares.
+\item
+  Que next-event accuracy implique ahorro.
+\item
+  Que una prediccion observacional sea causal.
+\item
+  Que video generado sea un simulador de operacion fiel.
+\item
+  Que adaptacion online sea segura sin referencia congelada.
+\item
+  Que un resultado de robotica transfiera a puertos.
+\item
+  Que mas parametros ganen con pocos proyectos.
+\end{itemize}
+
+\subsection{Gate para conservar JEPA}\label{gate-para-conservar-jepa}
+
+Se conserva el modulo si, con el mismo split y presupuesto:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  mejora el error de tiempo restante o AUPRC de desviacion frente a
+  boosting y ProcessTransformer;
+\item
+  mejora al menos un KPI operativo: lead time o falsas alarmas;
+\item
+  la mejora aparece en tres seeds y en holdout por proyecto/cliente;
+\item
+  correct actions superan shuffled actions cuando se hable de accion;
+\item
+  no empeora calibracion materialmente;
+\item
+  el coste de inferencia cabe en el SLA.
+\end{enumerate}
+
+Si no cumple, el producto se entrega con el modelo simple ganador.
+
+\subsection{Referencias primarias indicadas por el
+usuario}\label{referencias-primarias-indicadas-por-el-usuario}
+
+La bibliografia completa esta en \texttt{REFERENCES.bib}. Los enlaces de
+entrada se conservan en \texttt{Apuntes\_IA/Referencias\ ArXiv.txt}. Los
+apuntes locales \texttt{mega\_apuntes\_jepa\_world\_models.tex} ya
+organizan los 29 trabajos en orden conceptual y han sido usados como
+mapa, contrastando titulos/resumenes con arXiv a fecha de corte.
+
+\end{document}

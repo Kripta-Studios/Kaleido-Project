@@ -1,0 +1,232 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  spanish,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.1cm,right=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={Presentacion},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={KaleidoBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={KaleidoBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Presentacion}
+\author{}
+\date{15 julio 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Presentacion}\label{presentacion}
+
+Archivos finales:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Kaleido\_FlowTwin\_Presentacion.pdf}: version para proyectar o
+  enviar.
+\item
+  \texttt{Kaleido\_FlowTwin\_Presentacion.html}: version offline;
+  flechas para navegar, \texttt{O} para vista general, \texttt{N} para
+  notas y \texttt{F} para pantalla completa.
+\item
+  \texttt{Kaleido\_FlowTwin\_Presentacion.tex}: fuente Beamer editable.
+\end{itemize}
+
+Compilacion desde esta carpeta:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{latexmk }\OperatorTok{{-}}\NormalTok{pdf }\OperatorTok{{-}}\NormalTok{interaction}\OperatorTok{=}\NormalTok{nonstopmode }\OperatorTok{{-}}\NormalTok{halt{-}on{-}error Kaleido\_FlowTwin\_Presentacion}\OperatorTok{.}\FunctionTok{tex}
+\end{Highlighting}
+\end{Shaded}
+
+Los auxiliares de LaTeX estan ignorados por el \texttt{.gitignore} del
+proyecto.
+
+\end{document}

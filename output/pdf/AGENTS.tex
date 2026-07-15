@@ -1,0 +1,907 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  spanish,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.1cm,right=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={AGENTS.md - Kaleido FlowTwin engineering contract},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={KaleidoBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={KaleidoBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{AGENTS.md - Kaleido FlowTwin engineering contract}
+\author{}
+\date{15 julio 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{AGENTS.md - Kaleido FlowTwin engineering
+contract}\label{agentsmd---kaleido-flowtwin-engineering-contract}
+
+This file is normative for any human or agent implementing the MVP.
+
+\subsection{1. Mission}\label{1-mission}
+
+Build a read-only predictive operations layer for Kaleido that starts
+from sparse operational event data, produces immediate process
+intelligence, and promotes a sequential/world-model component only when
+it adds measured value.
+
+Primary task:
+
+\begin{quote}
+Predict remaining time and material deviation risk for one Trace Port
+operation/shift, with calibrated uncertainty, useful lead time and an
+auditable explanation.
+\end{quote}
+
+The result must complement Trace Port, Shipping Board and Freight
+Intelligence. Do not build a competing generic logistics platform.
+
+\subsection{2. Read first}\label{2-read-first}
+
+Before changing code, read completely:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \texttt{README.md}
+\item
+  \texttt{docs/investigacion/KALEIDO\_RESEARCH.md}
+\item
+  \texttt{ARCHITECTURE.md}
+\item
+  \texttt{DATASETS.md}
+\item
+  \texttt{PLAN.md}
+\item
+  \texttt{docs/investigacion/SOTA\_2026.md}
+\item
+  \texttt{DATA\_REQUEST.md}
+\item
+  \texttt{docs/investigacion/REPO\_REUSE\_AUDIT.md}
+\end{enumerate}
+
+Preserve the original evidence files:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{correspondencia/CorreoEnviado1.txt}
+\item
+  \texttt{correspondencia/CorreoRecibido1.txt}
+\item
+  \texttt{correspondencia/adjuntos/Industrial\_World\_Model\_MVP\_es.pdf}
+\end{itemize}
+
+Never overwrite or reformat them.
+
+\subsection{3. Claim policy}\label{3-claim-policy}
+
+Never claim \texttt{SOTA}, production-ready, causal, ROI, savings,
+accuracy, early warning or successful deployment without generated
+evidence.
+
+Allowed states:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{planned}: specified but not implemented;
+\item
+  \texttt{smoke\_only}: pipeline test, not business evidence;
+\item
+  \texttt{diagnostic}: internal development result, test may be reused;
+\item
+  \texttt{claim\_eligible}: frozen protocol, clean commit, held-out
+  test, provenance;
+\item
+  \texttt{pilot\_shadow}: running read-only with operator review;
+\item
+  \texttt{validated\_pilot}: pre-agreed acceptance gates passed.
+\end{itemize}
+
+Every result statement must name:
+
+\begin{itemize}
+\tightlist
+\item
+  dataset/export version and hash;
+\item
+  split protocol;
+\item
+  model and baselines;
+\item
+  metric and uncertainty;
+\item
+  number of seeds;
+\item
+  threshold selection method;
+\item
+  whether test influenced a choice;
+\item
+  claim state.
+\end{itemize}
+
+Public/synthetic datasets prove pipeline competence only. Kaleido value
+requires Kaleido data.
+
+\subsection{4. Non-negotiable data
+rules}\label{4-non-negotiable-data-rules}
+
+\subsubsection{4.1 Actions are not
+context}\label{41-actions-are-not-context}
+
+An \texttt{action} is a timestamped decision that an operator/controller
+could change. Cargo type, vessel, customer, weather and shift identity
+are context. Static metadata must not support causal or counterfactual
+language.
+
+Every adapter implements:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{build\_manifest()}
+\NormalTok{validate\_timestamps()}
+\NormalTok{classify\_fields()}
+\NormalTok{build\_object\_graph()}
+\NormalTok{build\_grouped\_splits()}
+\NormalTok{run\_leakage\_audit()}
+\end{Highlighting}
+\end{Shaded}
+
+Training fails closed when the audit fails. An explicit
+\texttt{-\/-unsafe-debug} mode may create watermarked smoke artifacts
+that can never enter reports.
+
+\subsubsection{4.2 Plan revisions are immutable
+events}\label{42-plan-revisions-are-immutable-events}
+
+Never replace planned dates with latest values. Store each revision and
+its \texttt{valid\_from}. A prediction at time \texttt{t} may only see
+the plan revision available at \texttt{t}.
+
+\subsubsection{4.3 Keep object identity}\label{43-keep-object-identity}
+
+Project, operation, shift, cargo unit, resource, vessel, document and
+incident are separate object types. Do not flatten them into duplicated
+case rows without a reversible mapping.
+
+\subsubsection{4.4 Censoring and unknown
+outcomes}\label{44-censoring-and-unknown-outcomes}
+
+Incomplete operations are censored, not failures and not exact remaining
+time. Unknown incident status remains unknown. Use survival methods when
+appropriate.
+
+\subsubsection{4.5 No random row split}\label{45-no-random-row-split}
+
+Default priority:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  chronological future;
+\item
+  held-out project/client/port;
+\item
+  held-out cargo/operation type;
+\item
+  grouped cross-validation.
+\end{enumerate}
+
+All prefixes/events from one operation remain in one partition.
+
+\subsection{5. Baselines before world
+models}\label{5-baselines-before-world-models}
+
+Required floors:
+
+\begin{itemize}
+\tightlist
+\item
+  global and group median;
+\item
+  persistence/rule thresholds;
+\item
+  Cox/Kaplan-Meier or another censoring-aware model;
+\item
+  regularized linear/logistic model;
+\item
+  quantile gradient boosting/CatBoost;
+\item
+  GRU/TCN;
+\item
+  ProcessTransformer;
+\item
+  object-centric graph baseline when relationships are available.
+\end{itemize}
+
+Do not remove a baseline because it wins.
+
+Event-JEPA is permitted after M0/M1/M2 data and baseline gates. Required
+ablations:
+
+\begin{itemize}
+\tightlist
+\item
+  current prefix only;
+\item
+  context only;
+\item
+  correct actions;
+\item
+  shuffled actions;
+\item
+  action only;
+\item
+  no JEPA objective;
+\item
+  one horizon vs multi-horizon;
+\item
+  no anticolapse regularizer;
+\item
+  frozen vs fine-tuned encoder;
+\item
+  object graph vs flattened trace.
+\end{itemize}
+
+If correct actions do not beat shuffled actions, do not claim action
+value.
+
+\subsection{6. Architecture boundaries}\label{6-architecture-boundaries}
+
+\subsubsection{Ingestion}\label{ingestion}
+
+Read-only connectors, export parsing, source lineage and checksums. No
+model features beyond canonical normalization.
+
+\subsubsection{Semantic/event layer}\label{semanticevent-layer}
+
+Canonical IDs, timestamps, units, field roles, OCEL-like relationships
+and versioned plans. Unknown semantics stay unknown.
+
+\subsubsection{Analytics}\label{analytics}
+
+Process discovery, conformance, variants, bottlenecks and descriptive
+reports. Must operate without ML training.
+
+\subsubsection{Prediction}\label{prediction}
+
+Baselines, sequential models, Event-JEPA and uncertainty. Models never
+write source data.
+
+\subsubsection{Simulation/scenarios}\label{simulationscenarios}
+
+Discrete-event simulation is separate from learned action ranking. A
+simulated saving is not a realized saving. Learned scenarios are
+restricted to observed support and approved actions.
+
+\subsubsection{Serving/UI}\label{servingui}
+
+Versioned read-only API, dashboard, export and audit trail. Every
+prediction names its source event cutoff and plan revision.
+
+\subsection{7. Required repository
+structure}\label{7-required-repository-structure}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{flowtwin/}
+\NormalTok{  README.md}
+\NormalTok{  AGENTS.md}
+\NormalTok{  LICENSE}
+\NormalTok{  SECURITY.md}
+\NormalTok{  pyproject.toml}
+\NormalTok{  uv.lock}
+\NormalTok{  Makefile}
+\NormalTok{  configs/}
+\NormalTok{    data/}
+\NormalTok{    model/}
+\NormalTok{    experiment/}
+\NormalTok{    deployment/}
+\NormalTok{  src/flowtwin/}
+\NormalTok{    cli.py}
+\NormalTok{    config.py}
+\NormalTok{    logging.py}
+\NormalTok{    provenance.py}
+\NormalTok{    data/}
+\NormalTok{      contracts.py}
+\NormalTok{      roles.py}
+\NormalTok{      manifests.py}
+\NormalTok{      timestamps.py}
+\NormalTok{      object\_graph.py}
+\NormalTok{      splits.py}
+\NormalTok{      leakage.py}
+\NormalTok{      adapters/}
+\NormalTok{        trace\_port.py}
+\NormalTok{        shipping\_board.py}
+\NormalTok{        freight\_intelligence.py}
+\NormalTok{        ocel.py}
+\NormalTok{    process/}
+\NormalTok{      discovery.py}
+\NormalTok{      conformance.py}
+\NormalTok{      variants.py}
+\NormalTok{      bottlenecks.py}
+\NormalTok{    features/}
+\NormalTok{      prefix.py}
+\NormalTok{      temporal.py}
+\NormalTok{      categorical.py}
+\NormalTok{      external\_context.py}
+\NormalTok{    baselines/}
+\NormalTok{      naive.py}
+\NormalTok{      survival.py}
+\NormalTok{      boosting.py}
+\NormalTok{      process\_transformer.py}
+\NormalTok{      object\_graph.py}
+\NormalTok{    models/}
+\NormalTok{      contracts.py}
+\NormalTok{      event\_encoder.py}
+\NormalTok{      target\_encoder.py}
+\NormalTok{      predictor.py}
+\NormalTok{      event\_jepa.py}
+\NormalTok{      uncertainty.py}
+\NormalTok{      heads.py}
+\NormalTok{    simulation/}
+\NormalTok{      discrete\_event.py}
+\NormalTok{      calibration.py}
+\NormalTok{      scenarios.py}
+\NormalTok{    evaluation/}
+\NormalTok{      remaining\_time.py}
+\NormalTok{      risk.py}
+\NormalTok{      calibration.py}
+\NormalTok{      lead\_time.py}
+\NormalTok{      value.py}
+\NormalTok{      sota\_gate.py}
+\NormalTok{    serving/}
+\NormalTok{      api.py}
+\NormalTok{      schemas.py}
+\NormalTok{      model\_registry.py}
+\NormalTok{    dashboard/}
+\NormalTok{      app.py}
+\NormalTok{  scripts/}
+\NormalTok{    audit\_export.py}
+\NormalTok{    build\_ocel.py}
+\NormalTok{    discover\_process.py}
+\NormalTok{    train\_baselines.py}
+\NormalTok{    train\_event\_jepa.py}
+\NormalTok{    evaluate.py}
+\NormalTok{    run\_shadow\_replay.py}
+\NormalTok{    build\_report.py}
+\NormalTok{  tests/}
+\NormalTok{    unit/}
+\NormalTok{    integration/}
+\NormalTok{    adversarial/}
+\NormalTok{    fixtures/}
+\NormalTok{  data/}
+\NormalTok{    README.md}
+\NormalTok{    manifests/}
+\NormalTok{    schemas/}
+\NormalTok{    splits/}
+\NormalTok{  outputs/}
+\NormalTok{  docs/}
+\NormalTok{    progress.md}
+\NormalTok{    decisions/}
+\NormalTok{    data\_cards/}
+\NormalTok{    model\_cards/}
+\end{Highlighting}
+\end{Shaded}
+
+Do not commit raw Kaleido data, photos, credentials or customer
+identifiers.
+
+\subsection{8. Stack}\label{8-stack}
+
+\begin{itemize}
+\tightlist
+\item
+  Python 3.11/3.12.
+\item
+  \texttt{uv}, \texttt{ruff}, \texttt{mypy} or \texttt{pyright},
+  \texttt{pytest}.
+\item
+  Polars or pandas; PyArrow/Parquet.
+\item
+  Pydantic for contracts/config.
+\item
+  PM4Py for XES/OCEL/process mining where license is accepted.
+\item
+  scikit-learn and CatBoost/LightGBM as optional strong baselines.
+\item
+  lifelines/scikit-survival as license/environment permits.
+\item
+  PyTorch for sequential/JEPA models.
+\item
+  FastAPI for read-only serving.
+\item
+  Plotly/Altair or a small local web dashboard.
+\item
+  SimPy for the first discrete-event simulator.
+\end{itemize}
+
+Dependencies are optional by capability; CPU smoke mode is mandatory.
+Record license and exact version.
+
+\subsection{9. Experiment contract}\label{9-experiment-contract}
+
+Every config includes:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{experiment\_name}\KeywordTok{:}
+\FunctionTok{hypothesis}\KeywordTok{:}
+\FunctionTok{dataset\_manifest}\KeywordTok{:}
+\FunctionTok{schema\_version}\KeywordTok{:}
+\FunctionTok{split\_manifest}\KeywordTok{:}
+\FunctionTok{seed}\KeywordTok{:}
+\FunctionTok{prediction\_points}\KeywordTok{:}
+\FunctionTok{horizons}\KeywordTok{:}
+\FunctionTok{input\_roles}\KeywordTok{:}
+\FunctionTok{action\_fields}\KeywordTok{:}
+\FunctionTok{context\_fields}\KeywordTok{:}
+\FunctionTok{observation\_fields}\KeywordTok{:}
+\FunctionTok{outcome\_fields}\KeywordTok{:}
+\FunctionTok{forbidden\_fields}\KeywordTok{:}
+\FunctionTok{model}\KeywordTok{:}
+\FunctionTok{baselines}\KeywordTok{:}
+\FunctionTok{metrics}\KeywordTok{:}
+\FunctionTok{threshold\_selection}\KeywordTok{:}
+\FunctionTok{calibration}\KeywordTok{:}
+\FunctionTok{compute}\KeywordTok{:}
+\FunctionTok{claim\_state}\KeywordTok{:}
+\end{Highlighting}
+\end{Shaded}
+
+Each run writes:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{run\_manifest.json}
+\NormalTok{config\_resolved.yaml}
+\NormalTok{environment.json}
+\NormalTok{data\_manifest.json}
+\NormalTok{split\_manifest.json}
+\NormalTok{leakage\_report.json}
+\NormalTok{metrics.json}
+\NormalTok{predictions.parquet}
+\NormalTok{calibration.json}
+\NormalTok{model\_card.md}
+\NormalTok{report.md}
+\end{Highlighting}
+\end{Shaded}
+
+Record commit, dirty state, commands, start/end time and artifact
+hashes.
+
+\subsection{10. Metrics}\label{10-metrics}
+
+Do not optimize only AUROC or next-event accuracy.
+
+Remaining time:
+
+\begin{itemize}
+\tightlist
+\item
+  MAE, median AE, pinball loss;
+\item
+  P50/P90 coverage and interval width;
+\item
+  per operation/cargo/project and worst group.
+\end{itemize}
+
+Risk:
+
+\begin{itemize}
+\tightlist
+\item
+  AUPRC, event precision/recall;
+\item
+  false alerts per shift/100 operations;
+\item
+  lead time and missed events;
+\item
+  Brier/ECE and reliability.
+\end{itemize}
+
+Process:
+
+\begin{itemize}
+\tightlist
+\item
+  conformance/deviation;
+\item
+  waiting time and rework;
+\item
+  variant coverage;
+\item
+  bottleneck stability.
+\end{itemize}
+
+Business:
+
+\begin{itemize}
+\tightlist
+\item
+  time saved in reporting;
+\item
+  avoidable wait/overtime under shadow simulation;
+\item
+  operator acceptance/usefulness;
+\item
+  estimated vs realized value clearly separated.
+\end{itemize}
+
+Thresholds are selected on validation only.
+
+\subsection{11. Adaptation}\label{11-adaptation}
+
+Never update the only reference model. Maintain:
+
+\begin{itemize}
+\tightlist
+\item
+  frozen reference;
+\item
+  adaptive shadow/adapters;
+\item
+  trust region;
+\item
+  uncertainty/update gate;
+\item
+  replay/anti-forgetting;
+\item
+  signed/versioned artifact;
+\item
+  rollback;
+\item
+  explicit reset after process redesign.
+\end{itemize}
+
+Log every accepted/rejected update.
+
+\subsection{12. Security}\label{12-security}
+
+\begin{itemize}
+\tightlist
+\item
+  minimum-privilege read-only credentials;
+\item
+  secrets from approved secret store only;
+\item
+  input validation and size limits;
+\item
+  pseudonymization mappings remain under Kaleido control;
+\item
+  redact photos/notes in development fixtures;
+\item
+  signed model/data artifacts for pilot;
+\item
+  audit log for each prediction;
+\item
+  no cross-customer training without explicit agreement;
+\item
+  document GDPR roles and retention before ingest.
+\end{itemize}
+
+\subsection{13. Tests}\label{13-tests}
+
+Unit:
+
+\begin{itemize}
+\tightlist
+\item
+  schema and role validation;
+\item
+  timezone/DST and out-of-order timestamps;
+\item
+  plan revision cutoff;
+\item
+  OCEL relationship integrity;
+\item
+  censoring;
+\item
+  leakage;
+\item
+  split disjointness;
+\item
+  metrics/calibration;
+\item
+  target encoder/adapter freeze.
+\end{itemize}
+
+Integration:
+
+\begin{itemize}
+\tightlist
+\item
+  synthetic OCEL -\textgreater{} audit -\textgreater{} process report;
+\item
+  OCEL -\textgreater{} prefix dataset -\textgreater{} baseline
+  -\textgreater{} evaluation;
+\item
+  checkpoint save/load;
+\item
+  CPU inference/API;
+\item
+  offline shadow replay;
+\item
+  report regeneration.
+\end{itemize}
+
+Adversarial:
+
+\begin{itemize}
+\tightlist
+\item
+  future outcome hidden in notes/columns;
+\item
+  duplicate/retry events;
+\item
+  timestamp rollback/DST;
+\item
+  overwritten plan;
+\item
+  shuffled actions;
+\item
+  missing objects/modalities;
+\item
+  new event vocabulary;
+\item
+  drift and process redesign;
+\item
+  customer/project ID shortcut;
+\item
+  photo after prediction cutoff.
+\end{itemize}
+
+\subsection{14. Milestone order}\label{14-milestone-order}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  M0 bootstrap and synthetic fixture.
+\item
+  M1 canonical contract and audit CLI.
+\item
+  M2 OCEL/process-mining dashboard.
+\item
+  M3 naive/survival/boosting baselines.
+\item
+  M4 sequential and graph baselines.
+\item
+  M5 Event-JEPA only if gates allow.
+\item
+  M6 discrete-event scenarios.
+\item
+  M7 shadow replay/dashboard/API.
+\item
+  M8 pilot report and commercial evaluation.
+\end{enumerate}
+
+Do not start M5 before M1-M4 produce valid evidence.
+
+\subsection{15. Definition of done}\label{15-definition-of-done}
+
+The MVP is done when:
+
+\begin{itemize}
+\tightlist
+\item
+  a fresh environment installs with one documented command;
+\item
+  a Trace Port-like export is audited without manual code edits;
+\item
+  process maps and data-quality report regenerate;
+\item
+  baselines run on frozen grouped splits;
+\item
+  prediction intervals and operational metrics are reported;
+\item
+  Event-JEPA is either validated incrementally or honestly rejected;
+\item
+  shadow replay exposes prediction cutoff, interval and reasons;
+\item
+  no source write capability exists;
+\item
+  security/data agreement checklist is complete;
+\item
+  an operator review is documented;
+\item
+  all tables are generated from artifacts;
+\item
+  limitations and \texttt{what\ this\ does\ not\ prove} are explicit.
+\end{itemize}
+
+At the end of each task report: hypothesis, changes, tests, evidence,
+limitations and next falsifiable step.
+
+\end{document}

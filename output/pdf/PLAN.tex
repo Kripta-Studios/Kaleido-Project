@@ -1,0 +1,623 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  spanish,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.1cm,right=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={Plan del MVP Kaleido FlowTwin},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={KaleidoBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={KaleidoBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Plan del MVP Kaleido FlowTwin}
+\author{}
+\date{15 julio 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Plan del MVP Kaleido
+FlowTwin}\label{plan-del-mvp-kaleido-flowtwin}
+
+\subsection{Objetivo y decision}\label{objetivo-y-decision}
+
+Construir un piloto offline/read-only para predecir tiempo restante y
+riesgo de desviacion en una operacion/turno de Trace Port. El plan
+admite que el historico sea insuficiente: en ese caso termina con
+instrumentacion, process intelligence y simulacion, sin inventar un
+predictor.
+
+\subsection{Estados de salida}\label{estados-de-salida}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Estado & Significado & Siguiente decision \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{GO\_PREDICTIVE} & hay volumen, calidad, outcomes y senal &
+piloto shadow 4-8 semanas \\
+\texttt{INSTRUMENT\_FIRST} & proceso util pero dato insuficiente &
+activar captura minima y reevaluar \\
+\texttt{BASELINE\_ONLY} & modelo simple gana & productizar baseline, no
+JEPA \\
+\texttt{NO\_SIGNAL} & no hay mejora ni KPI accionable & parar o cambiar
+caso \\
+\end{longtable}
+}
+
+Todos son resultados validos del piloto.
+
+\subsection{Fase 0 - Alineamiento
+(reunion)}\label{fase-0---alineamiento-reunion}
+
+Duracion: 60-90 minutos.
+
+Entregables:
+
+\begin{itemize}
+\tightlist
+\item
+  proceso candidato;
+\item
+  comprador/usuario;
+\item
+  unidad de decision;
+\item
+  desviacion material;
+\item
+  acciones permitidas;
+\item
+  KPI y coste aproximado;
+\item
+  propietario de datos;
+\item
+  export minimo acordado.
+\end{itemize}
+
+Gate: una pregunta predictiva con timestamp de decision y outcome
+verificable.
+
+\subsection{Fase 1 - Data Evidence
+Scan}\label{fase-1---data-evidence-scan}
+
+Duracion: 3-5 dias tras recibir muestra.
+
+Entrada: 3-5 operaciones anonimizadas y diccionario/export.
+
+Tareas:
+
+\begin{itemize}
+\tightlist
+\item
+  schema y relaciones;
+\item
+  timezone, IDs, duplicados y revisiones;
+\item
+  action/context/outcome audit;
+\item
+  cobertura de plan, actual y outcome;
+\item
+  inventario de eventos/modalidades;
+\item
+  riesgo GDPR/seguridad;
+\item
+  estimacion de operaciones utilizables y diversidad.
+\end{itemize}
+
+Salida:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{data\_readiness\_report.html/pdf};
+\item
+  canonical mapping;
+\item
+  leakage report;
+\item
+  decision \texttt{go/instrument/no-fit};
+\item
+  presupuesto de piloto.
+\end{itemize}
+
+Gate: se puede reconstruir al menos una operacion sin mirar el futuro.
+
+\subsection{Fase 2 - Proceso y
+baseline}\label{fase-2---proceso-y-baseline}
+
+Duracion: semana 1-2.
+
+Tareas:
+
+\begin{itemize}
+\tightlist
+\item
+  object-centric event log;
+\item
+  process map, variantes, esperas y conformance;
+\item
+  plan vs actual;
+\item
+  naive/median/survival/boosting;
+\item
+  split cronologico y por proyecto;
+\item
+  metricas operativas preliminares.
+\end{itemize}
+
+Gate:
+
+\begin{itemize}
+\tightlist
+\item
+  artefactos reproducibles;
+\item
+  umbrales solo de validation;
+\item
+  baseline aporta informacion por encima de plan/mediana;
+\item
+  explicacion revisable por un operador.
+\end{itemize}
+
+\subsection{Fase 3 - Modelo
+secuencial}\label{fase-3---modelo-secuencial}
+
+Duracion: semana 2-4, si Fase 2 pasa.
+
+Tareas:
+
+\begin{itemize}
+\tightlist
+\item
+  prefijos causales a varios prediction points;
+\item
+  GRU/TCN/ProcessTransformer;
+\item
+  object-centric graph baseline;
+\item
+  quantiles/calibracion;
+\item
+  error por grupo y drift temporal.
+\end{itemize}
+
+Gate: mejora material sobre boosting en al menos una metrica operativa
+sin empeorar de forma inaceptable calibracion o peor grupo.
+
+\subsection{Fase 4 - Event-JEPA
+experimental}\label{fase-4---event-jepa-experimental}
+
+Duracion: semana 4-5, condicionada al volumen.
+
+Tareas:
+
+\begin{itemize}
+\tightlist
+\item
+  future-embedding prediction 2/4/8 h;
+\item
+  target encoder/anticollapse;
+\item
+  actions vs context;
+\item
+  ablations correct/shuffled/no-action;
+\item
+  frozen probes y fine-tuning;
+\item
+  tres seeds.
+\end{itemize}
+
+Gate de promocion:
+
+\begin{itemize}
+\tightlist
+\item
+  delta positivo frente a mejor secuencial;
+\item
+  lead time o falsas alertas mejores;
+\item
+  mejora sostenida por seed/holdout;
+\item
+  correct actions \textgreater{} shuffled para action claim;
+\item
+  latencia y calibracion aceptables.
+\end{itemize}
+
+Si falla, se elimina del producto.
+
+\subsection{Fase 5 - Escenarios}\label{fase-5---escenarios}
+
+Duracion: semana 4-6, en paralelo conceptual con Fase 4.
+
+Ruta A, prioritaria:
+
+\begin{itemize}
+\tightlist
+\item
+  simulacion discreta de tareas, recursos, colas, pausas y calendario;
+\item
+  calibracion con tiempos observados;
+\item
+  escenarios definidos con experto;
+\item
+  sensibilidad y rangos, no una cifra unica.
+\end{itemize}
+
+Ruta B, solo con acciones reales:
+
+\begin{itemize}
+\tightlist
+\item
+  ranking de acciones observadas;
+\item
+  soporte/uncertainty guard;
+\item
+  offline policy evaluation conservadora;
+\item
+  advisory-only.
+\end{itemize}
+
+Gate: escenarios plausibles, dentro de restricciones y con hipotesis
+visibles.
+
+\subsection{Fase 6 - Shadow MVP}\label{fase-6---shadow-mvp}
+
+Duracion: semana 5-6 para replay; 4-8 semanas prospectivas si Kaleido
+continua.
+
+Entregables:
+
+\begin{itemize}
+\tightlist
+\item
+  dashboard de operacion;
+\item
+  P50/P90 y riesgo 2/4/8 h;
+\item
+  timeline y fuente de cada alerta;
+\item
+  motivos/objetos afectados;
+\item
+  abstencion;
+\item
+  export PDF/CSV/API;
+\item
+  model/data cards;
+\item
+  informe tecnico y ejecutivo.
+\end{itemize}
+
+Gate de piloto prospectivo, a acordar:
+
+\begin{itemize}
+\tightlist
+\item
+  lead time minimo;
+\item
+  limite de falsas alertas/turno;
+\item
+  cobertura P90;
+\item
+  mejora vs plan/baseline;
+\item
+  utilidad operatoria;
+\item
+  disponibilidad/latencia.
+\end{itemize}
+
+\subsection{Cronograma comercial
+propuesto}\label{cronograma-comercial-propuesto}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Reunion        seleccionar proceso y muestra}
+\NormalTok{Dias 1{-}5       Data Evidence Scan}
+\NormalTok{Semana 2       mapa de proceso + baseline}
+\NormalTok{Semana 3{-}4     predictor y calibracion}
+\NormalTok{Semana 5       escenarios + dashboard}
+\NormalTok{Semana 6       replay, informe y go/no{-}go}
+\NormalTok{Posterior      shadow prospectivo y productizacion}
+\end{Highlighting}
+\end{Shaded}
+
+No vender \texttt{4-6\ semanas} como garantia de precision. Es plazo
+para obtener una decision basada en evidencia.
+
+\subsection{Matriz de exito}\label{matriz-de-exito}
+
+\subsubsection{Tecnico}\label{tecnico}
+
+\begin{itemize}
+\tightlist
+\item
+  integridad temporal;
+\item
+  holdout sin leakage;
+\item
+  intervalo calibrado;
+\item
+  mejora frente a baseline;
+\item
+  robustez por proyecto/carga;
+\item
+  latencia y trazabilidad.
+\end{itemize}
+
+\subsubsection{Operativo}\label{operativo}
+
+\begin{itemize}
+\tightlist
+\item
+  alertas antes de que el operador ya conozca el problema;
+\item
+  volumen de falsas alarmas tolerable;
+\item
+  razon de alerta comprensible;
+\item
+  accion disponible en ese momento;
+\item
+  dashboard no duplica trabajo.
+\end{itemize}
+
+\subsubsection{Comercial}\label{comercial}
+
+\begin{itemize}
+\tightlist
+\item
+  comprador identificado;
+\item
+  coste del problema medible;
+\item
+  integracion con producto Kaleido;
+\item
+  packaging y precio potencial;
+\item
+  IP/datos/soporte acordables;
+\item
+  ruta a mas clientes sin mezclar datos.
+\end{itemize}
+
+\subsection{Riesgos principales}\label{riesgos-principales}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Riesgo & Mitigacion \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+historico pobre & instrument-first, public/synthetic solo para
+plumbing \\
+pocos eventos negativos & remaining time, survival, top-risk; no
+clasificador forzado \\
+plan sobreescrito & revisionado y cutoff temporal \\
+IDs no enlazables & resolver mapping antes de modelar \\
+atajos por cliente/proyecto & holdout, ablations y worst-group \\
+drift de proceso & frozen reference + shadow, reset por redisenos \\
+accion confundida con contexto & contrato y shuffled-action test \\
+ROI no disponible & separar metricas tecnicas de simulacion economica \\
+duplicar Trace Port & integrar la prediccion dentro del producto \\
+scope creep 3D/robotica & backlog separado, no primera version \\
+\end{longtable}
+}
+
+\subsection{Backlog posterior}\label{backlog-posterior}
+
+\begin{itemize}
+\tightlist
+\item
+  Shipping Board remaining-time/exception transfer;
+\item
+  Freight Intelligence ETA probabilistica;
+\item
+  fotos de incidencia con DINO frozen features;
+\item
+  root-cause cross-product;
+\item
+  optimizacion de recursos bajo restricciones;
+\item
+  LiDAR/vision para ocupacion y maniobras;
+\item
+  aprendizaje federado o por cliente con adapters.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,15 @@
+# LaTeX build artefacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+
+# Local render and scratch outputs
+tmp/
+*.tmp
+*~

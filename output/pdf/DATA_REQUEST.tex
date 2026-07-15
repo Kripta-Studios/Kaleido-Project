@@ -1,0 +1,323 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  spanish,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.1cm,right=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={Peticion minima de datos para la reunion},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={KaleidoBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={KaleidoBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Peticion minima de datos para la reunion}
+\author{}
+\date{15 julio 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Peticion minima de datos para la
+reunion}\label{peticion-minima-de-datos-para-la-reunion}
+
+\subsection{Objetivo}\label{objetivo}
+
+Determinar en menos de una semana si existe un caso predictivo viable,
+sin solicitar un volcado masivo ni acceso productivo.
+
+\subsection{Paquete minimo}\label{paquete-minimo}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Diccionario de campos/export de Trace Port.
+\item
+  Tres a cinco operaciones cerradas anonimizadas:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    una nominal;
+  \item
+    una lenta/desviada;
+  \item
+    una con incidencia si existe.
+  \end{itemize}
+\item
+  Plan original y revisiones disponibles.
+\item
+  Eventos/timestamps y relaciones con operacion, turno, carga y recurso.
+\item
+  Resultado final: fin, desviacion e incidencia.
+\item
+  Captura o export de dashboard solo si no expone informacion sensible.
+\item
+  Descripcion de que decision se toma cuando aparece riesgo.
+\end{enumerate}
+
+Formatos aceptables: CSV, XLSX, JSON, Parquet o export de API. No se
+necesita base de datos ni credenciales para el scan.
+
+\subsection{Seudonimizacion}\label{seudonimizacion}
+
+Kaleido puede sustituir:
+
+\begin{itemize}
+\tightlist
+\item
+  cliente, proyecto, buque, persona y recurso por IDs estables;
+\item
+  notas por categorias o texto redactado;
+\item
+  fotos por metadata o excluirlas inicialmente;
+\item
+  importes por rangos.
+\end{itemize}
+
+No debe eliminar timestamps, relaciones ni revisiones, porque son la
+senal del proceso.
+
+\subsection{Preguntas por tabla/export}\label{preguntas-por-tablaexport}
+
+\begin{itemize}
+\tightlist
+\item
+  ¿Que representa una fila?
+\item
+  ¿Cual es la clave primaria?
+\item
+  ¿Que timezone usa?
+\item
+  ¿El timestamp es de ocurrencia o registro?
+\item
+  ¿Puede haber duplicados/reintentos?
+\item
+  ¿Se actualiza una fila o se crea historial?
+\item
+  ¿Que campos existian en el momento del evento?
+\item
+  ¿Que outcome se conoce solo al final?
+\item
+  ¿Que IDs enlazan tablas?
+\item
+  ¿Que valores son decisiones y quienes pueden cambiarlos?
+\end{itemize}
+
+\subsection{Conteos que bastan antes del
+volcado}\label{conteos-que-bastan-antes-del-volcado}
+
+\begin{itemize}
+\tightlist
+\item
+  numero de proyectos/operaciones/turnos por mes;
+\item
+  fecha minima/maxima;
+\item
+  eventos por operacion;
+\item
+  porcentaje con plan y fin real;
+\item
+  porcentaje con incidencias;
+\item
+  tipos de carga/operacion;
+\item
+  numero de puertos/clientes;
+\item
+  frecuencia de replanificacion;
+\item
+  cobertura de recursos/equipos.
+\end{itemize}
+
+\subsection{Respuesta del Data Evidence
+Scan}\label{respuesta-del-data-evidence-scan}
+
+EVOCON devolvera:
+
+\begin{itemize}
+\tightlist
+\item
+  mapa de datos;
+\item
+  score de readiness por objetivo;
+\item
+  issues y acciones de instrumentacion;
+\item
+  caso candidato y baseline;
+\item
+  estimacion de esfuerzo/computo;
+\item
+  \texttt{GO\_PREDICTIVE}, \texttt{INSTRUMENT\_FIRST} o
+  \texttt{NO\_FIT};
+\item
+  propuesta cerrada del piloto, sin obligacion de continuar.
+\end{itemize}
+
+\subsection{Lo que no se solicita
+inicialmente}\label{lo-que-no-se-solicita-inicialmente}
+
+\begin{itemize}
+\tightlist
+\item
+  acceso de escritura;
+\item
+  credenciales productivas;
+\item
+  datos personales sin necesidad;
+\item
+  fotos originales;
+\item
+  todos los productos a la vez;
+\item
+  anos de datos sin saber la estructura;
+\item
+  aprobacion para controlar operaciones.
+\end{itemize}
+
+\end{document}

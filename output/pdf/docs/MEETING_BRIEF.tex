@@ -1,0 +1,793 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  spanish,
+  10pt,
+  a4paper,
+]{article}
+\usepackage{xcolor}
+\usepackage[top=2.2cm,bottom=2.2cm,left=2.1cm,right=2.1cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Shared visual layer for the generated Kaleido FlowTwin reports.
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xurl}
+\usepackage{lastpage}
+\usepackage{etoolbox}
+
+\definecolor{KaleidoNavy}{HTML}{0A2342}
+\definecolor{KaleidoBlue}{HTML}{176B87}
+\definecolor{KaleidoCyan}{HTML}{3BB7C4}
+\definecolor{KaleidoMint}{HTML}{DDF5F1}
+\definecolor{KaleidoFog}{HTML}{F2F5F7}
+\definecolor{KaleidoSlate}{HTML}{5D6A7A}
+\definecolor{KaleidoCoral}{HTML}{F26B5B}
+
+\titleformat{\section}
+  {\Large\bfseries\color{KaleidoNavy}}
+  {\thesection}{0.75em}{}[\vspace{0.2em}\color{KaleidoCyan}\titlerule]
+\titleformat{\subsection}
+  {\large\bfseries\color{KaleidoBlue}}
+  {\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{KaleidoNavy}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\section}{0pt}{2.2em}{1em}
+\titlespacing*{\subsection}{0pt}{1.6em}{0.65em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\bfseries\color{KaleidoNavy}KALEIDO FLOWTWIN}
+\fancyhead[R]{\small\color{KaleidoSlate}DOSSIER TECNICO}
+\fancyfoot[L]{\scriptsize\color{KaleidoSlate}EVOCON Solutions GmbH}
+\fancyfoot[R]{\scriptsize\color{KaleidoSlate}\thepage/\pageref*{LastPage}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{KaleidoCyan}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{20pt}
+
+\setlist[itemize]{leftmargin=1.4em,itemsep=0.25em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.25em,topsep=0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\arraystretch}{1.18}
+
+\AtBeginEnvironment{quote}{%
+  \color{KaleidoNavy}\itshape
+  \setlength{\leftskip}{1em}
+  \setlength{\rightskip}{1em}
+}
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \hypersetup{pageanchor=false}
+  \begin{titlepage}
+    \pagecolor{KaleidoNavy}
+    \color{white}
+    \vspace*{1.4cm}
+    {\color{KaleidoCyan}\rule{2.4cm}{2.5pt}\par}
+    \vspace{1.1cm}
+    {\Huge\bfseries\@title\par}
+    \vspace{0.65cm}
+    {\Large\color{KaleidoMint}Kaleido FlowTwin\par}
+    \vfill
+    {\large Álvaro Schwiedop Souto\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}Industrial AI \& Predictive Quality Lead\par}
+    \vspace{0.15cm}
+    {\normalsize\color{KaleidoMint}EVOCON Solutions GmbH\par}
+    \vspace{0.25cm}
+    {\normalsize\color{KaleidoMint}\@date\par}
+  \end{titlepage}
+  \hypersetup{pageanchor=true}
+  \nopagecolor
+  \color{black}
+}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+% fallback for those not using the hyperref driver hyperxmp:
+\makeatletter
+\@ifundefined{xmpquote}{\newcommand{\xmpquote}[1]{#1}}{}
+\makeatother
+\hypersetup{
+  pdftitle={Guion de reunion: Kaleido FlowTwin},
+  pdflang={es},
+  colorlinks=true,
+  linkcolor={KaleidoBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={KaleidoBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Guion de reunion: Kaleido FlowTwin}
+\author{}
+\date{15 julio 2026}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{3}
+\tableofcontents
+}
+\section{Guion de reunion: Kaleido
+FlowTwin}\label{guion-de-reunion-kaleido-flowtwin}
+
+Documento de preparacion para una conversacion tecnica y comercial con
+Kaleido. \texttt{FlowTwin} es un nombre provisional. La reunion no debe
+vender un modelo ya validado: debe conseguir acceso controlado a
+evidencia suficiente para decidir si existe un producto rentable.
+
+\subsection{La idea en una frase}\label{la-idea-en-una-frase}
+
+Convertir los eventos que Kaleido ya registra en Trace Port en una capa
+predictiva que estime tiempo restante y riesgo de desviacion, explique
+donde se forma el cuello de botella y compare escenarios operativos
+aprobados, sin tomar el control de la operacion.
+
+\subsection{El mensaje que debe
+quedar}\label{el-mensaje-que-debe-quedar}
+
+Kaleido ya tiene la parte dificil que muchos proyectos de IA no tienen:
+un producto conectado al trabajo real, eventos con significado operativo
+y acceso a usuarios que pueden actuar. No proponemos sustituir Trace
+Port ni construir un simulador visual. Proponemos convertir esa
+trazabilidad en anticipacion.
+
+La falta de un historico rico no se oculta ni se discute: es la primera
+restriccion de diseno. La fase inicial mide la calidad y densidad de la
+evidencia y entrega process mining, baselines y un simulador discreto
+aun cuando no haya datos suficientes para entrenar un modelo profundo.
+
+\subsection{Apertura de 60 segundos}\label{apertura-de-60-segundos}
+
+\begin{quote}
+Hemos revisado vuestra observacion sobre el historico y hemos cambiado
+el planteamiento para que el proyecto no dependa de promesas de deep
+learning. Trace Port ya registra proyectos, turnos, eventos, equipos,
+incidencias y tiempos. Nuestra propuesta es empezar por una sola
+operacion repetible y usar esos eventos para reconstruir el proceso
+real, medir desviaciones y crear un baseline de tiempo restante y riesgo
+a 2, 4 y 8 horas. Solo si un modelo secuencial o JEPA mejora ese
+baseline fuera de muestra se incorpora. El resultado seria una capa
+read-only sobre Trace Port: alerta anticipada, intervalo de confianza,
+cuello de botella y escenarios operativos aprobados. En cuatro a seis
+semanas no prometemos un gemelo autonomo; prometemos una decision
+medible sobre producto, datos y retorno.
+\end{quote}
+
+\subsection{Version de cinco minutos}\label{version-de-cinco-minutos}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Problema.} Un dashboard explica que ha pasado; el valor
+  adicional aparece cuando permite saber con antelacion si una operacion
+  no va a cumplir el plan.
+\item
+  \textbf{Activo de Kaleido.} Trace Port estructura la actividad que
+  necesitamos: proyecto, packing list, turno, evento, equipo, evidencia
+  e incidencia.
+\item
+  \textbf{Primer caso.} En una carga, descarga o manipulacion repetible,
+  estimar tiempo restante y probabilidad de exceder el plan en
+  horizontes de 2/4/8 h.
+\item
+  \textbf{Salida.} Riesgo calibrado, intervalo, factores asociados,
+  cuello de botella, abstencion si falta evidencia y comparacion de
+  acciones permitidas.
+\item
+  \textbf{Metodo.} Auditoria temporal, process mining, modelos simples,
+  simulacion de eventos discretos y, como candidato, representacion
+  secuencial tipo JEPA.
+\item
+  \textbf{Prueba honesta.} Separacion por proyecto y tiempo; nada del
+  futuro entra en el pasado; se compara con reglas y modelos tabulares;
+  se miden falsas alarmas, calibracion y minutos de anticipacion.
+\item
+  \textbf{Negocio.} Modulo premium de Trace Port, servicio de
+  implantacion y mejora interna de planificacion. El precio y el ROI se
+  calculan con el coste real de una desviacion y de intervenir, no con
+  porcentajes genericos.
+\item
+  \textbf{Siguiente paso.} Una sesion de esquema y tres a cinco
+  operaciones anonimizadas para producir un informe de viabilidad y un
+  contrato de datos.
+\end{enumerate}
+
+\subsection{Objetivo concreto de la
+reunion}\label{objetivo-concreto-de-la-reunion}
+
+Salir con cuatro decisiones:
+
+\begin{itemize}
+\tightlist
+\item
+  propietario de negocio y propietario tecnico;
+\item
+  una operacion repetible con una decision que todavia pueda cambiarse;
+\item
+  acceso a esquema y muestra anonimizada, preferiblemente tres a cinco
+  casos;
+\item
+  fecha de una sesion de 90 minutos para mapear proceso, costes y
+  acciones.
+\end{itemize}
+
+No hace falta conseguir en la primera reunion acceso a produccion,
+presupuesto cerrado ni compromiso con JEPA.
+
+\subsection{Descubrimiento: las preguntas que
+importan}\label{descubrimiento-las-preguntas-que-importan}
+
+\subsubsection{Operacion y decision}\label{operacion-y-decision}
+
+\begin{itemize}
+\tightlist
+\item
+  ¿Que operacion se repite con suficiente frecuencia y tiene principio y
+  fin?
+\item
+  ¿Que plan o SLA se incumple y cuando deja de ser util advertirlo?
+\item
+  ¿Quien puede actuar ante una alerta y que acciones tiene permitidas?
+\item
+  ¿Cual es el coste aproximado de retraso, recurso ocioso, hora extra,
+  demurrage, penalizacion o replanificacion?
+\item
+  ¿Que accion es segura pero cara? Ese dato determina el umbral de
+  alerta.
+\end{itemize}
+
+\subsubsection{Evidencia disponible}\label{evidencia-disponible}
+
+\begin{itemize}
+\tightlist
+\item
+  ¿Cada evento conserva \texttt{event\_time}, \texttt{ingest\_time},
+  proyecto, turno y actor?
+\item
+  ¿Se guarda el plan que estaba vigente en ese momento o solo su version
+  final?
+\item
+  ¿Hay reintentos, correcciones, eventos tardios, duplicados o trabajo
+  offline?
+\item
+  ¿Se conocen pausas, cambios de equipo y causa de incidencia?
+\item
+  ¿Que parte existe en Trace Port y cual vive en ERP, TOS, Excel o
+  correo?
+\item
+  ¿Cuantos proyectos completos hay por tipo de operacion y por terminal?
+\end{itemize}
+
+\subsubsection{Producto e integracion}\label{producto-e-integracion}
+
+\begin{itemize}
+\tightlist
+\item
+  ¿El mejor punto de entrada es API, export programado o replica
+  read-only?
+\item
+  ¿Que interfaz consume el usuario: panel Trace Port, email, push o API?
+\item
+  ¿Debe desplegarse en infraestructura de Kaleido, nube privada o
+  entorno del cliente final?
+\item
+  ¿Quien comercializaria el modulo y como se factura hoy Trace Port?
+\end{itemize}
+
+\subsection{Respuesta a la objecion principal: ``no hay historico
+rico''}\label{respuesta-a-la-objecion-principal-no-hay-historico-rico}
+
+Respuesta breve:
+
+\begin{quote}
+Precisamente por eso proponemos un piloto con salida util antes del
+modelo. La primera entrega mide el proceso, la calidad temporal y que
+señal existe. Con pocos datos usamos reglas, pooling por familias de
+operacion, simulacion y estimadores con intervalos amplios. Si la
+evidencia no soporta prediccion, el resultado es un no-go fundamentado y
+un plan de instrumentacion, no una demo que inventa precision.
+\end{quote}
+
+Consecuencias tecnicas:
+
+\begin{itemize}
+\tightlist
+\item
+  el historico se mide en casos completos y densidad de eventos, no solo
+  meses;
+\item
+  se agrupan operaciones solo si comparten mecanismo y contrato
+  semantico;
+\item
+  el modelo se abstiene cuando el caso esta fuera de distribucion;
+\item
+  un log publico o sintetico valida tuberias, nunca el valor para
+  Kaleido;
+\item
+  los datos nuevos se capturan con un contrato que permita aprendizaje
+  futuro.
+\end{itemize}
+
+\subsection{Que significa aqui ``world
+model''}\label{que-significa-aqui-world-model}
+
+No es un generador de video ni una maqueta 3D. Es un modelo del estado
+operativo que intenta responder:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  donde esta ahora la operacion;
+\item
+  que puede ocurrir a continuacion;
+\item
+  con que incertidumbre y en que plazo;
+\item
+  como cambia la distribucion si se modifica una accion permitida.
+\end{enumerate}
+
+Formalmente, para estado historico \texttt{h\_t}, contexto \texttt{c\_t}
+y accion candidata \texttt{a\_t}, se estima una distribucion futura:
+
+\texttt{p(y\_\{t+h\},\ z\_\{t+h\}\ \textbar{}\ h\_t,\ c\_t,\ a\_t)}
+
+\texttt{z} es un estado latente; \texttt{y} contiene tiempos, eventos e
+incidencias observables. Sin variacion real o una simulacion validada de
+\texttt{a\_t}, el sistema solo puede mostrar asociacion o escenario, no
+efecto causal.
+
+\subsection{Por que JEPA, y por que no es un
+requisito}\label{por-que-jepa-y-por-que-no-es-un-requisito}
+
+JEPA aprende a predecir representaciones de partes futuras u ocultas,
+evitando reconstruir cada detalle del dato. Puede ser util cuando hay
+muchos eventos sin etiquetas limpias, distintas cadencias y estados
+parcialmente observados. Para Kaleido el candidato seria un Event-JEPA
+temporal, no V-JEPA de video.
+
+No obstante, el modelo ganador puede ser Kaplan-Meier, gradient boosting
+o una red secuencial pequena. JEPA entra solo si aporta una mejora
+estable en holdout, calibracion y anticipacion a coste operativo
+comparable. La arquitectura de producto no depende de esa eleccion.
+
+\subsection{Arquitectura que conviene explicar en la
+pizarra}\label{arquitectura-que-conviene-explicar-en-la-pizarra}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Trace Port / ERP / TOS / meteo}
+\NormalTok{              |}
+\NormalTok{              v}
+\NormalTok{     eventos versionados + calidad temporal}
+\NormalTok{              |}
+\NormalTok{       estado operativo a tiempo t}
+\NormalTok{              |}
+\NormalTok{   +{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}+}
+\NormalTok{   |          |          |}
+\NormalTok{baseline   Event{-}JEPA   simulacion discreta}
+\NormalTok{   |          |          |}
+\NormalTok{   +{-}{-}{-}{-}{-}{-}\textgreater{} riesgo, tiempo, intervalo}
+\NormalTok{                    |}
+\NormalTok{          politica read{-}only + abstencion}
+\NormalTok{                    |}
+\NormalTok{      Trace Port / API / informe de turno}
+\end{Highlighting}
+\end{Shaded}
+
+Puntos tecnicos que generan confianza:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{event\_time} y \texttt{ingest\_time} se conservan por
+  separado;
+\item
+  los planes se versionan para no usar el plan final al evaluar el
+  pasado;
+\item
+  el split es por proyecto/tiempo/terminal, nunca por filas aleatorias;
+\item
+  la prediccion se hace como si solo se supiera lo disponible en ese
+  instante;
+\item
+  cada salida conserva modelo, version de datos y explicacion;
+\item
+  no hay escritura automatica sobre sistemas operativos o de seguridad.
+\end{itemize}
+
+\subsection{Prueba y criterios de
+salida}\label{prueba-y-criterios-de-salida}
+
+El baseline no es ``acertar la media''. Incluye reglas operativas,
+mediana por familia, survival analysis y boosting tabular. El candidato
+debe probar valor incremental en un holdout congelado.
+
+Metricas necesarias:
+
+\begin{itemize}
+\tightlist
+\item
+  MAE y pinball loss del tiempo restante;
+\item
+  AUCPR para eventos raros, no solo accuracy o AUROC;
+\item
+  Brier score y error de calibracion;
+\item
+  lead time antes de la desviacion;
+\item
+  falsas alertas por operacion o turno;
+\item
+  cobertura y anchura de intervalos;
+\item
+  rendimiento por tipo de carga, terminal y turno;
+\item
+  utilidad economica a distintos costes de intervenir y no intervenir.
+\end{itemize}
+
+Gates:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{go:} mejora repetible y alerta con tiempo accionable;
+\item
+  \textbf{instrument:} el proceso tiene valor, pero faltan campos o
+  consistencia;
+\item
+  \textbf{no-go:} no hay una decision accionable, no se puede evitar
+  fuga temporal o el modelo no supera reglas simples.
+\end{itemize}
+
+\subsection{Encaje con los productos de
+Kaleido}\label{encaje-con-los-productos-de-kaleido}
+
+\subsubsection{Trace Port: primer
+modulo}\label{trace-port-primer-modulo}
+
+``Predictive Operations'' sobre la pantalla de proyecto/turno: tiempo
+restante, riesgo, confianza, cuello de botella y enlace a evidencia. Es
+el mejor lugar de inicio porque ya dispone de eventos operativos y
+usuario en contexto.
+
+\subsubsection{Shipping Board: segunda
+extension}\label{shipping-board-segunda-extension}
+
+Riesgo de retraso o excepcion en expedicion/recepcion, con
+sincronizacion de documentos y eventos externos. Se reutiliza el motor,
+pero cambia el contrato de entidades y horizontes.
+
+\subsubsection{Freight Intelligence: tercera
+extension}\label{freight-intelligence-tercera-extension}
+
+ETA probabilistica y riesgo de excepcion de contenedor. Requiere separar
+eventos del carrier, estimaciones externas y conocimiento disponible en
+cada instante.
+
+\subsection{Hipotesis de negocio}\label{hipotesis-de-negocio}
+
+No presentar una cifra de precio cerrada sin conocer empaquetado ni
+costes. Si Kaleido confirma valor, hay cuatro vias compatibles:
+
+\begin{itemize}
+\tightlist
+\item
+  add-on SaaS por terminal, proyecto o volumen de operaciones;
+\item
+  implantacion y calibracion inicial por cliente;
+\item
+  white-label dentro de Trace Port;
+\item
+  ahorro interno en planificacion, supervision y revision de operativas.
+\end{itemize}
+
+Formula para construir el caso:
+
+\texttt{valor\ esperado\ =\ desviaciones\ evitadas\ +\ horas\ ahorradas\ +\ mejor\ uso\ de\ recursos\ -\ coste\ de\ intervenciones\ -\ coste\ del\ modulo}
+
+El piloto debe registrar decisiones y costes para calcular esta
+expresion con datos de Kaleido.
+
+\subsection{Objeciones y respuestas}\label{objeciones-y-respuestas}
+
+\subsubsection{``Ya tenemos dashboards y
+alertas''}\label{ya-tenemos-dashboards-y-alertas}
+
+FlowTwin no duplica visibilidad. La pregunta es si la alerta llega
+antes, esta calibrada y permite una accion que reduzca coste. Si una
+regla existente lo hace igual de bien, esa regla es el producto
+correcto.
+
+\subsubsection{``¿Esto es un gemelo
+digital?''}\label{esto-es-un-gemelo-digital}
+
+Es un gemelo operativo ligero: estado, transicion, incertidumbre y
+escenarios. No pretende reproducir fisica, geometria o video del puerto
+en la primera fase.
+
+\subsubsection{``¿La recomendacion es
+causal?''}\label{la-recomendacion-es-causal}
+
+No por defecto. Sin datos de acciones, aleatorizacion o una simulacion
+validada, se etiquetara como asociacion o escenario. Las decisiones de
+alto impacto siguen siendo humanas.
+
+\subsubsection{``¿Por que no usar directamente un
+LLM?''}\label{por-que-no-usar-directamente-un-llm}
+
+Un LLM puede resumir informes o explicar resultados, pero no sustituye
+un modelo temporal calibrado ni soluciona la fuga de informacion. Puede
+ser interfaz, no fuente de verdad numerica.
+
+\subsubsection{``¿Necesitamos enviar datos
+sensibles?''}\label{necesitamos-enviar-datos-sensibles}
+
+No necesariamente. Se puede empezar con esquema, perfiles agregados y
+muestra pseudonimizada; despues desplegar cerca del dato. Se eliminan
+nombres y texto libre no necesario, y se acuerdan retencion, roles y
+finalidad.
+
+\subsubsection{``¿Cuanto tarda?''}\label{cuanto-tarda}
+
+Cuatro a seis semanas para llegar a una decision de producto si el
+acceso y el responsable operativo estan disponibles. No equivale a
+integracion de produccion ni garantiza que un modelo avanzado supere el
+baseline.
+
+\subsection{Agenda recomendada de 60
+minutos}\label{agenda-recomendada-de-60-minutos}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}rll@{}}
+\toprule\noalign{}
+Minutos & Tema & Resultado \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+0-5 & Objetivo y restriccion de datos & Alineamiento \\
+5-15 & Demo o recorrido de una operacion & Flujo real \\
+15-30 & Eventos, planes, incidencias y sistemas & Mapa de evidencia \\
+30-40 & Decision, acciones y coste & Target accionable \\
+40-50 & Propuesta y gates & Alcance del scan/piloto \\
+50-60 & Propietarios, muestra y fechas & Siguiente paso \\
+\end{longtable}
+}
+
+\subsection{Que mostrar y que no
+mostrar}\label{que-mostrar-y-que-no-mostrar}
+
+Mostrar:
+
+\begin{itemize}
+\tightlist
+\item
+  el diagrama de la arquitectura y la escalera de cold start;
+\item
+  un ejemplo ficticio claramente marcado como tal;
+\item
+  criterios de go/no-go y peticion minima de datos;
+\item
+  que el sistema complementa los productos actuales de Kaleido.
+\end{itemize}
+
+No mostrar como evidencia:
+
+\begin{itemize}
+\tightlist
+\item
+  metricas antiguas de \texttt{industrial\_jepa\_mvp},
+  \texttt{e-jepa-ttc} o \texttt{softnav-jepa};
+\item
+  una precision sin prevalencia, holdout y baseline;
+\item
+  resultados de datasets publicos como prueba de ROI para Kaleido;
+\item
+  ``causal'', ``autonomo'', ``SOTA'' o ``gemelo completo'' sin prueba.
+\end{itemize}
+
+\subsection{Lectura de los repositorios
+existentes}\label{lectura-de-los-repositorios-existentes}
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{predictiveops-worldmodel} aporta contratos, manifests, splits,
+  tests y gates.
+\item
+  \texttt{industrial\_jepa\_mvp} aporta patrones de agregacion y
+  reporting, no evidencia transferible a logistica.
+\item
+  \texttt{e-jepa-ttc} aporta ventanas temporales, horizontes y
+  streaming.
+\item
+  \texttt{softnav-jepa} aporta la separacion entre estimador y politica
+  segura.
+\item
+  \texttt{SemanticSegmentation3Dclouds} queda como opcion futura si
+  aparece un caso LiDAR/3D, no para el MVP de eventos.
+\end{itemize}
+
+Ninguno es una aplicacion lista para Trace Port. Reutilizar
+indiscriminadamente sus modelos introduciria supuestos de sensores,
+labels y splits incompatibles.
+
+\subsection{Cierre de la reunion}\label{cierre-de-la-reunion}
+
+\begin{quote}
+Para no pediros un proyecto de IA a ciegas, proponemos empezar por una
+muestra pequena y una operacion concreta. En una semana os devolvemos el
+mapa de datos, la definicion exacta del target, los riesgos y un diseno
+de evaluacion. Con eso decidimos juntos si merece la pena ejecutar el
+piloto de cuatro a seis semanas o si lo correcto es primero mejorar
+instrumentacion.
+\end{quote}
+
+\subsection{Lista personal antes de
+entrar}\label{lista-personal-antes-de-entrar}
+
+\begin{itemize}
+\tightlist
+\item
+  Llevar la presentacion PDF y la version HTML offline.
+\item
+  Tener abiertos \texttt{DATA\_REQUEST.md} y \texttt{ARCHITECTURE.md}.
+\item
+  Saber explicar diferencia entre evento, caso, objeto y snapshot.
+\item
+  Preguntar, no asumir, que Trace Port conserva historial de versiones
+  del plan.
+\item
+  No discutir algoritmo antes de fijar decision y coste.
+\item
+  Anotar vocabulario exacto de Kaleido para estados, incidencias y
+  recursos.
+\item
+  Terminar con una peticion pequena y fechada.
+\end{itemize}
+
+\subsection{Glosario rapido}\label{glosario-rapido}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Caso:} una ejecucion completa que puede evaluarse, por ejemplo
+  una operacion.
+\item
+  \textbf{Objeto:} entidad que participa en varios eventos, como
+  proyecto, turno, equipo, buque o unidad de carga.
+\item
+  \textbf{OCEL:} log de eventos centrado en objetos; evita forzar todo a
+  un unico caso.
+\item
+  \textbf{Process mining:} reconstruccion y comparacion del proceso real
+  desde eventos.
+\item
+  \textbf{Conformance:} medida de divergencia entre proceso observado y
+  esperado.
+\item
+  \textbf{World model:} modelo de estado y futuros posibles
+  condicionados al contexto.
+\item
+  \textbf{JEPA:} prediccion en espacio de representaciones, no de cada
+  detalle crudo.
+\item
+  \textbf{Calibracion:} que un riesgo del 20 \% ocurra aproximadamente
+  dos de cada diez veces en poblaciones comparables.
+\item
+  \textbf{Lead time:} anticipacion entre alerta y evento objetivo.
+\item
+  \textbf{Abstencion:} no emitir una recomendacion cuando la evidencia
+  no es fiable.
+\item
+  \textbf{Holdout:} conjunto de evaluacion nunca usado para seleccionar
+  el modelo.
+\end{itemize}
+
+\end{document}
