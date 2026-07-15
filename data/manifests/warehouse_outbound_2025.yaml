@@ -1,0 +1,40 @@
+dataset_id: warehouse_outbound_event_log_2025
+owner: figshare_authors
+source_system: figshare
+source_url: https://figshare.com/articles/dataset/Warehouse_outbound_event_log/29500898
+doi: 10.6084/m9.figshare.29500898
+export_version: 1
+access_date: 2026-07-15
+license_or_agreement: CC-BY-4.0
+timezone_source: embedded_UTC_offsets
+rows: measured_during_ingestion
+operations: measured_during_ingestion
+projects: null
+date_min: measured_during_ingestion
+date_max: measured_during_ingestion
+contains_personal_data: anonymized_by_publisher
+contains_photos: false
+plan_revisions_available: false
+outcomes_available: case_completion_time
+action_columns: []
+context_columns: [CAT_ATTR_01_to_20, NUM_ATTR_01_to_04]
+observation_columns: [concept:name, time:timestamp, concurrent_cases]
+outcome_columns: [case_completion_time_derived_from_final_event]
+forbidden_columns: [future_events, case_end_time_at_prediction]
+files:
+  - path: data/raw/public/warehouse_outbound_2025/outbound_2024_06_10_obfuscated.csv
+    bytes: 73123087
+    published_md5: 10b6913de29a7099c28dbed9cc387866
+    sha256: 2e6767ddd724304fe3716b0c768233e4a8db520f25780ce5ccd3795811348416
+  - path: data/raw/public/warehouse_outbound_2025/outbound_2024_ext_obfuscated.csv
+    bytes: 357622604
+    published_md5: 5a70551180accfdb9773876b5c509133
+    sha256: 1dbf8fedb4ea79a1904f14428389591fbd029177651cba6a6bb53fe21b6b07c2
+  - path: data/raw/public/warehouse_outbound_2025/outbound_2024_obfuscated.csv
+    bytes: 226656157
+    published_md5: 9d567c18b2ae9ff7a2ee6499f1496067
+    sha256: 7661e177bd8856e1612f9fe6280db8e130b9acb4d95c937a906755d73e224709
+known_limitations:
+  - real anonymized aeronautical warehouse outbound process, not a port
+  - obfuscated attributes prevent causal/action interpretation
+  - no immutable operational plan revisions or Kaleido deviation label

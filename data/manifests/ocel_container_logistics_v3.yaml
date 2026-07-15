@@ -1,0 +1,39 @@
+dataset_id: ocel_container_logistics_v3
+owner: RWTH_Aachen_process_and_data_science
+source_system: zenodo
+source_url: https://zenodo.org/records/18373888
+doi: 10.5281/zenodo.18373888
+export_version: v3
+access_date: 2026-07-15
+license_or_agreement: CC-BY-4.0
+timezone_source: embedded_UTC_offsets
+rows: 35761
+operations: null
+projects: null
+date_min: null
+date_max: null
+contains_personal_data: false
+contains_photos: false
+plan_revisions_available: false
+outcomes_available: simulated_events_only
+action_columns: []
+context_columns: []
+observation_columns: [event_type, event_timestamp, object_relationships]
+outcome_columns: []
+forbidden_columns: []
+files:
+  - path: data/raw/public/ocel_container_logistics_v3/container_logistics.json
+    bytes: 10014281
+    published_md5: ef0866abba63e0e47b92d97e7252fb80
+    sha256: 17d2b3d9a3e0300546c786ea62b7336b7ea3b3c513518da829e772d5d3a65a45
+  - path: data/raw/public/ocel_container_logistics_v3/container_logistics.sqlite
+    bytes: 23023616
+    published_md5: 3377230c4ef04c1eb0b3b6ae8114f650
+    sha256: 3c91ff97f736615196902039eec8f00bcd2f83f653d282d8a5aaef3baa7d3d7e
+  - path: data/raw/public/ocel_container_logistics_v3/container_logistics.xml
+    bytes: 13413628
+    published_md5: 7f6e1fe03ebdc40f70c12d8932688798
+    sha256: 86cd46e2c9aba6903f76aab9d9e9491b1dad5e5920a98a3785bd95eac94ec937
+known_limitations:
+  - artificial CPN simulation; pipeline competence only
+  - no Kaleido semantics, outcomes, costs or operator decisions

@@ -1,0 +1,28 @@
+dataset_id: bpi_challenge_2019
+owner: Eindhoven_University_of_Technology
+source_system: 4TU_Figshare
+source_url: https://data.4tu.nl/articles/_/12715853/1
+doi: 10.4121/uuid:d06aff4b-79f0-45e6-8ec8-e19730c248f1
+export_version: 1
+access_date: 2026-07-15
+license_or_agreement: CC-BY-4.0
+timezone_source: embedded
+rows: 1595923
+operations: 251734
+projects: null
+contains_personal_data: anonymized_by_publisher
+contains_photos: false
+plan_revisions_available: false
+outcomes_available: process_events
+action_columns: []
+context_columns: []
+observation_columns: [xes_events]
+outcome_columns: []
+forbidden_columns: []
+files:
+  - path: data/raw/benchmark/bpi2019/BPI_Challenge_2019.xes
+    bytes: 728558522
+    published_md5: 4eb909242351193a61e1c15b9c3cc814
+    sha256: af63bc687fc4152f2123b05c3af7772b37ef3fce2d3f67f812666c9e356baae7
+known_limitations:
+  - optional purchase-to-pay stress test, not evidence for Kaleido

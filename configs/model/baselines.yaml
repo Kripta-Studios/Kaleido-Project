@@ -1,0 +1,14 @@
+remaining_time:
+  naive_group_fields: [operation_type, cargo_type]
+  quantiles: [0.5, 0.9]
+  min_group_size: 20
+risk:
+  horizons_hours: [2, 4, 8]
+  calibration: isotonic
+  threshold_selection: validation_only
+sequence:
+  hidden_size: 64
+  layers: 2
+  dropout: 0.1
+  epochs: 3
+  device: cpu

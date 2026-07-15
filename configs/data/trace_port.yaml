@@ -1,0 +1,11 @@
+adapter: trace_port
+schema_version: trace_port_canonical_v1
+timezone: Europe/Madrid
+strict: true
+unsafe_debug: false
+required_columns: [event_id, event_type, event_time, operation_id]
+action_fields: [resource_assignment, sequence_change, pause_approved, plan_revision]
+context_fields: [project_id, shift_id, cargo_type, vessel_id, location_id]
+observation_fields: [event_type, event_time, quantity, status_from, status_to]
+outcome_fields: [completed_at, deviation_minutes, incident_outcome]
+forbidden_fields: [future_outcome, final_plan_end, post_cutoff_notes]

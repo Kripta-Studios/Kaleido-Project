@@ -1,0 +1,26 @@
+experiment_name: warehouse_sequence_smoke_v2
+hypothesis: a small GRU or ProcessTransformer improves remaining-time error over tabular boosting
+dataset_manifest: data/manifests/warehouse_outbound_2025.yaml
+schema_version: warehouse_xes_csv_v1
+split_manifest: outputs/warehouse_smoke_v2/split_manifest.json
+seed: 42
+prediction_points: [0.25, 0.5, 0.75]
+horizons: [completion]
+input_roles: [observation, context]
+action_fields: []
+context_fields: []
+observation_fields: [concept:name, time:timestamp]
+outcome_fields: [case_completion_time]
+forbidden_fields: [future_events, case_end_time]
+model: [gru, process_transformer]
+baselines: [quantile_gradient_boosting]
+metrics: [mae, median_ae, pinball_p50, pinball_p90]
+threshold_selection: not_applicable
+calibration: quantile_heads
+compute:
+  device: cpu
+  max_cases: 20000
+  epochs: 3
+  batch_size: 256
+  max_sequence_length: 128
+claim_state: smoke_only

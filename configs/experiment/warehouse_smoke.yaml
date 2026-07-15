@@ -1,0 +1,23 @@
+experiment_name: warehouse_remaining_time_smoke_v2
+hypothesis: prefix timing and activity features beat the global remaining-time median
+dataset_manifest: data/manifests/warehouse_outbound_2025.yaml
+schema_version: warehouse_xes_csv_v1
+split_manifest: outputs/warehouse_smoke_v2/split_manifest.json
+seed: 42
+prediction_points: [0.25, 0.5, 0.75]
+horizons: [2h, 4h, 8h, completion]
+input_roles: [context, observation]
+action_fields: []
+context_fields: []
+observation_fields: [concept:name, time:timestamp]
+outcome_fields: [case_completion_time]
+forbidden_fields: [future_events, case_end_time]
+model: quantile_gradient_boosting
+baselines: [global_median, activity_median, kaplan_meier, ridge, quantile_gradient_boosting]
+metrics: [mae, median_ae, pinball_p50, pinball_p90, p50_coverage, p90_coverage]
+threshold_selection: validation_only
+calibration: split_conformal_validation
+compute:
+  device: cpu
+  max_cases: 20000
+claim_state: smoke_only

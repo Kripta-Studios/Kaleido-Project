@@ -1,0 +1,7 @@
+host: 127.0.0.1
+port: 8000
+read_only: true
+max_batch_events: 10000
+cors_origins: []
+artifact_root: outputs
+demo_mode: true

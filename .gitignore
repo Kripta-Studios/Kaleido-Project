@@ -13,3 +13,21 @@
 tmp/
 *.tmp
 *~
+
+# Public/private datasets and generated experiment artifacts
+data/raw/
+data/processed/
+data/private/
+outputs/
+*.db-shm
+*.db-wal
+
+# Python environments and generated caches
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage

@@ -1,0 +1,30 @@
+dataset_id: ocel_order_management
+owner: RWTH_Aachen_process_and_data_science
+source_system: ocel_standard_org
+source_url: https://ocel-standard.org/event-logs/simulations/order-management/
+export_version: downloaded_2026-07-15
+access_date: 2026-07-15
+license_or_agreement: not_stated_on_source_page
+timezone_source: embedded
+rows: 21008
+operations: null
+projects: null
+contains_personal_data: false
+contains_photos: false
+plan_revisions_available: false
+outcomes_available: simulated_delivery_events
+action_columns: []
+context_columns: []
+observation_columns: [event_type, timestamp, object_relationships]
+outcome_columns: [package_delivered, failed_delivery]
+forbidden_columns: []
+files:
+  - path: data/raw/public/ocel_order_management/order-management-log.zip
+    bytes: 2503754
+    sha256: 422e353b22009234fe054272a44cb67da7be8ff7d4142a1b4c24800130edd347
+  - path: data/raw/public/ocel_order_management/order-management-model.zip
+    bytes: 26567
+    sha256: 932d8d2d8a625eb0d5a060923b4e355d78bf78f8c678a746e98743a0c6c113d5
+known_limitations:
+  - simulated process; pipeline and simulator tests only
+  - source page does not state a reusable data license; do not redistribute
