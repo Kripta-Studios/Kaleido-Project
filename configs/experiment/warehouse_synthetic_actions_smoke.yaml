@@ -1,0 +1,24 @@
+experiment_name: warehouse_synthetic_actions_smoke_v1
+hypothesis: a learner recovers explicitly injected action effects better with correct than shuffled actions
+dataset_manifest: data/manifests/warehouse_outbound_2025.yaml
+schema_version: synthetic_action_overlay_v1
+split_manifest: outputs/warehouse_smoke_v2/split_manifest.json
+seed: 42
+prediction_points: [existing_causal_prefixes]
+horizons: [completion]
+input_roles: [observation, synthetic_action]
+action_fields: [synthetic_action]
+context_fields: [parallel_station_available, constraint_active]
+observation_fields: [last_activity, elapsed_minutes, since_previous_minutes, prefix_events]
+outcome_fields: [synthetic_remaining_minutes]
+forbidden_fields: [real_action_claim, kaleido_action_claim]
+model: histogram_gradient_boosting_action_recovery
+baselines: [current_prefix_only, context_only, action_only, shuffled_action]
+metrics: [mae, median_ae]
+threshold_selection: none_fixed_protocol
+calibration: not_applicable
+compute:
+  device: cpu
+  seeds: [11, 42, 73]
+  max_iter: 100
+claim_state: smoke_only

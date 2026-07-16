@@ -42,7 +42,7 @@ class DatasetManifest(BaseModel):
     outcome_columns: list[str]
     forbidden_columns: list[str]
     known_limitations: list[str]
-    files: list[ManifestFile] = Field(default_factory=list)
+    files: list[ManifestFile] = Field(min_length=1)
 
 
 class FileVerification(BaseModel):

@@ -1,4 +1,4 @@
-experiment_name: warehouse_sequence_smoke_v2
+experiment_name: warehouse_sequence_smoke_v4
 hypothesis: a small GRU or ProcessTransformer improves remaining-time error over tabular boosting
 dataset_manifest: data/manifests/warehouse_outbound_2025.yaml
 schema_version: warehouse_xes_csv_v1
@@ -19,8 +19,11 @@ threshold_selection: not_applicable
 calibration: quantile_heads
 compute:
   device: cpu
+  seeds: [11, 42, 73]
   max_cases: 20000
   epochs: 3
-  batch_size: 256
-  max_sequence_length: 128
+  batch_size: 1024
+  # Observed public prefixes: median=4, p95=6, max=8 events. Keep headroom
+  # without paying the quadratic CPU cost of padding every sequence to 128.
+  max_sequence_length: 16
 claim_state: smoke_only

@@ -1,0 +1,25 @@
+experiment_name: warehouse_jepa_hybrid_smoke_v1
+hypothesis: JEPA embeddings add incremental signal when appended to the winning raw-feature quantile boosting baseline
+dataset_manifest: data/manifests/warehouse_outbound_2025.yaml
+schema_version: warehouse_xes_csv_v1
+split_manifest: outputs/warehouse_smoke_v2/split_manifest.json
+seed: 42
+prediction_points: [0.25, 0.5, 0.75]
+horizons: [completion_suffix]
+input_roles: [observation, learned_representation]
+action_fields: []
+context_fields: []
+observation_fields: [concept:name, time:timestamp]
+outcome_fields: [case_completion_time]
+forbidden_fields: [future_events_at_inference, case_end_time_at_inference, final_event_count]
+model: quantile_boosting_with_frozen_jepa_embeddings
+baselines: [raw_quantile_boosting]
+variants: [raw, raw_t_jepa, raw_var_jepa, raw_t_var_jepa]
+metrics: [mae, median_ae, pinball_p50, pinball_p90, p90_coverage, interval_width]
+threshold_selection: validation_only_hybrid_selection
+calibration: direct_quantile_models
+compute:
+  device: cpu
+  seeds: [11, 42, 73]
+  estimators: 120
+claim_state: smoke_only

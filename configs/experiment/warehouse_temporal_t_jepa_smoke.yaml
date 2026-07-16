@@ -1,0 +1,39 @@
+experiment_name: warehouse_temporal_t_jepa_smoke_v1
+hypothesis: a temporal T-JEPA with disjoint future targets and an EMA teacher improves remaining-time prediction over the current Event-JEPA
+dataset_manifest: data/manifests/warehouse_outbound_2025.yaml
+schema_version: warehouse_xes_csv_v1
+split_manifest: outputs/warehouse_smoke_v2/split_manifest.json
+seed: 42
+prediction_points: [0.25, 0.5, 0.75]
+horizons: [next_event, two_events, completion_suffix]
+input_roles: [observation]
+action_fields: []
+context_fields: []
+observation_fields: [concept:name, time:timestamp]
+outcome_fields: [case_completion_time]
+forbidden_fields: [future_events_at_inference, case_end_time_at_inference, final_event_count]
+model: temporal_t_jepa_ema_disjoint
+baselines: [raw_quantile_boosting, current_event_jepa, process_transformer]
+regularizer_candidates: [sigreg, visreg, reg_token]
+metrics: [mae, median_ae, pinball_p50, pinball_p90, p90_coverage, interval_width]
+threshold_selection: validation_only_regularizer_selection
+calibration: direct_quantile_probe
+compute:
+  device: cpu
+  seeds: [11, 42, 73]
+  max_sequence_length: 16
+  batch_size: 512
+  pretrain_epochs: 3
+  frozen_head_epochs: 12
+  hidden_size: 32
+  latent_size: 32
+  layers: 1
+  attention_heads: 4
+  dropout: 0.0
+  sigreg_slices: 32
+  regularizer_weight: 0.1
+  ema_momentum: 0.996
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  shuffle_seed: 2026
+claim_state: smoke_only

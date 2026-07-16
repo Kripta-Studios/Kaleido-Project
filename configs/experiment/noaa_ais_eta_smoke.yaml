@@ -1,0 +1,55 @@
+experiment_name: noaa_ais_eta_smoke
+hypothesis: >-
+  A cutoff-safe hybrid of vessel kinematics and tabular learning reduces future
+  ETA error versus direct distance/speed and historical port-distance medians.
+dataset_manifest: data/manifests/noaa_ais_2025_jan_feb.yaml
+schema_version: marinecadastre-ais-csv-2025
+dataset:
+  dataset_id: noaa_marinecadastre_ais_2025_01_01_02_07
+  expected_days: 38
+  development_prefix_cache: outputs/noaa_ais_eta_v2/prefixes.parquet
+  incremental_start: '2025-01-31T00:00:00'
+  untouched_test_start: '2025-02-01T00:00:00'
+split_manifest: fixed_calendar_boundaries_grouped_by_arrival_trip
+split:
+  train_end: '2025-01-26T00:00:00'
+  validation_end: '2025-02-01T00:00:00'
+seeds: [41, 42, 43]
+prediction_points: half_hour_bins_from_12h_to_15min_before_geofence_entry
+horizons: [0_2h, 2_6h, 6_12h]
+input_roles:
+  - observation
+  - context
+action_fields: []
+context_fields:
+  - port
+  - vessel_group
+  - vessel_dimensions
+observation_fields:
+  - position
+  - speed_over_ground
+  - course_over_ground
+  - prior_approach_rate
+outcome_fields:
+  - hours_to_port_geofence_entry
+forbidden_fields:
+  - arrival_time
+  - future_positions
+  - mmsi
+model:
+  family: quantile_gradient_boosting
+  variants: [tabular_eta, physics_residual_eta]
+baselines: [kinematic_eta, port_distance_median]
+metrics: [mae_hours, median_ae_hours, within_1h, within_2h, conformal_p90]
+acceptance_gates:
+  min_test_trips: 50
+  max_mae_hours: 2.5
+  max_bootstrap_95_high_hours: 3.0
+  min_within_2h: 0.50
+  min_improvement_vs_kinematic_percent: 30.0
+  min_improvement_vs_port_distance_median_percent: 5.0
+threshold_selection: validation_only
+calibration: split_conformal_validation
+compute:
+  device: cpu
+claim_state: smoke_only

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -90,6 +91,150 @@ def test_demo_operation_is_watermarked(tmp_path: Path) -> None:
     client = TestClient(create_app(tmp_path))
     overview = client.get("/v1/demo/overview").json()
     assert "SYNTHETIC" in overview["watermark"]
+    assert overview["read_only"] is True
+    assert len(overview["operations"]) == 8
     detail = client.get("/v1/demo/operations/TP-2407").json()
     assert detail["synthetic"] is True
     assert detail["claim_state"] == "smoke_only"
+    assert detail["audit_id"]
+    assert detail["source_event_count"] == len(detail["source_event_ids"])
+    assert detail["allowed_scenarios"]
+
+
+def test_demo_dashboard_controls_have_read_only_backends(tmp_path: Path) -> None:
+    client = TestClient(create_app(tmp_path))
+    page = client.get("/").text
+    for control_id in (
+        "refresh-button",
+        "alerts-button",
+        "profile-button",
+        "filters-toggle",
+        "export-operations",
+        "export-evidence",
+        "audit-open",
+    ):
+        assert f'id="{control_id}"' in page
+    alerts = client.get("/v1/demo/alerts")
+    assert alerts.status_code == 200
+    assert alerts.json()["read_only"] is True
+    assert alerts.json()["count"] >= 1
+    export = client.get("/v1/demo/export")
+    assert export.status_code == 200
+    assert export.json()["claim_state"] == "smoke_only"
+    scenario = client.post(
+        "/v1/scenarios/rank",
+        json={
+            "operation_id": "TP-2407",
+            "approved_actions": ["resequence_cargo", "adjust_staging_window"],
+        },
+    )
+    assert scenario.status_code == 200
+    assert scenario.json()["advisory_only"] is True
+    assert scenario.json()["evidence_type"] == "simulation_not_realized_saving"
+
+
+def test_demo_evidence_exposes_jepa_gate_from_generated_artifacts(
+    tmp_path: Path,
+) -> None:
+    artifacts = {
+        "warehouse_smoke_v2": {
+            "dataset_id": "public-fixture",
+            "selected_model_test": {"mae_minutes": 734.5},
+        },
+        "warehouse_temporal_t_jepa_v1": {
+            "selected_main_validation_only": "multi_visreg",
+            "aggregates": {"multi_visreg": {"mae_mean_minutes": 759.4}},
+        },
+        "warehouse_var_event_jepa_v1": {
+            "aggregate": {"mae_mean_minutes": 760.4},
+        },
+        "warehouse_jepa_hybrid_v1": {
+            "selected_overall_validation_only": "raw",
+            "best_hybrid_validation_only": "raw_var_jepa",
+            "aggregates": {
+                "raw": {"mae_mean_minutes": 734.4},
+                "raw_var_jepa": {"mae_mean_minutes": 736.6},
+            },
+        },
+    }
+    for run_name, metrics in artifacts.items():
+        run = tmp_path / run_name
+        run.mkdir()
+        (run / "metrics.json").write_text(json.dumps(metrics), encoding="utf-8")
+
+    payload = TestClient(create_app(tmp_path)).get("/v1/demo/evidence").json()
+    assert payload["claim_state"] == "smoke_only"
+    assert [stage["milestone"] for stage in payload["stages"]] == [
+        "M3",
+        "M5-T",
+        "M5-V",
+        "M5-H",
+    ]
+    assert payload["research_finding"]["verdict"] == "KEEP RAW BOOSTING"
+    assert payload["research_finding"]["metric_display"] == "+2.20 min"
+    assert payload["metric_context"]["benchmark_verdict"] == (
+        "best_tested_mean_error_floor"
+    )
+    assert payload["metric_context"]["operational_verdict"] == (
+        "unknown_without_kaleido_acceptance_threshold"
+    )
+
+
+def test_demo_evidence_prefers_future_ais_eta_artifacts(tmp_path: Path) -> None:
+    run = tmp_path / "noaa_ais_eta_v3"
+    run.mkdir()
+    selected = {
+        "mae": 1.88,
+        "median_absolute_error": 1.37,
+        "p90_absolute_error": 4.28,
+        "within_tolerance": {"within_1": 0.42, "within_2": 0.61, "within_4": 0.87},
+    }
+    metrics = {
+        "dataset": {"dataset_id": "noaa-ais-test"},
+        "selected_model_validation_only": "tabular_eta",
+        "selected_test": selected,
+        "test_metrics": {
+            "kinematic_eta": {**selected, "mae": 7.79},
+            "port_distance_median": {**selected, "mae": 2.73},
+            "physics_residual_eta": {**selected, "mae": 1.89},
+            "tabular_eta": selected,
+        },
+        "selected_trip_bootstrap": {
+            "bootstrap_95_low": 1.70,
+            "bootstrap_95_high": 2.08,
+        },
+        "promotion_gate": {
+            "passed": True,
+            "checks": {f"gate_{index}": True for index in range(6)},
+        },
+        "split": {
+            "counts": {
+                "train": {"trips": 303, "prefixes": 5893},
+                "validation": {"trips": 73, "prefixes": 1381},
+                "test": {"trips": 85, "prefixes": 1780},
+            }
+        },
+        "by_port": {"new_orleans": {"rows": 1559}},
+        "p90_interval_coverage": 0.945,
+        "p90_interval_width_hours": 9.04,
+    }
+    (run / "metrics.json").write_text(json.dumps(metrics), encoding="utf-8")
+    (run / "data_manifest.json").write_text("{}", encoding="utf-8")
+
+    client = TestClient(create_app(tmp_path))
+    evidence = client.get("/v1/demo/evidence").json()
+    assert evidence["dataset_id"] == "noaa-ais-test"
+    assert evidence["research_finding"]["verdict"] == "6 / 6 PUBLIC GATES PASSED"
+    assert evidence["metric_context"]["selected_mae_hours"] == 1.88
+    assert evidence["metric_context"]["test_trips"] == 85
+    assert [stage["milestone"] for stage in evidence["stages"]] == [
+        "ETA-1",
+        "ETA-2",
+        "ETA-3",
+        "ETA-4",
+    ]
+    overview = client.get("/v1/demo/overview").json()
+    assert overview["dataset"]["split_counts_operations"]["test"] == 85
+    card = client.get("/v1/models/latest/card").json()
+    assert card["model_version"] == "ais-eta-v3"
+    assert card["metrics"]["test_mae_hours"] == 1.88

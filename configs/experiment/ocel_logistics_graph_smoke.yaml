@@ -1,0 +1,38 @@
+experiment_name: ocel_logistics_graph_smoke
+hypothesis: >-
+  Cutoff-safe object relationships and visible plan revisions reduce held-out
+  container completion error versus a flat trace and a shuffled-graph control.
+dataset_manifest: data/manifests/ocel_logistics_2026.yaml
+schema_version: ocel-2.0-sqlite
+split_manifest: generated_chronological_grouped_by_container
+seeds: [41, 42, 43]
+prediction_points:
+  - operational_milestones
+  - linked_plan_updates
+horizons: [completion]
+input_roles:
+  - observation
+  - context
+  - object_relationship
+action_fields: []
+context_fields:
+  - linked_vehicle_count
+  - observed_handling_units
+observation_fields:
+  - elapsed_hours
+  - last_activity
+  - visible_departure_plan
+outcome_fields:
+  - remaining_hours
+forbidden_fields:
+  - completion_time
+model:
+  family: quantile_gradient_boosting
+  variants: [flat, object_graph, shuffled_object_graph]
+baselines: [global_median, activity_median]
+metrics: [mae_hours, median_ae_hours, within_4h, within_12h, conformal_p90]
+threshold_selection: validation_only
+calibration: split_conformal_validation
+compute:
+  device: cpu
+claim_state: smoke_only

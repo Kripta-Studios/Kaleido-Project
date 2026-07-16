@@ -44,19 +44,20 @@
       <header class="topbar">
         <button class="mobile-menu" aria-label="Toggle menu">☰</button>
         <div>
-          <div class="eyebrow">TRACE PORT · PREDICTIVE OPERATIONS</div>
-          <h1>Operation control</h1>
+          <div class="eyebrow">SHIPPING BOARD · FREIGHT INTELLIGENCE · TRACE PORT</div>
+          <h1>Predictive operations</h1>
         </div>
         <div class="top-actions">
+          <button class="utility-button" id="refresh-button" type="button" title="Refresh replay data">Refresh</button>
           <div class="cutoff">
             <span>Shadow replay cutoff</span>
             <strong id="global-cutoff">Loading…</strong>
           </div>
-          <button class="icon-button" aria-label="Notifications">
+          <button class="icon-button" id="alerts-button" type="button" aria-label="Open synthetic alerts" aria-expanded="false">
             <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
             <i></i>
           </button>
-          <button class="avatar" aria-label="User profile">AS</button>
+          <button class="avatar" id="profile-button" type="button" aria-label="Open local session information" aria-expanded="false">AS</button>
         </div>
       </header>
 
@@ -66,6 +67,25 @@
         <button id="watermark-close" aria-label="Dismiss message">×</button>
       </div>
 
+      <section class="context-hero" aria-label="FlowTwin operational context">
+        <div class="hero-image" role="img" aria-label="Abstract port operations digital twin">
+          <div class="hero-grid" aria-hidden="true"></div>
+          <svg class="hero-route" viewBox="0 0 900 250" aria-hidden="true">
+            <path d="M30 192 C180 55 290 220 430 105 S690 45 860 128"/>
+            <circle cx="30" cy="192" r="5"/><circle cx="430" cy="105" r="5"/><circle cx="860" cy="128" r="5"/>
+          </svg>
+        </div>
+        <div class="hero-copy">
+          <span class="section-label">READ-ONLY OPERATIONAL TWIN</span>
+          <h2>Anticipate arrival, then explain the operational consequence.</h2>
+          <p>Future-tested AIS ETA evidence, object-centric process intelligence and auditable read-only scenarios.</p>
+          <div class="hero-status"><i></i><span>NOAA AIS evidence · synthetic operation replay · no Kaleido data</span></div>
+        </div>
+        <div class="hero-pulse" aria-hidden="true">
+          <span>Event stream</span><strong id="hero-events">2,185</strong><small>fixture events audited</small>
+        </div>
+      </section>
+
       <section class="metric-grid" aria-label="Operational summary">
         <article class="metric-card">
           <div class="metric-icon teal"><svg viewBox="0 0 24 24"><path d="M4 19V9m8 10V5m8 14v-7"/></svg></div>
@@ -73,7 +93,7 @@
         </article>
         <article class="metric-card">
           <div class="metric-icon amber"><svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19zM12 9v5m0 3h.01"/></svg></div>
-          <div><span>At material risk</span><strong id="metric-risk">—</strong><small>synthetic threshold ≥ 60%</small></div>
+          <div><span>At demo risk</span><strong id="metric-risk">—</strong><small>synthetic threshold ≥ 60%</small></div>
         </article>
         <article class="metric-card">
           <div class="metric-icon blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
@@ -81,8 +101,16 @@
         </article>
         <article class="metric-card muted">
           <div class="metric-icon slate"><svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg></div>
-          <div><span>P90 coverage</span><strong>Pending</strong><small>requires held-out outcomes</small></div>
+          <div><span>P90 coverage</span><strong id="metric-coverage">—</strong><small>public held-out smoke evidence</small></div>
         </article>
+      </section>
+
+      <section class="dataset-strip panel" aria-label="Dataset and split context">
+        <div><span class="section-label">EVIDENCE DATASET</span><strong id="dataset-name">Loading…</strong><small id="dataset-domain-note">public evidence dataset</small></div>
+        <div><strong id="dataset-operations">—</strong><small id="dataset-entity-label">vessel trips</small></div>
+        <div><strong id="dataset-prefixes">—</strong><small>prediction prefixes</small></div>
+        <div><strong id="dataset-split">—</strong><small>chronological train / validation / test</small></div>
+        <div><strong id="dataset-hash">—</strong><small>source SHA-256</small></div>
       </section>
 
       <section class="workspace" id="operations">
@@ -94,10 +122,17 @@
                 <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
                 <input id="operation-search" type="search" placeholder="Search vessel or operation">
               </label>
-              <button class="filter-button" aria-label="Filter operations">
+              <button class="compact-button" id="export-operations" type="button" title="Export filtered operations as CSV">CSV</button>
+              <button class="filter-button" id="filters-toggle" type="button" aria-label="Filter operations" aria-expanded="false">
                 <svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10m-7 6h4"/></svg>
               </button>
             </div>
+          </div>
+          <div class="filter-panel" id="filter-panel" hidden>
+            <label>Status<select id="status-filter"><option value="all">All</option><option value="critical">Critical</option><option value="watch">Watch</option><option value="stable">Stable</option></select></label>
+            <label>Minimum risk <span id="risk-filter-value">0%</span><input id="risk-filter" type="range" min="0" max="100" step="5" value="0"></label>
+            <label>Sort<select id="sort-operations"><option value="risk_desc">Risk: high to low</option><option value="progress_desc">Progress: high to low</option><option value="delta_asc">Plan buffer: lowest first</option><option value="operation_asc">Operation ID</option></select></label>
+            <button class="compact-button" id="reset-filters" type="button">Reset</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -116,12 +151,58 @@
         </div>
       </section>
 
+      <section class="insight-grid" id="process" aria-label="Process and evidence intelligence">
+        <article class="panel process-panel">
+          <div class="panel-heading">
+            <div><span class="section-label">OBJECT-CENTRIC FLOW</span><h2>Constraint propagation</h2></div>
+            <span class="live-chip"><i></i> replay</span>
+          </div>
+          <div class="process-map" aria-label="Animated operation process map">
+            <svg viewBox="0 0 720 210" role="img" aria-label="Cargo ready to operation complete process">
+              <defs><linearGradient id="flow-line" x1="0" x2="1"><stop stop-color="#0a9690"/><stop offset="1" stop-color="#e5a52c"/></linearGradient></defs>
+              <path class="flow-path" d="M75 105 C150 30 225 30 300 105 S450 180 525 105 S620 40 670 105"/>
+              <g class="process-node" data-process="READY" role="button" tabindex="0" transform="translate(75 105)"><circle r="26"/><text y="4">READY</text></g>
+              <g class="process-node" data-process="ASSIGN" role="button" tabindex="0" transform="translate(300 105)"><circle r="31"/><text y="4">ASSIGN</text></g>
+              <g class="process-node warning-node" data-process="HANDLE" role="button" tabindex="0" transform="translate(525 105)"><circle r="35"/><text y="4">HANDLE</text></g>
+              <g class="process-node" data-process="DONE" role="button" tabindex="0" transform="translate(670 105)"><circle r="25"/><text y="4">DONE</text></g>
+              <circle class="flow-particle" r="6"><animateMotion dur="5s" repeatCount="indefinite" path="M75 105 C150 30 225 30 300 105 S450 180 525 105 S620 40 670 105"/></circle>
+            </svg>
+            <div class="process-legend"><span><i class="teal-dot"></i> observed state</span><span><i class="amber-dot"></i> synthetic bottleneck</span><span>OCEL relationships preserved</span></div>
+          </div>
+        </article>
+
+        <article class="panel evidence-panel" id="models">
+          <div class="panel-heading">
+            <div><span class="section-label">FROZEN PROTOCOL</span><h2>Model evidence ladder</h2></div>
+            <button class="compact-button heading-action" id="export-evidence" type="button">JSON</button>
+            <span class="claim-chip">smoke_only</span>
+          </div>
+          <div id="model-evidence" class="model-evidence">
+            <div class="evidence-loading"><div class="spinner"></div><span>Reading generated artifacts…</span></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="audit-strip panel" id="audit" aria-label="Prediction audit contract">
+        <div><span class="section-label">EVERY PREDICTION NAMES</span><strong>event cutoff</strong></div>
+        <span class="audit-arrow">→</span><div><strong>plan revision</strong><small>visible at cutoff</small></div>
+        <span class="audit-arrow">→</span><div><strong>model + dataset</strong><small>versioned hashes</small></div>
+        <span class="audit-arrow">→</span><div><strong>interval + reasons</strong><small>advisory only</small></div>
+        <button class="audit-lock" id="audit-open" type="button" aria-label="Open prediction audit details">⌁ OPEN AUDIT</button>
+      </section>
+
       <footer>
         <span>FlowTwin 0.1 · Local MVP</span>
-        <span><i class="status-dot"></i> API healthy · source writes disabled</span>
+        <span id="api-status"><i class="status-dot"></i> Checking API…</span>
       </footer>
     </main>
   </div>
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="utility-drawer" id="utility-drawer" aria-hidden="true" aria-label="Dashboard utility panel">
+    <div class="drawer-head"><div><span class="section-label">READ-ONLY UTILITY</span><h2 id="drawer-title">Details</h2></div><button id="drawer-close" type="button" aria-label="Close utility panel">×</button></div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </aside>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="/static/app.js" defer></script>
 </body>
 </html>

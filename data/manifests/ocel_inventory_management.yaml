@@ -19,17 +19,37 @@ context_columns: [material, plant, customer, supplier]
 observation_columns: [activity, timestamp, stock_before, stock_after]
 outcome_columns: [current_status, status_change]
 forbidden_columns: []
-record_sha256_files:
-  01_generate_simulation.py: ba7c714168c2da175f6eded45e93923943b9d7000b6b34d416f17ea0d4d026c8
-  02_database_to_ocel_csv.py: 03e43af328d6374ffd29f530016af93bdef8f4126a2ddb4a32bfbb4761135fe6
-  03_ocel_csv_to_ocel.py: 820d6bb08a0bfe24fc04ec85baf915d6856722abbfba70d1531d10c56eea5e82
-  04_postprocess_activities.py: 724af9cb2bd7c7af0f4fdee018ecfb1a769bdbe54d215f8d508b67003b0959e6
-  05_ocel_csv_to_ocel.py: 90a439e4495dd22361797b26406449c1082d3e9aa13a449d27e6214c46a9f61c
-  inventory_management.db: c86daa9cd5d598567b1018ab27b50ed188c1f3bc52684c547c73e8a00a7c2899
-  ocel_inventory_management.csv: 7180e38fd78ea4ff3f7c767284fc588e9e24b80a807479975111664c1d05a2e3
-  ocel_inventory_management.xml: 56d28c03620562bcebf9d27a550b84e25a95d566d7757911cea173a4fd7fc1e5
-  post_ocel_inventory_management.csv: 8af29290668a538d192d7934ca9156335fe53234b76b6825b43cd06d38aee53d
-  post_ocel_inventory_management.xml: c59d4965cf98853413164df964160e370687167249a78717c06a85ce2fee82ff
+files:
+  - path: data/raw/public/ocel_inventory_management/01_generate_simulation.py
+    bytes: 23735
+    sha256: ba7c714168c2da175f6eded45e93923943b9d7000b6b34d416f17ea0d4d026c8
+  - path: data/raw/public/ocel_inventory_management/02_database_to_ocel_csv.py
+    bytes: 6677
+    sha256: 03e43af328d6374ffd29f530016af93bdef8f4126a2ddb4a32bfbb4761135fe6
+  - path: data/raw/public/ocel_inventory_management/03_ocel_csv_to_ocel.py
+    bytes: 144
+    sha256: 820d6bb08a0bfe24fc04ec85baf915d6856722abbfba70d1531d10c56eea5e82
+  - path: data/raw/public/ocel_inventory_management/04_postprocess_activities.py
+    bytes: 11479
+    sha256: 724af9cb2bd7c7af0f4fdee018ecfb1a769bdbe54d215f8d508b67003b0959e6
+  - path: data/raw/public/ocel_inventory_management/05_ocel_csv_to_ocel.py
+    bytes: 3061
+    sha256: 90a439e4495dd22361797b26406449c1082d3e9aa13a449d27e6214c46a9f61c
+  - path: data/raw/public/ocel_inventory_management/inventory_management.db
+    bytes: 249856
+    sha256: c86daa9cd5d598567b1018ab27b50ed188c1f3bc52684c547c73e8a00a7c2899
+  - path: data/raw/public/ocel_inventory_management/ocel_inventory_management.csv
+    bytes: 149675
+    sha256: 7180e38fd78ea4ff3f7c767284fc588e9e24b80a807479975111664c1d05a2e3
+  - path: data/raw/public/ocel_inventory_management/ocel_inventory_management.xml
+    bytes: 840656
+    sha256: 56d28c03620562bcebf9d27a550b84e25a95d566d7757911cea173a4fd7fc1e5
+  - path: data/raw/public/ocel_inventory_management/post_ocel_inventory_management.csv
+    bytes: 512068
+    sha256: 8af29290668a538d192d7934ca9156335fe53234b76b6825b43cd06d38aee53d
+  - path: data/raw/public/ocel_inventory_management/post_ocel_inventory_management.xml
+    bytes: 3984223
+    sha256: c59d4965cf98853413164df964160e370687167249a78717c06a85ce2fee82ff
 known_limitations:
   - simulated inventory process, not port operations
   - source timestamps have no declared timezone

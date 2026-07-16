@@ -66,7 +66,14 @@ class RunContext:
 
     def finish(self, extra: dict[str, Any] | None = None) -> dict[str, Any]:
         ended_at = datetime.now(UTC)
-        files = sorted(path for path in self.output_dir.rglob("*") if path.is_file())
+        # A manifest cannot contain a stable checksum of itself. Exclude an older
+        # manifest when a run is resumed or regenerated in the same directory.
+        manifest_path = self.output_dir / "run_manifest.json"
+        files = sorted(
+            path
+            for path in self.output_dir.rglob("*")
+            if path.is_file() and path != manifest_path
+        )
         manifest: dict[str, Any] = {
             "claim_state": self.claim_state,
             "command": self.command,
@@ -81,5 +88,5 @@ class RunContext:
         }
         if extra:
             manifest.update(extra)
-        atomic_json(self.output_dir / "run_manifest.json", manifest)
+        atomic_json(manifest_path, manifest)
         return manifest

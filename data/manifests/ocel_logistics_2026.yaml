@@ -1,0 +1,9 @@
+dataset_id: ocel2_container_logistics_2026
+export_version: 1
+source_type: public_simulated_ocel
+official_record: https://doi.org/10.5281/zenodo.18373888
+license: CC-BY-4.0
+local_path: data/raw/public/ocel_logistics/container_logistics.sqlite
+expected_sha256: 3c91ff97f736615196902039eec8f00bcd2f83f653d282d8a5aaef3baa7d3d7e
+domain: simulated_container_logistics
+claim_boundary: pipeline_competence_only_not_kaleido_value

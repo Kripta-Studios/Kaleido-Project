@@ -39,7 +39,10 @@ def remaining_time_metrics(
         "pinball_p50_minutes": pinball_loss(target, p50, 0.5),
     }
     if p90 is not None:
-        metrics["pinball_p90_minutes"] = pinball_loss(target, np.asarray(p90), 0.9)
+        p90_values = np.maximum(p50, np.asarray(p90, dtype=float))
+        metrics["pinball_p90_minutes"] = pinball_loss(target, p90_values, 0.9)
+        metrics["p90_quantile_coverage"] = float(np.mean(target <= p90_values))
+        metrics["p50_to_p90_width_minutes"] = float(np.mean(p90_values - p50))
     if interval50 is not None:
         coverage, width = interval_coverage(target, *interval50)
         metrics["p50_interval_coverage"] = coverage

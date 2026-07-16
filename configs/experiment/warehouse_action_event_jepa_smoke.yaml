@@ -1,0 +1,33 @@
+experiment_name: warehouse_action_event_jepa_smoke_v1
+hypothesis: a latent transition model recovers generated action effects only when the correct action stream is supplied
+dataset_manifest: data/manifests/warehouse_outbound_2025.yaml
+schema_version: synthetic_action_overlay_v1
+split_manifest: outputs/warehouse_smoke_v2/split_manifest.json
+seed: 42
+prediction_points: [existing_causal_prefixes]
+horizons: [synthetic_completion]
+input_roles: [observation, synthetic_action, context]
+action_fields: [synthetic_action]
+context_fields: [parallel_station_available, constraint_active]
+observation_fields: [concept:name, time:timestamp, elapsed_minutes, prefix_events]
+outcome_fields: [synthetic_remaining_minutes, synthetic_future_state]
+forbidden_fields: [source_action_claim, kaleido_action_claim, future_events_at_inference]
+model: synthetic_action_conditioned_event_jepa_sigreg
+baselines: [correct_action, shuffled_action, current_prefix_only, context_only, action_only]
+metrics: [mae, median_ae, pinball_p50, pinball_p90, p90_coverage, effective_rank]
+threshold_selection: not_applicable_fixed_protocol
+calibration: quantile_heads
+compute:
+  device: cpu
+  seeds: [11, 42, 73]
+  max_sequence_length: 16
+  batch_size: 512
+  pretrain_epochs: 3
+  frozen_head_epochs: 12
+  hidden_size: 32
+  latent_size: 32
+  layers: 1
+  attention_heads: 4
+  sigreg_slices: 32
+  sigreg_weight: 0.1
+claim_state: smoke_only

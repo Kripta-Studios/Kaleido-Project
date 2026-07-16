@@ -1,0 +1,9 @@
+dataset_id: noaa_marinecadastre_ais_2025_01_01_02_07
+export_version: 1
+source_type: public_ais
+official_source: https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2025/
+local_pattern: data/raw/public/noaa_ais_2025/ais-2025-*.csv.zst
+expected_files: 38
+domain: us_vessel_traffic
+ports: [new_york, houston, los_angeles, new_orleans]
+claim_boundary: capability_example_only_not_kaleido_or_european_port_value

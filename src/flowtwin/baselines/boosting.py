@@ -69,7 +69,6 @@ def logistic_risk_pipeline(numeric: list[str], categorical: list[str]) -> Pipeli
             (
                 "model",
                 LogisticRegression(
-                    penalty="l2",
                     C=0.5,
                     class_weight="balanced",
                     max_iter=1000,

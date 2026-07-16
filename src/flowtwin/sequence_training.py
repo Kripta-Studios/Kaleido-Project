@@ -35,6 +35,7 @@ class SequencePartition:
 @dataclass(frozen=True)
 class SequenceData:
     partitions: dict[str, SequencePartition]
+    vocabulary: Vocabulary
     vocabulary_size: int
     max_length: int
 
@@ -81,7 +82,7 @@ def build_sequence_data(
     timestamp_column: str = "time:timestamp",
 ) -> SequenceData:
     prefixes = pl.read_parquet(baseline_run_dir / "prefixes.parquet").sort(
-        ["operation_id", "prediction_cutoff"]
+        ["operation_id", "prediction_cutoff", "prefix_events"]
     )
     operation_ids = set(prefixes["operation_id"].to_list())
     event_groups = _load_events(
@@ -114,11 +115,11 @@ def build_sequence_data(
         operation_id = str(row["operation_id"])
         cutoff = row["prediction_cutoff"]
         complete_trace = event_groups[operation_id]
-        observed = [
-            (time_value, activity)
-            for time_value, activity in complete_trace
-            if time_value <= cutoff
-        ]
+        # Timestamp ties are common in public process logs. ``time <= cutoff`` would
+        # reveal later events sharing the cutoff timestamp, so the audited ordinal is
+        # the causal boundary and the timestamp remains provenance only.
+        observed_count = int(row["prefix_events"])
+        observed = complete_trace[:observed_count]
         if not observed:
             continue
         encoded = [vocabulary.encode(activity) for _, activity in observed][-max_length:]
@@ -159,6 +160,7 @@ def build_sequence_data(
     }
     return SequenceData(
         partitions=partitions,
+        vocabulary=vocabulary,
         vocabulary_size=len(vocabulary),
         max_length=max_length,
     )
@@ -212,10 +214,17 @@ def train_sequence_models(
     config_path: Path,
     output_dir: Path,
     *,
-    seeds: tuple[int, ...] = (11, 42, 73),
+    seeds: tuple[int, ...] | None = None,
 ) -> dict[str, Any]:
+    if (baseline_run_dir / "INVALIDATED.md").is_file():
+        raise RuntimeError(f"refusing invalidated baseline run: {baseline_run_dir}")
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     compute = config["compute"]
+    resolved_seeds = (
+        tuple(int(seed) for seed in compute["seeds"])
+        if seeds is None
+        else seeds
+    )
     run = RunContext.start(
         output_dir,
         ["flowtwin", "train-sequence", str(source_path)],
@@ -225,6 +234,8 @@ def train_sequence_models(
     (output_dir / "config_resolved.yaml").write_text(
         config_path.read_text(encoding="utf-8"), encoding="utf-8"
     )
+    for name in ("data_manifest.json", "split_manifest.json", "leakage_report.json"):
+        (output_dir / name).write_bytes((baseline_run_dir / name).read_bytes())
     data = build_sequence_data(
         source_path,
         baseline_run_dir,
@@ -248,7 +259,7 @@ def train_sequence_models(
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     for architecture in ("gru", "transformer"):
-        for seed in seeds:
+        for seed in resolved_seeds:
             torch.manual_seed(seed)
             np.random.seed(seed)
             model = build_sequence_model(
@@ -261,10 +272,6 @@ def train_sequence_models(
                     max_length=data.max_length,
                 )
             )
-            optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-            train_loader = _loader(
-                data.partitions["train"], int(compute["batch_size"]), True, seed
-            )
             validation_loader = _loader(
                 data.partitions["validation"], int(compute["batch_size"]), False, seed
             )
@@ -272,44 +279,76 @@ def train_sequence_models(
             best_validation = float("inf")
             best_state: dict[str, Any] | None = None
             started = time.perf_counter()
-            for epoch in range(1, int(compute["epochs"]) + 1):
-                model.train()
-                training_total = 0.0
-                training_rows = 0
-                for tokens, lengths, numeric, target in train_loader:
-                    optimizer.zero_grad(set_to_none=True)
-                    prediction = model(tokens, lengths, numeric)
-                    loss = pinball_loss(prediction, target)
-                    loss.backward()
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                    optimizer.step()
-                    training_total += float(loss.detach()) * len(target)
-                    training_rows += len(target)
-                validation_loss = _evaluate_loss(model, validation_loader)
-                history.append(
-                    {
-                        "epoch": epoch,
-                        "train_pinball_hours": training_total / max(training_rows, 1),
-                        "validation_pinball_hours": validation_loss,
-                    }
+            checkpoint = checkpoint_dir / f"{architecture}_seed{seed}.pt"
+            resumed_checkpoint = False
+            if checkpoint.is_file():
+                candidate = torch.load(checkpoint, map_location="cpu", weights_only=True)
+                resumed_checkpoint = bool(
+                    candidate.get("architecture") == architecture
+                    and candidate.get("seed") == seed
+                    and candidate.get("vocabulary_size") == data.vocabulary_size
+                    and candidate.get("max_length") == data.max_length
                 )
-                if validation_loss < best_validation:
-                    best_validation = validation_loss
+                if resumed_checkpoint:
+                    model.load_state_dict(candidate["state_dict"])
                     best_state = copy.deepcopy(model.state_dict())
+                    best_validation = _evaluate_loss(model, validation_loader)
+                    history.append(
+                        {
+                            "epoch": 0,
+                            "validation_pinball_hours": best_validation,
+                        }
+                    )
+            if not resumed_checkpoint:
+                optimizer = torch.optim.AdamW(
+                    model.parameters(), lr=1e-3, weight_decay=1e-4
+                )
+                train_loader = _loader(
+                    data.partitions["train"], int(compute["batch_size"]), True, seed
+                )
+                for epoch in range(1, int(compute["epochs"]) + 1):
+                    model.train()
+                    training_total = 0.0
+                    training_rows = 0
+                    for tokens, lengths, numeric, target in train_loader:
+                        optimizer.zero_grad(set_to_none=True)
+                        prediction = model(tokens, lengths, numeric)
+                        loss = pinball_loss(prediction, target)
+                        loss.backward()
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                        optimizer.step()
+                        training_total += float(loss.detach()) * len(target)
+                        training_rows += len(target)
+                    validation_loss = _evaluate_loss(model, validation_loader)
+                    history.append(
+                        {
+                            "epoch": epoch,
+                            "train_pinball_hours": training_total / max(training_rows, 1),
+                            "validation_pinball_hours": validation_loss,
+                        }
+                    )
+                    print(
+                        f"sequence architecture={architecture} seed={seed} epoch={epoch} "
+                        f"validation_pinball_hours={validation_loss:.6f}",
+                        flush=True,
+                    )
+                    if validation_loss < best_validation:
+                        best_validation = validation_loss
+                        best_state = copy.deepcopy(model.state_dict())
             if best_state is None:
                 raise RuntimeError("sequence training produced no checkpoint")
             model.load_state_dict(best_state)
-            checkpoint = checkpoint_dir / f"{architecture}_seed{seed}.pt"
-            torch.save(
-                {
-                    "state_dict": best_state,
-                    "architecture": architecture,
-                    "seed": seed,
-                    "vocabulary_size": data.vocabulary_size,
-                    "max_length": data.max_length,
-                },
-                checkpoint,
-            )
+            if not resumed_checkpoint:
+                torch.save(
+                    {
+                        "state_dict": best_state,
+                        "architecture": architecture,
+                        "seed": seed,
+                        "vocabulary_size": data.vocabulary_size,
+                        "max_length": data.max_length,
+                    },
+                    checkpoint,
+                )
             reloaded = build_sequence_model(
                 SequenceModelConfig(
                     vocabulary_size=data.vocabulary_size,
@@ -338,6 +377,7 @@ def train_sequence_models(
                 "best_validation_pinball_hours": best_validation,
                 "history": history,
                 "training_seconds": duration,
+                "resumed_checkpoint": resumed_checkpoint,
                 "checkpoint_sha256": sha256_file(checkpoint),
                 "test_influenced_choice": False,
             }
@@ -353,15 +393,21 @@ def train_sequence_models(
             [item["metrics"]["mae_minutes"] for item in architecture_results],
             dtype=float,
         )
+        validation_losses = np.asarray(
+            [item["best_validation_pinball_hours"] for item in architecture_results],
+            dtype=float,
+        )
         aggregates[architecture] = {
             "mae_mean_minutes": float(maes.mean()),
             "mae_std_minutes": float(maes.std(ddof=1)),
             "mae_by_seed_minutes": maes.tolist(),
+            "validation_pinball_mean_hours": float(validation_losses.mean()),
+            "validation_pinball_by_seed_hours": validation_losses.tolist(),
             "beats_tabular_each_seed": bool(np.all(maes < baseline_mae)),
         }
     best_architecture = min(
         aggregates,
-        key=lambda name: aggregates[name]["mae_mean_minutes"],
+        key=lambda name: aggregates[name]["validation_pinball_mean_hours"],
     )
     payload = {
         "dataset_id": baseline_metrics["dataset_id"],
@@ -376,20 +422,39 @@ def train_sequence_models(
             "model": baseline_name,
             "test_mae_minutes": baseline_mae,
         },
-        "number_of_seeds": len(seeds),
-        "seeds": list(seeds),
+        "number_of_seeds": len(resolved_seeds),
+        "seeds": list(resolved_seeds),
         "test_influenced_choice": False,
         "claim_state": "smoke_only",
         "public_data_scope": "pipeline competence only; not Kaleido value evidence",
     }
     atomic_json(output_dir / "metrics.json", payload)
+    atomic_json(
+        output_dir / "calibration.json",
+        {
+            "method": "direct_quantile_heads_no_posthoc_calibration",
+            "models": {
+                architecture: {
+                    "p90_coverage_by_seed": [
+                        item["metrics"].get("p90_quantile_coverage")
+                        for item in architecture_results
+                    ],
+                    "p50_to_p90_width_minutes_by_seed": [
+                        item["metrics"].get("p50_to_p90_width_minutes")
+                        for item in architecture_results
+                    ],
+                }
+                for architecture, architecture_results in results.items()
+            },
+        },
+    )
     gate = {
         "m1_data_contract": True,
         "m2_process_intelligence": True,
         "m3_tabular_baselines": True,
         "m4_sequential_baselines": True,
         "same_frozen_split": True,
-        "three_seeds": len(seeds) >= 3,
+        "three_seeds": len(resolved_seeds) >= 3,
         "best_sequential_architecture": best_architecture,
         "best_sequential_beats_tabular_each_seed": aggregates[best_architecture][
             "beats_tabular_each_seed"
@@ -400,13 +465,80 @@ def train_sequence_models(
         "claim_state": "smoke_only",
     }
     atomic_json(output_dir / "m4_gate.json", gate)
+    _write_reports(output_dir, payload, gate)
     run.finish(
         {
             "dataset_id": payload["dataset_id"],
             "split_protocol": payload["split_protocol"],
-            "number_of_seeds": len(seeds),
+            "number_of_seeds": len(resolved_seeds),
             "test_influenced_choice": False,
             "best_architecture": best_architecture,
         }
     )
     return payload
+
+
+def _write_reports(output_dir: Path, metrics: dict[str, Any], gate: dict[str, Any]) -> None:
+    selected = str(metrics["best_architecture"])
+    aggregate = metrics["aggregates"][selected]
+    common = [
+        f"Dataset/export: `{metrics['dataset_id']}`, {metrics['dataset_export_version']}.",
+        f"Source SHA-256: `{metrics['source_file_sha256']}`.",
+        f"Split: {metrics['split_protocol']}.",
+        f"Seeds: {metrics['seeds']}.",
+        f"Architecture selected on mean validation pinball: `{selected}`.",
+        "Test influenced a choice: no.",
+        f"Mean test MAE: {aggregate['mae_mean_minutes']:.2f} minutes.",
+        f"Between-seed MAE SD: {aggregate['mae_std_minutes']:.2f} minutes.",
+    ]
+    limitation = (
+        "Public obfuscated non-port data; no immutable plans, material deviation label, "
+        "verified actions, Kaleido accuracy, ROI, savings or deployment evidence."
+    )
+    (output_dir / "model_card.md").write_text(
+        "\n".join(
+            [
+                "# Model card - sequential public smoke",
+                "",
+                *[f"- {line}" for line in common],
+                "",
+                "## Limitations",
+                "",
+                limitation,
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (output_dir / "report.md").write_text(
+        "\n".join(
+            [
+                "# Sequential baseline experiment report",
+                "",
+                "## Hypothesis",
+                "",
+                "A small GRU or ProcessTransformer improves remaining-time error over "
+                "the frozen tabular boosting reference.",
+                "",
+                "## Changes",
+                "",
+                "Trained GRU and ProcessTransformer quantile models across three seeds "
+                "using ordinal causal prefixes and validation-only selection.",
+                "",
+                "## Tests and evidence",
+                "",
+                *common,
+                f"Best sequential beats tabular in every seed: "
+                f"{gate['best_sequential_beats_tabular_each_seed']}.",
+                "",
+                "## Limitations",
+                "",
+                limitation,
+                "",
+                "## Next falsifiable step",
+                "",
+                "Run action-free Event-JEPA on the same frozen split and reject promotion "
+                "unless validation-selected representations beat both references stably.",
+            ]
+        ),
+        encoding="utf-8",
+    )
