@@ -1,0 +1,79 @@
+experiment_name: lade_dispatch_modalities_v1_observable_fifo
+hypothesis: >-
+  When continuous coordinates are unavailable, an Event-JEPA retrained with
+  categorical AOI and event-sequence structure recovers part of the remaining-
+  time accuracy lost by raw boosting; without coordinates, AOI or absolute clock,
+  neither model meets the full-information error floor.
+dataset_manifest: data/manifests/lade_delivery_jilin_2022.yaml
+schema_version: lade_delivery_csv_v1
+split_manifest: chronological_months_grouped_by_courier_day
+seed: 42
+seeds: [11, 42, 73]
+prediction_points: prefixes_with_four_cutoff_visible_fifo_actions
+horizons: [next_task, two_tasks, four_tasks]
+input_roles: [observation, context, heuristic_action_proxy]
+action_fields: [accepted_pending_task_fifo_proxy]
+context_fields: [aoi_identity, aoi_type, absolute_clock, relative_event_time]
+observation_fields: [delivery_prefix, task_accept_time, task_coordinates]
+outcome_fields: [remaining_route_minutes]
+forbidden_fields: [courier_id_feature, future_delivery_time, future_delivery_order]
+model: dispatch_world_jepa_ema_visreg
+baselines: [quantile_gradient_boosting]
+metrics: [mae_minutes, median_ae_minutes, p90_coverage, transition_alignment]
+threshold_selection: validation_only
+calibration: direct_quantile_models
+split:
+  train_end_ds: 831
+  validation_start_ds: 901
+  validation_end_ds: 930
+  test_start_ds: 1001
+data:
+  action_policy: accepted_pending_fifo
+  min_route_tasks: 6
+  max_route_minutes: 900
+  max_sequence_length: 32
+  horizons: [1, 2, 4]
+modalities:
+  full:
+    continuous_coordinates: true
+    aoi_identity: true
+    aoi_type: true
+    absolute_clock: true
+  no_continuous_coordinates:
+    continuous_coordinates: false
+    aoi_identity: true
+    aoi_type: true
+    absolute_clock: true
+  no_spatial_identity:
+    continuous_coordinates: false
+    aoi_identity: false
+    aoi_type: true
+    absolute_clock: true
+  event_time_only:
+    continuous_coordinates: false
+    aoi_identity: false
+    aoi_type: true
+    absolute_clock: false
+compute:
+  device: cpu
+  batch_size: 256
+  pretrain_epochs: 5
+  hidden_size: 48
+  latent_size: 32
+  layers: 1
+  attention_heads: 4
+  dropout: 0.0
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  ema_momentum: 0.996
+  regularizer_slices: 32
+  regularizer_weight: 0.05
+  boosting_max_iter: 160
+  boosting_candidates:
+    - {max_leaf_nodes: 15, l2_regularization: 5.0}
+    - {max_leaf_nodes: 31, l2_regularization: 10.0}
+test_influenced_choice: true
+test_influence_reason: >-
+  October was opened in earlier LaDe diagnostics before this modality protocol
+  was written. The experiment is diagnostic and cannot become claim-eligible.
+claim_state: diagnostic

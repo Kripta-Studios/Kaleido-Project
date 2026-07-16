@@ -1,6 +1,6 @@
 # FlowTwin implementation progress
 
-Last updated: 2026-07-16. All results are `smoke_only`.
+Last updated: 2026-07-17. Public results are `smoke_only` or `diagnostic`.
 
 | Milestone | State | Evidence | Remaining gate |
 |---|---|---|---|
@@ -9,7 +9,7 @@ Last updated: 2026-07-16. All results are `smoke_only`.
 | M2 OCEL/process | complete for smoke | object graph, variants, conformance, dashboard | operator review |
 | M3 baselines | complete | naive/survival/linear/quantile boosting | real plan target |
 | M4 sequential | complete; rejected vs floor | GRU/Transformer, grouped future test | richer sequence data |
-| M5 JEPA | research shadow | Event/T/Var-JEPA and ablations | incremental held-out value |
+| M5 JEPA | active AIS development | Phys-JEPA port-call dynamics | clean future AIS improvement |
 | M6 scenarios/actions | synthetic only | correct-vs-shuffled VISReg experiment | real controllable actions |
 | M7 serving | complete for smoke | read-only API/dashboard/export/audit | Kaleido review |
 | Aligned ETA | **6/6 public gates passed** | AIS ETA 1.88 h MAE on 85 future trips | Vigo/port subgroup test |
@@ -37,6 +37,29 @@ demonstrator. JEPA learned nontrivial representation but its embeddings did not
 add held-out value to boosting. It stays in research shadow.
 
 See [Decision 0004](decisions/0004-aligned-public-benchmark-pivot.md).
+
+## Active research: Port Call Deviation Twin
+
+LaDe remaining-route time is no longer the flagship JEPA task. The v1
+full-label downstream head was invalidated by shuffled embedding extraction;
+v2 used eventual delivery order as an oracle action; v3 corrected this to a
+cutoff-visible FIFO proxy but was stopped after case selection. See
+[Decision 0006](decisions/0006-lade-jepa-invalidation-ledger.md).
+
+The active case is an AIS Port Call Deviation Twin for Shipping Board and
+Freight Intelligence. It predicts state evolution at 0.5/1/2 hours and compares
+physical progress with observed evolution. The development comparison keeps
+persistence, kinematics, trajectory GBT, GRU, Transformer, plain JEPA and
+Phys-JEPA. February 1--7 is already opened and may only select a candidate; a
+new calendar interval must remain untouched until code/config are committed.
+See [Decision 0005](decisions/0005-port-call-deviation-twin-phys-jepa.md).
+
+The three-seed development selection chose Phys-JEPA + VICReg. Its frozen
+representation improved hybrid trajectory validation MAE from 3.336 to 3.124
+km (6.37%) without collapse. A validation-only compressed sparse probe improved
+ETA from 1.318 to 1.300 h and delay AUPRC from 0.754 to 0.761 using the same 10%
+of labelled train trips. These are diagnostic selection results; the new NOAA
+future week has not been downloaded or opened.
 
 ## Verification
 

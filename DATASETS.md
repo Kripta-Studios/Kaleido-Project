@@ -140,6 +140,39 @@ Se construyeron 303/73/85 viajes de train/validacion/test y el test futuro del
 de MAE y pasa 6/6 gates predeclarados. Estado `smoke_only`; Estados Unidos no
 representa Vigo. Manifest: `data/manifests/noaa_ais_2025_jan_feb.yaml`.
 
+#### Holdout Phys-JEPA predeclarado
+
+El Port Call Deviation Twin usa esos 38 dias solo para desarrollo y seleccion
+de arquitectura. El intervalo 2025-02-08 a 2025-02-14 queda reservado como
+holdout futuro. Antes de descargarlo deben estar versionados:
+
+- arquitectura Phys-JEPA y regularizador;
+- horizontes 0,5/1/2 h;
+- GBT, GRU, Transformer, fisica y persistencia;
+- fraccion etiquetada del 10 % por viaje;
+- gates de distancia, ETA escasa, AUPRC y no-colapso.
+
+La seleccion de desarrollo eligio Phys-JEPA + VICReg: el GBT hibrido redujo el
+MAE de trayectoria de validacion de 3,336 a 3,124 km. El intervalo reservado
+sigue sin descargarse; este numero no es evidencia de test limpio.
+
+Manifest de protocolo:
+`data/manifests/noaa_ais_2025_phys_jepa_holdout.yaml`. Los hashes se rellenan
+despues de descargar sin inspeccionar contenido y se hace un segundo commit
+limpio antes de construir los targets.
+
+### LaDe delivery Jilin (diagnostico de seleccion de caso)
+
+LaDe Jilin contiene 31.415 entregas y se uso para evaluar un dispatch JEPA. No
+se promociona: coordenadas/hora/progreso favorecen una solucion tabular y el log
+no contiene una revision inmutable del plan del dispatcher. La v1 downstream se
+invalido por desalineacion de embeddings; la v2 uso orden final de entrega como
+oracle; la v3 cambio a FIFO visible al cutoff pero se detuvo al pivotar a AIS.
+
+- Fuente: <https://huggingface.co/datasets/Cainiao-AI/LaDe>.
+- Manifest: `data/manifests/lade_delivery_jilin_2022.yaml`.
+- Decision: `docs/decisions/0006-lade-jepa-invalidation-ledger.md`.
+
 ## Prioridad C - datasets publicos para desarrollo
 
 ### Container Logistics Object-centric Event Log (2026)

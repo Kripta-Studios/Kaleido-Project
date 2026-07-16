@@ -1,0 +1,22 @@
+dataset_id: noaa_marinecadastre_ais_2025_phys_jepa_holdout_02_08_02_14
+export_version: 1
+source_type: public_ais
+official_source: https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2025/
+development_prefix_cache: outputs/noaa_ais_eta_v3/prefixes.parquet
+development_prefix_sha256: 1d72175cf85194629b252d07b7b267ac6a356c7cbabf888443d4fc08f2d7f4b4
+holdout_dates: ['2025-02-08', '2025-02-14']
+holdout_files:
+  - ais-2025-02-08.csv.zst
+  - ais-2025-02-09.csv.zst
+  - ais-2025-02-10.csv.zst
+  - ais-2025-02-11.csv.zst
+  - ais-2025-02-12.csv.zst
+  - ais-2025-02-13.csv.zst
+  - ais-2025-02-14.csv.zst
+holdout_hashes: pending_download_without_content_inspection
+ports: [new_york, houston, los_angeles, new_orleans]
+split:
+  train_arrival_before: '2025-02-01T00:00:00Z'
+  validation_arrival_before: '2025-02-08T00:00:00Z'
+  test_arrival_before: '2025-02-15T00:00:00Z'
+claim_boundary: public_us_ais_capability_only_not_kaleido_or_european_port_value

@@ -1,0 +1,121 @@
+experiment_name: noaa_ais_port_call_phys_jepa_clean_future_v1
+hypothesis: >-
+  A validation-selected physics-informed JEPA representation improves a
+  trajectory GBT by at least 1% multi-horizon distance MAE on new future AIS,
+  while also improving a two-hour delay AUPRC and an ETA head trained with only
+  10% of labelled arrival trips.
+dataset_manifest: data/manifests/noaa_ais_2025_phys_jepa_holdout.yaml
+schema_version: marinecadastre-ais-prefix-v1
+split_manifest: fixed_calendar_boundaries_grouped_by_arrival_trip
+seed: 42
+seeds: [11, 42, 73]
+prediction_points: sequence_cutoffs_with_targets_near_0.5_1_2_hours
+horizons: [0.5h, 1h, 2h]
+input_roles: [observation, context]
+action_fields: []
+context_fields: [port, vessel_group, dimensions]
+observation_fields:
+  - distance_to_port
+  - speed_over_ground
+  - course_error
+  - historical_approach_speed
+outcome_fields: [future_state, remaining_hours, physical_progress_shortfall]
+forbidden_fields: [arrival_time_feature, future_state_in_context, mmsi]
+model: trajectory_boosting_plus_validation_selected_phys_jepa
+baselines:
+  - persistence
+  - constant_course_kinematic
+  - trajectory_boosting
+  - supervised_gru
+  - supervised_transformer
+metrics:
+  - distance_mae_km
+  - distance_mae_by_horizon_km
+  - speed_mae_knots
+  - deviation_auprc
+  - sparse_eta_mae_hours
+  - sparse_delay_auprc
+  - effective_rank
+  - paired_trip_bootstrap_relative_improvement
+threshold_selection: validation_only
+calibration: split_conformal_absolute_residuals_fitted_on_validation
+split:
+  train_arrival_before: '2025-02-01T00:00:00Z'
+  validation_arrival_before: '2025-02-08T00:00:00Z'
+  test_arrival_before: '2025-02-15T00:00:00Z'
+data:
+  horizons_hours: [0.5, 1.0, 2.0]
+  max_sequence_length: 8
+  min_context_events: 4
+  target_tolerance_hours: 0.26
+deviation_definition:
+  horizon_hours: 2.0
+  shortfall_km: 10.0
+  semantics: actual_distance_exceeds_constant_course_physics_forecast_by_more_than_10km
+label_efficiency:
+  labeled_route_fraction: 0.10
+  route_selection: sha256_ranked_within_seed
+  delay_vs_direct_eta_hours: 2.0
+  pretraining_outcomes_excluded: [remaining_hours, arrival_time, delay_label]
+compute:
+  device: cpu
+  batch_size: 128
+  pretrain_epochs: 40
+  supervised_epochs: 30
+  hidden_size: 128
+  latent_size: 64
+  layers: 2
+  attention_heads: 4
+  dropout: 0.0
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  ema_momentum: 0.996
+  regularizer_slices: 32
+  regularizer_weight: 0.01
+  forecast_weight: 10.0
+  sparse_heads:
+    state_pca_components: 8
+    eta:
+      family: extra_trees
+      n_estimators: 250
+      min_samples_leaf: 3
+      max_features: 0.7
+    delay:
+      family: hist_gradient_boosting
+      learning_rate: 0.05
+      max_iter: 200
+      max_leaf_nodes: 15
+      l2_regularization: 5.0
+    ridge_alpha: 10.0
+    logistic_c: 0.1
+  jepa_variants: [phys_vicreg]
+  boosting_max_iter: 200
+  boosting_candidates:
+    - {max_leaf_nodes: 15, l2_regularization: 5.0}
+    - {max_leaf_nodes: 31, l2_regularization: 10.0}
+acceptance_gates:
+  min_test_trips: 50
+  min_relative_distance_mae_improvement_vs_boosting_percent: 1.0
+  min_sparse_eta_improvement_percent: 1.0
+  require_sparse_delay_auprc_improvement: true
+  require_noncollapsed_each_seed: true
+  require_positive_distance_delta_each_seed: true
+test_influenced_choice: false
+test_influence_reason: null
+claim_state: claim_eligible
+development_selection:
+  source_run: outputs/noaa_ais_phys_jepa_development_v3
+  source_metrics_sha256: 9baae4e2598ec7c2eed0f4b4aff7664a5729ddb49455ec5739e032cf25055d0a
+  architecture_selected_before_holdout_download: true
+  selected_regularizer: phys_vicreg
+  regularizer_metric: full_trajectory_validation_hybrid_mae_mean_km
+  regularizer_validation_mae_km: 3.123757097298611
+  raw_validation_mae_km: 3.3363672478428916
+  sparse_feature_and_head_sweep_used_test: false
+  selected_sparse_eta_policy: raw_plus_jepa_forecast_distance_and_speed_with_extra_trees
+  selected_sparse_delay_policy: raw_plus_train_pca8_state_plus_jepa_forecast_distance_with_hgb15
+sources:
+  noaa: https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2025/
+  phys_jepa: https://arxiv.org/abs/2606.16076
+  leworldmodel: https://arxiv.org/abs/2603.19312
+  visreg: https://arxiv.org/abs/2606.02572

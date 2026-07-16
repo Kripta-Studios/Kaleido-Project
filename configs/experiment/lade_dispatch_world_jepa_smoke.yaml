@@ -1,0 +1,87 @@
+experiment_name: lade_jilin_dispatch_world_jepa_v3_observable_fifo
+hypothesis: >-
+  An action-conditioned JEPA trained on real courier-day task sequences predicts
+  held-out future states better with the observed next-task action than with a
+  shuffled or absent action; its state representation also improves remaining-
+  route-time prediction when only 10% of training routes have outcome labels.
+dataset_manifest: data/manifests/lade_delivery_jilin_2022.yaml
+schema_version: lade_delivery_csv_v1
+split_manifest: chronological_months_grouped_by_courier_day
+seed: 42
+seeds: [11, 42, 73]
+prediction_points: all_prefixes_with_four_accepted_future_tasks
+horizons: [next_task, two_tasks, four_tasks]
+input_roles: [observation, context, observed_action_proxy]
+action_fields: [accepted_pending_task_fifo_proxy]
+context_fields: [city, aoi_type, local_hour, weekday]
+observation_fields: [delivery_prefix, task_accept_time, task_coordinates]
+outcome_fields: [remaining_route_minutes]
+forbidden_fields: [courier_id_feature, future_delivery_time, unavailable_future_task]
+model: dispatch_world_jepa_ema_visreg
+baselines:
+  - progress_group_median
+  - ridge
+  - quantile_gradient_boosting
+  - supervised_process_transformer
+metrics:
+  - mae_minutes
+  - median_ae_minutes
+  - pinball_p50_minutes
+  - pinball_p90_minutes
+  - p90_coverage
+  - p90_width_minutes
+  - transition_alignment
+  - effective_rank
+threshold_selection: validation_only
+calibration: direct_quantile_models
+split:
+  train_end_ds: 831
+  validation_start_ds: 901
+  validation_end_ds: 930
+  test_start_ds: 1001
+data:
+  action_policy: accepted_pending_fifo
+  min_route_tasks: 6
+  max_route_minutes: 900
+  max_sequence_length: 32
+  horizons: [1, 2, 4]
+compute:
+  device: cpu
+  batch_size: 256
+  pretrain_epochs: 5
+  supervised_epochs: 10
+  hidden_size: 48
+  latent_size: 32
+  layers: 1
+  attention_heads: 4
+  dropout: 0.0
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  ema_momentum: 0.996
+  regularizer_slices: 32
+  regularizer_weight: 0.05
+  boosting_max_iter: 160
+  boosting_candidates:
+    - {max_leaf_nodes: 15, l2_regularization: 5.0}
+    - {max_leaf_nodes: 31, l2_regularization: 10.0}
+  variants: [correct_action, shuffled_action, prefix_only, correct_no_visreg]
+label_efficiency:
+  candidate_route_fractions_evaluated_on_validation: [0.02, 0.05, 0.10, 0.25]
+  labeled_route_fraction: 0.10
+  fraction_selection: max_relative_improvement_vs_same_label_baseline_on_validation
+  route_selection: sha256_ranked_within_seed
+  representation_variant: prefix_only
+  unlabeled_pretraining_rows: all_training_prefixes
+acceptance_gates:
+  min_test_routes: 50
+  min_transition_improvement_vs_shuffled_percent: 1.0
+  min_transition_improvement_vs_no_action_percent: 10.0
+  require_fixed_model_correct_action_beats_ablations_each_seed: true
+  min_sparse_label_mae_improvement_vs_boosting_percent: 1.0
+  require_sparse_label_jepa_selected_on_validation: true
+  require_no_collapse_each_seed: true
+test_influenced_choice: true
+test_influence_reason: >-
+  October was opened by v1 before a shuffled-extraction bug in the downstream
+  JEPA head was discovered. V2 corrects row alignment and is diagnostic only.
+claim_state: diagnostic

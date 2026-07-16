@@ -9,7 +9,7 @@ from flowtwin.models.predictor import build_latent_predictor
 
 
 def sigreg_loss(embeddings: Any, *, num_slices: int, seed: int) -> Any:
-    """Epps-Pulley SIGReg over resampled random one-dimensional projections."""
+    """Official LeJEPA-style Epps-Pulley SIGReg over random projections."""
 
     torch = require_torch()
     generator = torch.Generator(device=embeddings.device).manual_seed(seed)
@@ -21,20 +21,21 @@ def sigreg_loss(embeddings: Any, *, num_slices: int, seed: int) -> Any:
     )
     directions = directions / directions.norm(dim=0, keepdim=True).clamp_min(1e-8)
     integration = torch.linspace(
-        -5,
-        5,
+        0,
+        3,
         17,
         device=embeddings.device,
         dtype=embeddings.dtype,
     )
+    integration_step = 3.0 / 16.0
+    weights = torch.full_like(integration, 2.0 * integration_step)
+    weights[[0, -1]] = integration_step
     theoretical = torch.exp(-0.5 * integration.square())
     projected = (embeddings @ directions).unsqueeze(2) * integration
     empirical_real = projected.cos().mean(dim=0)
     empirical_imag = projected.sin().mean(dim=0)
-    error = (
-        (empirical_real - theoretical).square() + empirical_imag.square()
-    ) * theoretical
-    statistic = torch.trapezoid(error, integration, dim=1) * embeddings.shape[0]
+    error = (empirical_real - theoretical).square() + empirical_imag.square()
+    statistic = (error @ (weights * theoretical)) * embeddings.shape[0]
     return statistic.mean()
 
 
@@ -73,6 +74,43 @@ def visreg_loss(embeddings: Any, *, num_slices: int, seed: int) -> Any:
     target = normal.icdf(quantiles).unsqueeze(1)
     shape_loss = (projected - target).square().mean()
     return center_loss + scale_loss + shape_loss
+
+
+def vicreg_loss(embeddings: Any) -> Any:
+    """VICReg variance/covariance penalty, scaled to one external loss weight."""
+
+    torch = require_torch()
+    centered = embeddings - embeddings.mean(dim=0)
+    standard_deviation = torch.sqrt(
+        embeddings.var(dim=0, unbiased=False) + 1e-4
+    )
+    variance_loss = torch.relu(1.0 - standard_deviation).mean()
+    denominator = max(int(embeddings.shape[0]) - 1, 1)
+    covariance = centered.T @ centered / denominator
+    diagonal = torch.diagonal(covariance)
+    off_diagonal = covariance - torch.diag_embed(diagonal)
+    covariance_loss = off_diagonal.square().sum() / embeddings.shape[1]
+    return variance_loss + covariance_loss / 25.0
+
+
+def anticollapse_loss(
+    embeddings: Any,
+    *,
+    regularizer: str,
+    num_slices: int,
+    seed: int,
+) -> Any:
+    """Dispatch a named anti-collapse objective with a common interface."""
+
+    if regularizer == "visreg":
+        return visreg_loss(embeddings, num_slices=num_slices, seed=seed)
+    if regularizer == "sigreg":
+        return sigreg_loss(embeddings, num_slices=num_slices, seed=seed)
+    if regularizer == "vicreg":
+        return vicreg_loss(embeddings)
+    if regularizer == "none":
+        return embeddings.new_zeros(())
+    raise ValueError(f"unknown anti-collapse regularizer: {regularizer}")
 
 
 def build_event_jepa(config: EventJEPAConfig) -> Any:

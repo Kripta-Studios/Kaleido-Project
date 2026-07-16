@@ -11,6 +11,10 @@ from rich.table import Table
 
 from flowtwin.action_world_training import train_action_event_jepa
 from flowtwin.benchmarks.ais_eta import run_ais_eta_benchmark
+from flowtwin.benchmarks.ais_world_model import run_ais_world_model_benchmark
+from flowtwin.benchmarks.lade_dispatch import run_lade_dispatch_benchmark
+from flowtwin.benchmarks.lade_modalities import run_lade_modality_benchmark
+from flowtwin.benchmarks.lade_regularizers import run_lade_regularizer_benchmark
 from flowtwin.benchmarks.ocel_logistics import run_ocel_logistics_benchmark
 from flowtwin.data.adapters.ocel import OcelSQLiteAdapter
 from flowtwin.data.adapters.trace_port import TracePortAdapter
@@ -213,6 +217,99 @@ def benchmark_ais_eta(
         f"test MAE={result['mae']:.2f} h; "
         f"within +/-1 h={result['within_tolerance']['within_1']:.1%}; "
         "[yellow]public US AIS, smoke_only[/yellow]"
+    )
+
+
+@app.command("benchmark-lade-dispatch")
+def benchmark_lade_dispatch(
+    source: Path,
+    config: Annotated[Path, typer.Option("--config", "-c")] = Path(
+        "configs/experiment/lade_dispatch_world_jepa_smoke.yaml"
+    ),
+    output: Annotated[Path, typer.Option("--output", "-o")] = Path(
+        "outputs/lade_dispatch_world_jepa_v3_fifo"
+    ),
+) -> None:
+    metrics = run_lade_dispatch_benchmark(source, config, output)
+    selected = metrics["selected_model"]
+    result = metrics["selected_test"]
+    gate = metrics["promotion_gate"]
+    console.print(
+        f"[green]LaDe dispatch benchmark complete[/green] — selected={selected}; "
+        f"test MAE={result['mae_minutes']:.2f} min; "
+        f"public world-model gate={gate['passed']}; "
+        f"[yellow]public last-mile proxy, {metrics['claim_state']}[/yellow]"
+    )
+
+
+@app.command("benchmark-ais-world-model")
+def benchmark_ais_world_model(
+    prefixes: Path = Path("outputs/noaa_ais_eta_v3/prefixes.parquet"),
+    config: Annotated[Path, typer.Option("--config", "-c")] = Path(
+        "configs/experiment/noaa_ais_phys_jepa_development.yaml"
+    ),
+    output: Annotated[Path, typer.Option("--output", "-o")] = Path(
+        "outputs/noaa_ais_phys_jepa_development_v1"
+    ),
+) -> None:
+    metrics = run_ais_world_model_benchmark(prefixes, config, output)
+    selected = metrics["selected_model"]
+    result = metrics["selected_test"]
+    product = metrics["product_candidate"]
+    exposure = (
+        "previously opened development period only"
+        if metrics["test_influenced_choice"]
+        else "frozen future holdout opened once"
+    )
+    console.print(
+        "[green]AIS world-model benchmark complete[/green] — "
+        f"selected={selected}; distance MAE={result['distance_mae_km']:.3f} km; "
+        f"deviation AUPRC={result['deviation_auprc']:.3f}; "
+        f"hybrid={product['model']}; gate={product['gate']['passed']}; "
+        f"[yellow]{exposure}; {metrics['claim_state']}[/yellow]"
+    )
+
+
+@app.command("benchmark-lade-regularizers")
+def benchmark_lade_regularizers(
+    source: Path,
+    config: Annotated[Path, typer.Option("--config", "-c")] = Path(
+        "configs/experiment/lade_dispatch_regularizers_diagnostic.yaml"
+    ),
+    output: Annotated[Path, typer.Option("--output", "-o")] = Path(
+        "outputs/lade_dispatch_regularizers_v3_fifo"
+    ),
+) -> None:
+    metrics = run_lade_regularizer_benchmark(source, config, output)
+    selected = metrics["selected_regularizer"]
+    summary = metrics["regularizers"][selected]
+    console.print(
+        f"[green]LaDe anti-collapse diagnostic complete[/green] — "
+        f"selected={selected}; "
+        f"test action delta={summary['mean_test_improvement_vs_shuffled_percent']:.2f}%; "
+        "[yellow]test previously opened, diagnostic only[/yellow]"
+    )
+
+
+@app.command("benchmark-lade-modalities")
+def benchmark_lade_modalities(
+    source: Path,
+    config: Annotated[Path, typer.Option("--config", "-c")] = Path(
+        "configs/experiment/lade_dispatch_modalities_diagnostic.yaml"
+    ),
+    output: Annotated[Path, typer.Option("--output", "-o")] = Path(
+        "outputs/lade_dispatch_modalities_v1_fifo"
+    ),
+) -> None:
+    metrics = run_lade_modality_benchmark(source, config, output)
+    full = metrics["modalities"]["full"]
+    no_coordinates = metrics["modalities"]["no_continuous_coordinates"]
+    console.print(
+        "[green]LaDe modality diagnostic complete[/green] — "
+        f"full raw MAE={full['raw_boosting']['test']['mae_minutes']:.2f} min; "
+        "no-coordinate raw MAE="
+        f"{no_coordinates['raw_boosting']['test']['mae_minutes']:.2f} min; "
+        "[yellow]test previously opened, diagnostic only[/yellow]"
     )
 
 

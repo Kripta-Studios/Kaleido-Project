@@ -15,6 +15,7 @@ from flowtwin.models.event_jepa import (
     build_event_jepa,
     event_jepa_loss,
     sigreg_loss,
+    vicreg_loss,
     visreg_loss,
 )
 from flowtwin.models.uncertainty import embedding_diagnostics
@@ -131,6 +132,14 @@ def test_visreg_has_finite_nonzero_loss_and_gradient_at_collapse() -> None:
     assert collapsed.grad is not None
     assert torch.isfinite(collapsed.grad).all()
     assert float(collapsed.grad.norm()) > 0
+
+
+def test_vicreg_penalizes_low_variance_and_redundant_dimensions() -> None:
+    collapsed = torch.zeros(128, 16)
+    gaussian = torch.randn(128, 16)
+    redundant = gaussian[:, :1].repeat(1, 16)
+    assert float(vicreg_loss(collapsed)) > float(vicreg_loss(gaussian))
+    assert float(vicreg_loss(redundant)) > float(vicreg_loss(gaussian))
 
 
 @pytest.mark.parametrize(

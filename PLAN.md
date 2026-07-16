@@ -241,3 +241,23 @@ decision basada en evidencia.
 - optimizacion de recursos bajo restricciones;
 - LiDAR/vision para ocupacion y maniobras;
 - aprendizaje federado o por cliente con adapters.
+
+## Experimento activo 2026-07-17: Port Call Deviation Twin
+
+El caso JEPA activo deja de ser remaining-time tabular en LaDe. Se usa NOAA AIS
+para aprender dinamica de aproximacion a puerto sin arrival/remaining-time
+labels. El producto candidato combina el estado/futuro Phys-JEPA con GBT.
+
+Orden obligatorio:
+
+1. seleccionar capacidad y regularizador solo en datos ya abiertos: completado,
+   Phys-JEPA + VICReg;
+2. verificar tres seeds y VISReg/SIGReg/VICReg/none: completado, sin colapso;
+3. congelar config, codigo, gates y commit;
+4. descargar y hashear 2025-02-08--14 sin inspeccionar outcomes;
+5. commit de manifest de datos;
+6. construir prefijos y abrir test una vez;
+7. integrar solo si el gate futuro pasa.
+
+Vease `docs/decisions/0005-port-call-deviation-twin-phys-jepa.md` y
+`docs/investigacion/JEPA_WORLD_MODEL_2026_AUDIT.md`.

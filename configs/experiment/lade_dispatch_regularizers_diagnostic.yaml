@@ -1,0 +1,88 @@
+experiment_name: lade_dispatch_anticollapse_diagnostic_v3_observable_fifo
+hypothesis: >-
+  VISReg supplies a stronger corrective gradient near collapse than SIGReg,
+  VICReg and no regularizer, while preserving non-collapsed action-sensitive
+  dispatch representations across three seeds.
+dataset_manifest: data/manifests/lade_delivery_jilin_2022.yaml
+schema_version: lade_delivery_csv_v1
+split_manifest: chronological_months_grouped_by_courier_day
+seed: 42
+seeds: [11, 42, 73]
+prediction_points: all_prefixes_with_four_accepted_future_tasks
+horizons: [next_task, two_tasks, four_tasks]
+input_roles: [observation, context, observed_action_proxy]
+action_fields: [accepted_pending_task_fifo_proxy]
+context_fields: [city, aoi_type, local_hour, weekday]
+observation_fields: [delivery_prefix, task_accept_time, task_coordinates]
+outcome_fields: [future_state_embedding, remaining_route_minutes]
+forbidden_fields: [courier_id_feature, future_delivery_time, unavailable_future_task]
+model: dispatch_world_jepa_ema_regularizer_ablation
+baselines: [no_regularizer, sigreg, vicreg, visreg]
+metrics:
+  - effective_rank
+  - participation_ratio
+  - minimum_dimension_std
+  - near_collapse_gradient_norm
+  - fixed_model_action_transition_improvement
+  - remaining_time_mae_minutes
+threshold_selection: validation_only_regularizer_and_weight
+calibration: not_applicable_to_latent_transition
+split:
+  train_end_ds: 831
+  validation_start_ds: 901
+  validation_end_ds: 930
+  test_start_ds: 1001
+data:
+  action_policy: accepted_pending_fifo
+  min_route_tasks: 6
+  max_route_minutes: 900
+  max_sequence_length: 32
+  horizons: [1, 2, 4]
+compute:
+  device: cpu
+  batch_size: 256
+  pretrain_epochs: 5
+  hidden_size: 48
+  latent_size: 32
+  layers: 1
+  attention_heads: 4
+  dropout: 0.0
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  ema_momentum: 0.996
+  regularizer_slices: 32
+  boosting_max_iter: 160
+  boosting_candidates:
+    - {max_leaf_nodes: 15, l2_regularization: 5.0}
+    - {max_leaf_nodes: 31, l2_regularization: 10.0}
+regularizers:
+  none:
+    variant: correct_none
+    weight_candidates: [0.0]
+  sigreg:
+    variant: correct_sigreg
+    weight_candidates: [0.0001, 0.001, 0.01]
+  vicreg:
+    variant: correct_vicreg
+    weight_candidates: [0.01, 0.05, 0.1]
+  visreg:
+    variant: correct_visreg
+    weight_candidates: [0.01, 0.05, 0.1]
+acceptance_gates:
+  min_effective_rank: 2.0
+  min_mean_dimension_std: 0.05
+  require_not_collapsed_each_seed: true
+  require_correct_action_beats_shuffled_each_seed: true
+  require_finite_near_collapse_gradient: true
+test_influenced_choice: true
+test_influence_reason: >-
+  The October partition was already opened by the parent LaDe benchmark before
+  this user-requested regularizer comparison was specified. V1 of this diagnostic
+  was interrupted after discovering a shuffled extraction bug; v3 fixes alignment
+  and replaces future delivered order with an observable FIFO proxy.
+claim_state: diagnostic
+sources:
+  sigreg: https://arxiv.org/abs/2511.08544
+  sigreg_reference_code: https://github.com/galilai-group/lejepa
+  vicreg: https://arxiv.org/abs/2105.04906
+  visreg: https://arxiv.org/abs/2606.02572

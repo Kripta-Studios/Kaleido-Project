@@ -1,0 +1,45 @@
+dataset_id: lade_delivery_jilin_2022
+owner: Cainiao Network / LaDe authors
+source_system: LaDe-D public research dataset
+export_version: 1
+access_date: 2026-07-16
+official_record: https://huggingface.co/datasets/Cainiao-AI/LaDe
+official_project: https://cainiaotechai.github.io/LaDe-website/
+license_or_agreement: Apache-2.0 metadata; authors state research use
+timezone_source: Asia/Shanghai inferred from Jilin; source CSV has local clock without offset
+rows: 31415
+operations: 1930 courier-day routes before quality filters
+date_min: 2022-05-12
+date_max: 2022-10-28
+contains_personal_data: false according to public research release
+contains_photos: false
+plan_revisions_available: false
+outcomes_available: true
+files:
+  - path: data/raw/public/lade_delivery_jilin/delivery_jl.csv
+    bytes: 4736342
+    sha256: 12e2cf4664dd5b4475d39dddee8872f5a03b3082f08f0eece7f103baee6c6e73
+action_columns:
+  - next_delivered_task_proxy_if_already_accepted_at_cutoff
+context_columns:
+  - city
+  - region_id
+  - aoi_type
+observation_columns:
+  - accept_time
+  - delivery_time
+  - delivery_gps_lng
+  - delivery_gps_lat
+  - aoi_id
+outcome_columns:
+  - route_completion_time
+forbidden_columns:
+  - courier_id_as_model_feature
+  - future_delivery_timestamp_at_inference
+  - future_task_if_not_accepted_at_cutoff
+known_limitations:
+  - The next-delivery action is inferred from observed order, not an explicit dispatcher command.
+  - Local timestamps have no timezone offset in the CSV.
+  - Jilin last-mile delivery is a public proxy, not a Kaleido port or freight operation.
+  - The dataset has no immutable plan revisions or intervention propensities.
+
