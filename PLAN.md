@@ -18,6 +18,17 @@ y simulacion, sin inventar un predictor.
 
 Todos son resultados validos del piloto.
 
+## Evidencia publica ejecutada para la demo
+
+El caso de presentacion es ahora ETA AIS, alineado con Shipping Board/Freight
+Intelligence. Un modelo elegido en validacion obtiene 1.875 h de MAE en 85 viajes
+del test futuro 1-7 febrero 2025, frente a 2.726 h del historico y 7.786 h de la
+cinematica; pasa 6/6 gates predeclarados. OCEL Logistics cubre proceso y objetos.
+Ambos permanecen `smoke_only` y no sustituyen las fases Kaleido descritas abajo.
+
+El benchmark historico de almacén (~734 min MAE) y JEPA se conservan como
+evidencia rechazada/I+D, no como predictor de producto.
+
 ## Fase 0 - Alineamiento (reunion)
 
 Duracion: 60-90 minutos.
@@ -230,4 +241,3 @@ decision basada en evidencia.
 - optimizacion de recursos bajo restricciones;
 - LiDAR/vision para ocupacion y maniobras;
 - aprendizaje federado o por cliente con adapters.
-

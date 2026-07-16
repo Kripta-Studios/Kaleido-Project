@@ -2,6 +2,18 @@
 
 Fecha de corte: 15-07-2026. Se han priorizado paginas oficiales de Kaleido.
 
+## Actualizacion experimental 16-07-2026
+
+La demostracion publica principal se ha alineado con Shipping Board/Freight
+Intelligence: ETA a geofence con NOAA AIS. En un test futuro agrupado de 85
+viajes, boosting obtiene 1.875 h de MAE frente a 2.726 h de una mediana
+puerto-distancia y 7.786 h de distancia/velocidad, y pasa 6/6 gates
+predeclarados. El resultado es `smoke_only`: no prueba precision Kaleido/Vigo.
+
+OCEL 2.0 Container Logistics demuestra process intelligence y relaciones; su
+grafo mejora test pero no fue seleccionado en validacion. JEPA y el antiguo
+benchmark de almacen permanecen como I+D/evidencia negativa, no como demo.
+
 ## Lo que hace Kaleido
 
 Kaleido Ideas & Logistics opera soluciones integradas por mar, tierra y aire y
@@ -168,4 +180,3 @@ hora, penalizaciones, demurrage, productividad y comprador real.
 - ¿Quien compraria el modulo: Kaleido interno, terminal, cargador o cliente final?
 - ¿Que coste tiene una hora de retraso, una espera y una falsa alarma?
 - ¿Se puede hacer una exportacion anonimizada de 5 operaciones esta semana?
-

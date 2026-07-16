@@ -7,10 +7,20 @@ si existe un producto rentable.
 
 ## La idea en una frase
 
-Convertir los eventos que Kaleido ya registra en Trace Port en una capa
-predictiva que estime tiempo restante y riesgo de desviacion, explique donde se
-forma el cuello de botella y compare escenarios operativos aprobados, sin tomar
-el control de la operacion.
+Complementar Shipping Board/Freight Intelligence con ETA y excepciones, y Trace
+Port/TWINPORTS con inteligencia de proceso y prediccion auditable, sin tomar el
+control de la operacion.
+
+## Evidencia que se enseña
+
+El demostrador principal usa 38 dias de NOAA AIS y un test futuro de 85 viajes.
+Boosting ETA obtiene 1.88 h de MAE, IC95 % 1.70-2.08 h, 60.6 % dentro de +/-2 h
+y mejora a los baselines fisico (7.79 h) e historico (2.73 h). Pasa 6/6 gates
+predeclarados. Es `smoke_only`: no es una cifra de Kaleido.
+
+La limitacion se dice inmediatamente: intervalo P90 ancho (9.04 h) y 87.6 % de
+los prefijos test en Nueva Orleans. OCEL muestra process intelligence; JEPA queda
+en I+D. El antiguo resultado de ~734 min se rechazo como demostrador.
 
 ## El mensaje que debe quedar
 
@@ -26,17 +36,14 @@ datos suficientes para entrenar un modelo profundo.
 
 ## Apertura de 60 segundos
 
-> Hemos revisado vuestra observacion sobre el historico y hemos cambiado el
-> planteamiento para que el proyecto no dependa de promesas de deep learning.
-> Trace Port ya registra proyectos, turnos, eventos, equipos, incidencias y
-> tiempos. Nuestra propuesta es empezar por una sola operacion repetible y usar
-> esos eventos para reconstruir el proceso real, medir desviaciones y crear un
-> baseline de tiempo restante y riesgo a 2, 4 y 8 horas. Solo si un modelo
-> secuencial o JEPA mejora ese baseline fuera de muestra se incorpora. El
-> resultado seria una capa read-only sobre Trace Port: alerta anticipada,
-> intervalo de confianza, cuello de botella y escenarios operativos aprobados.
-> En cuatro a seis semanas no prometemos un gemelo autonomo; prometemos una
-> decision medible sobre producto, datos y retorno.
+> Hemos probado una idea concreta cercana a Shipping Board y Freight
+> Intelligence: una ETA AIS que mejora dos comparadores y pasa seis criterios en
+> futuro no visto. No afirmamos que esa precision se transfiera a Kaleido. La
+> propuesta es conectar el mismo contrato read-only con una operacion o viaje
+> real, acordar la tolerancia antes de medir y conservar Trace Port/TWINPORTS como
+> superficies de trabajo. JEPA solo entra si aporta valor incremental. No
+> prometemos un gemelo autonomo; proponemos una decision medible sobre producto,
+> datos y retorno.
 
 ## Version de cinco minutos
 

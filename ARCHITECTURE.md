@@ -15,6 +15,10 @@
 7. **Uncertainty first.** Toda prediccion incluye intervalo, confianza o
    abstencion.
 
+La demo concreta usa la rama `AIS/Shipping Board -> ETA boosting + conformal` y
+la rama `OCEL/Trace Port -> process mining + object graph`. Event-JEPA permanece
+en shadow. El antiguo modelo de tiempo restante de almacén no se sirve.
+
 ## Vista logica
 
 ```text
@@ -347,4 +351,3 @@ source_event_ids
 5. alertas operativas con runbook;
 6. escenarios asesorados;
 7. integracion mas profunda solo tras aprobacion y seguridad.
-

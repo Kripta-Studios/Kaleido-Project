@@ -9,11 +9,12 @@ los datos de Kaleido pueden demostrar valor para Kaleido.
 
 Descargar antes de iniciar la implementacion, en este orden:
 
-1. **Container Logistics OCEL 2.0 v3**: JSON, SQLite y XML.
-2. **Warehouse outbound event log**: descarga completa de Figshare.
-3. **Order Management OCEL 2.0**: log SQLite y modelo CPN.
-4. **Inventory Management Database and OCELs**: ultima version de Zenodo.
-5. **BPI Challenge 2019**: solo para stress test y benchmark secundario.
+1. **NOAA MarineCadastre AIS 2025**: enero y primera semana de febrero.
+2. **Container Logistics OCEL 2.0 v3**: JSON, SQLite y XML.
+3. **Warehouse outbound event log**: solo referencia JEPA historica.
+4. **Order Management OCEL 2.0**: log SQLite y modelo CPN.
+5. **Inventory Management Database and OCELs**: ultima version de Zenodo.
+6. **BPI Challenge 2019**: solo para stress test secundario.
 
 Los cuatro primeros cubren object-centric process mining, loaders multiformato,
 remaining time sobre log real, simulacion, recursos, fallos y escenarios. BPI 2019
@@ -23,6 +24,7 @@ Estructura local recomendada, fuera de Git:
 
     data/
       raw/public/ocel_container_logistics_v3/
+      raw/public/noaa_ais_2025/
       raw/public/warehouse_outbound_2025/
       raw/public/ocel_order_management/
       raw/public/ocel_inventory_management/
@@ -128,6 +130,16 @@ port-call context, no representa Vigo ni prueba el caso Kaleido.
 
 Para Vigo se necesita una fuente legal/contractual disponible para Kaleido.
 
+El benchmark ejecutado usa 38 ficheros diarios, 2025-01-01 a 2025-02-07,
+descargados de:
+
+- <https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2025/>
+
+Se construyeron 303/73/85 viajes de train/validacion/test y el test futuro del
+1 al 7 de febrero contiene 1.780 prefijos. El resultado seleccionado es 1.875 h
+de MAE y pasa 6/6 gates predeclarados. Estado `smoke_only`; Estados Unidos no
+representa Vigo. Manifest: `data/manifests/noaa_ais_2025_jan_feb.yaml`.
+
 ## Prioridad C - datasets publicos para desarrollo
 
 ### Container Logistics Object-centric Event Log (2026)
@@ -146,11 +158,17 @@ evento y 7 tipos de objeto. Descargar los tres formatos:
 - DOI: <https://doi.org/10.5281/zenodo.18373888>.
 - Licencia: CC BY 4.0.
 
+El run objeto-centrico ejecutado usa el SQLite y 1.966 contenedores finalizados.
+El grafo correcto mejora test (86.64 h frente a 88.17 h), pero validacion elige
+flat; queda como process/diagnostic evidence. Manifest:
+`data/manifests/ocel_logistics_2026.yaml`.
+
 ### Warehouse outbound event log (2025)
 
 Log real y anonimizado de un proceso outbound de una empresa logistica del
 sector aeronautico. La descarga publicada ocupa 626,95 MB y el estudio parte de
-169.523 trazas. Es el dataset publico principal para tiempo restante.
+169.523 trazas. Fue el primer benchmark de tiempo restante; ya no es el
+demostrador principal por su escala de error absoluta.
 
 - Uso: prefijos, remaining time, drift temporal, XGBoost, LSTM/Transformer y
   evaluacion por horizonte.

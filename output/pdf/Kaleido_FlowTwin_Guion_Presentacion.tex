@@ -1,0 +1,338 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}\usepackage[T1]{fontenc}\usepackage[spanish]{babel}\usepackage{lmodern}
+\usepackage[a4paper,margin=2cm,headheight=15pt]{geometry}
+\usepackage{xcolor,hyperref,fancyhdr,enumitem,tabularx,array,booktabs,microtype}
+\definecolor{Ink}{HTML}{10272F}\definecolor{Teal}{HTML}{18A999}\definecolor{Blue}{HTML}{2F6BFF}
+\definecolor{Gold}{HTML}{F2B134}\definecolor{Red}{HTML}{D85C5C}\definecolor{Paper}{HTML}{F5F7F5}\definecolor{Muted}{HTML}{61747B}
+\hypersetup{colorlinks=true,linkcolor=Blue,urlcolor=Blue}
+\pagestyle{fancy}\fancyhf{}\lhead{Kaleido FlowTwin}\rhead{Guion de presentación}\cfoot{\thepage}
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
+\setlist[itemize]{leftmargin=5mm,itemsep=2pt,topsep=2pt}
+\newcommand{\claim}{\texttt{smoke\_only}}
+\newcommand{\slidehead}[3]{%
+  \par\vspace{7pt}\noindent
+  \colorbox{Ink}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+    \color{white}\textbf{Diapositiva #1 -- #2}\hfill\color{Teal!45}\textbf{#3}}}%
+  \par\vspace{5pt}}
+\newcommand{\cue}[1]{\textcolor{Teal}{\textbf{#1}}}
+\newcommand{\avoid}[1]{\textcolor{Red}{\textbf{No decir:}} #1}
+\newcommand{\transition}[1]{\textcolor{Blue}{\textbf{Transición:}} \emph{``#1''}}
+\title{\textbf{Kaleido FlowTwin}\\Guion de la presentación del MVP}
+\author{EVOCON Solutions -- Álvaro Schwiedop Souto}
+\date{2026-07-16}
+\begin{document}
+\maketitle
+
+\begin{center}
+\fcolorbox{Gold}{Gold!16}{\parbox{.92\linewidth}{
+\textbf{Estado de evidencia: \claim.} El objetivo de la reunión no es afirmar que el
+modelo ya funciona para Kaleido, sino demostrar un MVP ejecutado, explicar qué se ha
+aprendido y acordar el acceso a una operación real para un replay shadow.
+}}
+\end{center}
+
+\section*{Mapa rápido}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{3.6cm}X@{}}\toprule
+Duración objetivo & 20--22 minutos de presentación + 10 minutos de preguntas. \\
+Petición final & Sesión de 90 minutos sobre una operación repetible y 3--5 casos pseudonimizados. \\
+Idea central & Shipping Board informa; Freight Intelligence analiza; FlowTwin anticipa ETA y excepciones. \\
+Resultado principal & ETA AIS: 1.88 h de MAE, 60.6\% dentro de $\pm$2 h y 6/6 gates aprobados. \\
+Límite & Es evidencia pública de capacidad, no precisión Kaleido, ROI ni despliegue. \\
+\bottomrule\end{tabularx}
+
+\subsection*{Antes de empezar}
+\begin{itemize}
+\item Abrir la presentación HTML a pantalla completa y dejar el dashboard preparado en otra pestaña.
+\item Comprobar que el watermark \claim{} es visible y que el dashboard muestra la evidencia ETA AIS.
+\item No empezar por JEPA. Empezar por el problema operativo y llegar a JEPA como resultado de I+D falsable.
+\item Tener preparada la pregunta final: operación, responsables, muestra y fecha.
+\end{itemize}
+
+\clearpage
+\section{Guion diapositiva a diapositiva}
+
+\slidehead{1}{FlowTwin Predictive Operations}{0:45}
+\cue{Objetivo.} Situar la propuesta y marcar desde el primer minuto la frontera de evidencia.
+
+\cue{Qué decir.} ``Gracias por el tiempo. Hemos construido un MVP técnico de una capa
+predictiva read-only. El demostrador principal estima la llegada de buques a una zona
+portuaria a partir de AIS, muestra ventanas de incertidumbre y conserva toda la trazabilidad.
+No venimos a presentar resultados de Kaleido: venimos a enseñar una idea ejecutada sobre
+datos públicos y un protocolo para validarla de forma segura con vosotros.''
+
+\avoid{``Ya predice vuestras operaciones'', ``gemelo autónomo'' o ``ahorro demostrado''.}
+
+\transition{Primero quiero encajar la idea dentro de lo que Kaleido ya tiene.}
+
+\slidehead{2}{Encaje en productos Kaleido}{1:15}
+\cue{Objetivo.} Dejar claro que FlowTwin complementa productos existentes.
+
+\cue{Qué decir.} ``Shipping Board y Freight Intelligence son el encaje inmediato para una
+ETA explicable: anticipar llegada, detectar excepciones y priorizar qué revisar. Trace Port
+aporta después la memoria de operaciones, turnos e incidencias; TWINPORTS, el estado físico
+y espacial. FlowTwin no compite con esos productos: convierte sus eventos en una predicción
+con intervalo, cutoff y razones.''
+
+\cue{Pregunta opcional.} ``¿En qué pantalla toma hoy una decisión el responsable de turno
+cuando una operación empieza a desviarse?''
+
+\transition{Con ese encaje como restricción, construimos el MVP completo de extremo a extremo.}
+
+\slidehead{3}{MVP y límites explícitos}{1:10}
+\cue{Objetivo.} Resumir el alcance y convertir las invalidaciones en prueba de disciplina.
+
+\cue{Qué decir.} ``Construimos dos demostradores alineados: ETA con AIS para Shipping Board
+y Freight Intelligence, y proceso objeto-céntrico OCEL para Trace Port/TWINPORTS. JEPA queda
+como línea de I+D sometida a ablations. Mantuvimos viajes y operaciones enteros en cada
+partición, elegimos modelos en validación y reservamos un test futuro del 1 al 7 de febrero.
+Los runs que no pasaron el protocolo se conservaron como auditoría y no entraron en la cifra.''
+
+\avoid{Presentar M0--M7 como un despliegue productivo. Son hitos técnicos de smoke.}
+
+\transition{Veamos exactamente qué datos y protocolo sostienen las cifras.}
+
+\slidehead{4}{Dataset y protocolo}{1:20}
+\cue{Objetivo.} Dar credibilidad sin confundir dominio público con dominio portuario.
+
+\cue{Qué decir.} ``Procesamos 38 días de NOAA MarineCadastre AIS,
+6.92 GB comprimidos. Una geofence define la llegada y cada prefijo usa solo lo
+visible en ese instante. El split contiene 303 viajes de entrenamiento,
+73 de validación y 85 de test futuro, con
+1,780 predicciones en ese test. MMSI se excluyó como feature y ningún viaje
+cruza particiones. El dataset OCEL secundario aporta 1,966 contenedores.''
+
+\cue{Frase clave.} ``Es una prueba técnica real de ETA portuaria en EE. UU., no una prueba de precisión en Vigo.''
+
+\transition{Antes de entrenar nada, los eventos ya permiten inteligencia de proceso.}
+
+\clearpage
+\slidehead{5}{Process intelligence}{1:00}
+\cue{Objetivo.} Mostrar valor temprano aunque ML no supere los gates.
+
+\cue{Qué decir.} ``El ejemplo OCEL conserva contenedores, vehículos y revisiones de plan
+como objetos distintos. El grafo correcto bajó el MAE de test de 88.17 a
+86.64 horas, pero validación eligió la traza plana, así que cerramos el gate
+predictivo. Aun así, el bloque ya permite mapas de proceso, variantes, esperas, rework y
+conformance sin depender de que gane un modelo.''
+
+\transition{En el demostrador de ETA sí obtuvimos un resultado concreto sobre futuro no visto.}
+
+\slidehead{6}{Comparación de modelos}{1:40}
+\cue{Objetivo.} Explicar el número principal, sus comparadores y el gate fijado antes del test.
+
+\cue{Qué decir.} ``El modelo elegido solo en validación obtiene 1.88 horas de MAE
+en 85 viajes futuros. El error mediano es 1.37 horas y el
+bootstrap por viaje da un IC95\% de 1.70 a 2.08. No lo juzgamos solo:
+la ETA distancia/velocidad tiene 7.79 horas y la mediana por puerto y distancia,
+2.73. El modelo mejora un 75.9\% y un
+31.2\%, respectivamente.''
+
+\cue{Traducción operativa.} ``El 42.0\% queda dentro de $\pm$1 hora, el
+60.6\% dentro de $\pm$2 y el 87.3\% dentro de $\pm$4. Pasa los seis
+gates predeclarados: volumen, MAE, extremo del intervalo, tolerancia y mejora contra dos
+baselines.''
+
+\avoid{Llamarlo precisión Kaleido, SOTA o prometer que $\pm$2 horas sea su tolerancia de negocio.}
+
+\transition{Una predicción operativa no puede ser solo una cifra puntual.}
+
+\slidehead{7}{Incertidumbre y riesgo}{1:15}
+\cue{Objetivo.} Defender intervalos, abstención y semántica del target.
+
+\cue{Qué decir.} ``Por horizonte, el MAE es 1.96 horas cuando faltan 0--2,
+1.49 entre 2 y 6, y 2.13 entre 6 y 12. El intervalo P90 cubre
+94.5\%, pero mide 9.04 horas de ancho medio: la cobertura se
+consigue con una banda todavía demasiado amplia. Además, Nueva Orleans concentra
+87.6\% de los prefijos de test.''
+
+\cue{Conclusión.} ``La predicción puntual funciona como demostrador; el siguiente trabajo
+falsable es calibrar por puerto, medir peor grupo y hacer que el sistema se abstenga.''
+
+\transition{Con el baseline fijado, podemos preguntar qué está aprendiendo realmente JEPA.}
+
+\slidehead{8}{Ablations de Event-JEPA}{2:00}
+\cue{Objetivo.} Explicar por qué JEPA sigue siendo interesante aunque no gane el benchmark.
+
+\cue{Qué decir.} ``La referencia multi-horizonte obtiene 763.51. El encoder aleatorio
+queda en 772.78, por lo que el objetivo JEPA sí aporta representación downstream.
+Sin SIGReg el MAE sube a 811.95 y aparece colapso: la regularización es esencial.
+Pero completion-only obtiene 763.03, ligeramente mejor, y los pares temporales
+barajados quedan en 763.91. La diferencia temporal es pequeña e inconsistente
+por seed. Todavía no hemos demostrado una dinámica futura multihorizonte rica.''
+
+\cue{Mensaje de investigación.} ``JEPA aporta señal, pero cada parte debe ganarse su lugar
+mediante una ablation que pueda falsarla.''
+
+\transition{Por eso repetimos el experimento con mecanismos más cercanos a T-JEPA y Var-JEPA.}
+
+\clearpage
+\slidehead{9}{T-JEPA, Var-JEPA y el gate híbrido}{2:15}
+\cue{Objetivo.} Explicar en lenguaje simple qué se cambió y por qué boosting sigue ganando.
+
+\cue{Qué decir.} ``En la primera versión el target aún contenía el prefijo y compartía
+encoder. En Temporal T-JEPA hicimos tres cambios con sentido temporal: el target contiene
+solo eventos futuros, un teacher suavizado por EMA produce el target sin gradiente y elegimos
+SiGReg, VISReg o token de registro únicamente en validación. Gana multi-VISReg con
+759.38 $\pm$ 1.15: mejora al Event-JEPA anterior, y el futuro correcto gana
+al barajado en tres de tres semillas, pero no supera boosting ni demuestra ventaja
+multihorizonte estable.''
+
+\cue{Continuación.} ``Var-Event-JEPA sustituye el único punto latente por distribuciones:
+contexto, una variable auxiliar y futuro tienen media y varianza; el ELBO combina
+reconstrucción, generación y KL. Obtiene 760.41 $\pm$ 6.25. Su
+incertidumbre latente tiene Spearman medio 0.045 con el error y falla en dos
+semillas. Finalmente añadimos los embeddings al boosting: validación conserva raw. El mejor
+híbrido elegido, raw+Var, obtiene 738.98 $\pm$ 0.60, 4.60
+minutos peor que raw.''
+
+\cue{ELI5.} ``Boosting recibe directamente reloj, progreso, actividad y espera. JEPA intenta
+resumir una película de pocos eventos; en este log el resumen comprime más información de la
+que descubre. Con objetos, planes, contexto y acciones reales la película sería más rica,
+pero eso hay que medir, no asumir.''
+
+\avoid{Decir que se reprodujeron exactamente T-JEPA o Var-T-JEPA. Son adaptaciones temporales
+CPU-budgeted y el resultado es \claim.}
+
+\transition{La pregunta siguiente es si un canal de acción permite aprender transiciones condicionadas.}
+
+\clearpage
+\slidehead{10}{World model sintético con VISReg}{2:00}
+\cue{Objetivo.} Mostrar la investigación de acciones sin convertirla en un claim causal.
+
+\cue{Qué decir.} ``No renombramos actividades del log como acciones. Creamos un overlay
+separado con acciones, elegibilidad, propensión, coste y efecto conocido. El primer
+benchmark tabular y el Action-JEPA con SIGReg fallaron sus gates. Con VISReg, la acción
+correcta obtiene 725.75 $\pm$ 3.20 frente a
+740.43 barajada: gana en tres de tres seeds, con 14.67 minutos de
+mejora media. El rango efectivo sube a 15.41--16.16, pero la
+escala sigue en 0.020--0.023, bajo el umbral. Recuperamos una
+señal inyectada; no promocionamos el world model.''
+
+\avoid{``La acción reduce 14,67 minutos en la realidad''. La magnitud pertenece al target generado.}
+
+\transition{Esto conduce a una separación clara entre producto e investigación.}
+
+\slidehead{11}{Decisión de producto}{1:00}
+\cue{Objetivo.} Convertir los resultados en una arquitectura de producto prudente.
+
+\cue{Qué decir.} ``La demo sirve ETA AIS, comparadores, tolerancias, intervalo y auditoría
+read-only. OCEL demuestra process intelligence con identidad de objetos. Temporal T-JEPA,
+Var-JEPA, acciones reales y object graphs permanecen como I+D con gates. El predictor
+histórico de almacén con 734 minutos queda conservado como resultado negativo: no se sirve
+ni se usa para vender la idea.''
+
+\transition{La integración propuesta mantiene esa separación y no escribe en sistemas fuente.}
+
+\slidehead{12}{Arquitectura complementaria}{1:10}
+\cue{Objetivo.} Explicar el flujo read-only y la trazabilidad de cada predicción.
+
+\cue{Qué decir.} ``AIS o Shipping Board aportan posición y contexto de viaje; Trace Port,
+eventos y turnos; TWINPORTS, activos y espacio. El contrato temporal conserva planes
+versionados. El baseline ETA, process mining y JEPA shadow producen punto, intervalo y
+razones; la salida vuelve a una pestaña o API read-only. Cada resultado muestra cutoff,
+versión y procedencia. El humano sigue decidiendo.''
+
+\avoid{Hablar de control automático, escritura en TOS/ERP o optimización autónoma.}
+
+\transition{La forma más clara de entenderlo es verlo en una interfaz de operación.}
+
+\clearpage
+\slidehead{13}{Demo del dashboard}{2:30}
+\cue{Objetivo.} Enseñar cómo se consumiría el software, sin vender el fixture como Kaleido.
+
+\cue{Secuencia de demo.}
+\begin{enumerate}[leftmargin=6mm,itemsep=2pt]
+\item Señalar el watermark \claim{} y el modo read-only.
+\item Abrir la evidencia ETA: 1.88 h, IC95\% y 85 viajes futuros.
+\item Comparar boosting con la ETA cinemática y la mediana puerto-distancia.
+\item Mostrar los porcentajes dentro de $\pm$1, $\pm$2 y $\pm$4 horas y los 6/6 gates.
+\item Abrir incertidumbre y límites: intervalo P90, reparto por puerto y abstención.
+\item Recorrer procedencia: fechas de test, exclusión de MMSI, hashes y model card.
+\item Terminar en la separación: ETA demostrable; OCEL diagnóstico; JEPA en I+D.
+\end{enumerate}
+
+\cue{Frase de cierre de demo.} ``La interfaz es el ejemplo de consumo; los valores son
+sintéticos/públicos. En piloto, esta misma superficie se alimentaría de un export congelado.''
+
+\transition{Para convertir la demo en evidencia Kaleido proponemos cuatro gates pequeños.}
+
+\slidehead{14}{Piloto con Kaleido}{1:15}
+\cue{Objetivo.} Pedir una acción concreta, no una aprobación abstracta.
+
+\cue{Qué decir.} ``Primero validamos esquema y semántica sobre 3--5 casos. Después
+congelamos planes, revisiones y outcomes. Ejecutamos un replay shadow durante 4--8 semanas,
+con falsas alertas, lead time, cobertura, peor grupo y utilidad de operador. Solo entonces
+decidimos integración, buyer, coste y packaging.''
+
+\cue{Petición literal.} ``¿Podemos agendar una sesión de 90 minutos con una persona de
+Trace Port y una persona de operaciones para elegir una operación y revisar 3--5 casos
+pseudonimizados?''
+
+\transition{La propuesta se resume en una sola frase.}
+
+\slidehead{15}{Cierre}{0:35}
+\cue{Qué decir.} ``Shipping Board informa. Freight Intelligence analiza. FlowTwin anticipa.
+Ya existe una prueba de ETA sobre futuro no visto y un marco objeto-céntrico para procesos.
+El siguiente paso no es prometer generalización: es acordar operación, tolerancia, muestra y
+fecha para medirlo con datos Kaleido.''
+
+\cue{Acción.} Callar y esperar respuesta. No rellenar el silencio con detalles técnicos.
+
+\clearpage
+\section{Preguntas previsibles}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{4.2cm}X@{}}\toprule
+¿Por qué JEPA si boosting gana? & Porque Temporal T-JEPA mejora al JEPA anterior y distingue
+futuros correctos de barajados, pero los embeddings no añaden valor incremental al boosting.
+Se mantiene shadow como hipótesis para datos con acciones, objetos y contexto más ricos. \\
+¿Esto es un world model? & Es un experimento de transición latente condicionado por acciones
+generadas. Recupera señal inyectada, pero no supera el gate de estabilidad y no tiene acciones Kaleido. \\
+¿Qué hace falta de Kaleido? & IDs pseudonimizados, eventos con timestamps, plan original y
+revisiones con \texttt{valid\_from}, outcomes, objetos y acciones realmente controlables. \\
+¿Cuántos datos? & Primero 3--5 casos para semántica. El volumen de entrenamiento se decide
+después de medir variantes, eventos por operación, censura y prevalencia del outcome. \\
+¿Puede escribir o controlar equipos? & No. El MVP y la API son read-only y advisory. \\
+¿Cuál es el ROI? & Todavía no se ha medido. En shadow se separan tiempo de reporting,
+evitabilidad simulada, aceptación del operador y valor realizado. \\
+¿Por qué el intervalo es tan ancho? & Porque refleja heterogeneidad e incertidumbre del dataset.
+Se muestra para permitir abstención; no se estrecha de forma cosmética. \\
+¿1,88 horas es bueno o malo? & Para este demostrador pasa los seis criterios fijados antes
+del test y mejora dos comparadores. Además, 60.6\% cae dentro de $\pm$2 h. No
+sabemos si esa tolerancia sirve a Kaleido: debe acordarse por decisión y horizonte. \\
+¿Qué ocurrió con los 734 minutos? & Era el MAE de otro dataset de almacén, unas 12,2 h.
+Ganaba por poco a baselines débiles, pero la escala absoluta y los intervalos no servían
+como demostrador. Se rechazó para producto y se conserva solo como evidencia auditable. \\
+¿El test representa todos los puertos? & No. 87.6\% de sus prefijos son de
+Nueva Orleans; Houston y Los Ángeles tienen menos viajes y Nueva York no aparece en el test.
+Por eso el siguiente gate es por puerto y, después, Vigo/Kaleido. \\
+\bottomrule\end{tabularx}
+
+\section{Versiones por tiempo}
+\textbf{Si solo hay 10 minutos:} diapositivas 1, 2, 4, 6, 7, 11, 14 y 15. Omitir JEPA
+o resumirlo como línea de I+D que todavía no gana el gate.
+
+\textbf{Si hay 30 minutos:} recorrido completo, demo de 4--5 minutos y preguntas tras la
+diapositiva 10 antes de cerrar con el piloto.
+
+\section{Fuentes y recordatorio de claims}
+\begin{itemize}
+\item \href{https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2025/}{NOAA MarineCadastre AIS 2025}.
+\item \href{https://doi.org/10.5281/zenodo.18373888}{OCEL 2.0 Container Logistics}.
+\item \href{https://www.kaleidologistics.com/en/productos-ktech/shipping-board/}{Kaleido Shipping Board} y
+\href{https://www.kaleidologistics.com/en/productos-ktech/freight-intelligence/}{Freight Intelligence}.
+\item \href{https://www.kaleidologistics.com/en/productos-ktech/trace-port/}{Kaleido Trace Port}.
+\item \href{https://www.kaleidologistics.com/es/proyectos-financiados/el-proyecto-twinports-despega-en-el-puerto-de-vigo-comienzan-los-trabajos-para-crear-el-gemelo-digital-de-la-terminal-portuaria-de-kaleido/}{Kaleido TWINPORTS}.
+\item \href{https://arxiv.org/abs/2511.08544}{LeJEPA};
+\href{https://arxiv.org/abs/2603.19312}{LeWorldModel};
+\href{https://arxiv.org/abs/2606.02572}{VISReg};
+\href{https://arxiv.org/abs/2410.05016}{T-JEPA};
+\href{https://arxiv.org/abs/2603.20111}{Var-JEPA}.
+\end{itemize}
+
+\begin{center}
+\fcolorbox{Red}{Red!8}{\parbox{.92\linewidth}{
+\textbf{Recordatorio final.} Dataset/export y hash, split, modelos/baselines, métrica e
+incertidumbre, seeds, selección de umbral, influencia de test y claim state deben acompañar
+cualquier resultado. Los datos públicos o sintéticos no prueban valor Kaleido.
+}}
+\end{center}
+\end{document}
