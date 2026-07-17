@@ -34,8 +34,13 @@ Dataset/export: `noaa_marinecadastre_ais_2025_01_01_02_07`, export version 1.
 The committed manifest is `data/manifests/noaa_ais_2025_jan_feb.yaml`. The local
 source contains 38 compressed daily files (7,425,690,235 bytes). The existing
 prefix cache SHA-256 is recorded by every run.
-Its value for this selection is
-`1d72175cf85194629b252d07b7b267ac6a356c7cbabf888443d4fc08f2d7f4b4`.
+The selected v3 prefix output is
+`52ab400670b3a596d648e96cb5bedc289bc92923415ce9a42ba02bc121f5a954`.
+The previously recorded `1d721...` value belongs to the v2 cache consumed by
+the ETA v3 run, not to its combined prefix output. The holdout builder caught
+that provenance error and failed closed before parsing holdout content; this
+decision and the data manifest were corrected in a separate commit before
+target construction.
 
 Split protocol: fixed chronological partitions grouped by arrival trip. The
 already processed development cache contains 303/73/85 train/validation/test

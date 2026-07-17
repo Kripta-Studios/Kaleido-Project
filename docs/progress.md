@@ -62,6 +62,11 @@ of labelled train trips. These are diagnostic selection results; the new NOAA
 future week was downloaded as seven opaque compressed files and hash-frozen; it
 has not yet been parsed or opened for target construction.
 
+The first target-build attempt stopped before parsing because the manifest
+mistook the ETA v2 input-cache hash for the ETA v3 combined-prefix hash. The
+fail-closed audit corrected it to `52ab4006...f5a954` in a separate commit;
+holdout model choices and gates did not change.
+
 ## Verification
 
 ```powershell

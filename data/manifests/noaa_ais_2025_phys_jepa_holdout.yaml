@@ -3,7 +3,11 @@ export_version: 1
 source_type: public_ais
 official_source: https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2025/
 development_prefix_cache: outputs/noaa_ais_eta_v3/prefixes.parquet
-development_prefix_sha256: 1d72175cf85194629b252d07b7b267ac6a356c7cbabf888443d4fc08f2d7f4b4
+development_prefix_sha256: 52ab400670b3a596d648e96cb5bedc289bc92923415ce9a42ba02bc121f5a954
+development_prefix_provenance:
+  run: outputs/noaa_ais_eta_v3/run_manifest.json
+  source_cache_sha256: 1d72175cf85194629b252d07b7b267ac6a356c7cbabf888443d4fc08f2d7f4b4
+  note: source_cache_is_v2_input_not_v3_combined_prefix_output
 holdout_dates: ['2025-02-08', '2025-02-14']
 holdout_files:
   - ais-2025-02-08.csv.zst
