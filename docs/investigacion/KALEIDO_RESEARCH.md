@@ -2,7 +2,7 @@
 
 Fecha de corte: 15-07-2026. Se han priorizado paginas oficiales de Kaleido.
 
-## Actualizacion experimental 16-07-2026
+## Actualizacion experimental 17-07-2026
 
 La demostracion publica principal se ha alineado con Shipping Board/Freight
 Intelligence: ETA a geofence con NOAA AIS. En un test futuro agrupado de 85
@@ -11,8 +11,19 @@ puerto-distancia y 7.786 h de distancia/velocidad, y pasa 6/6 gates
 predeclarados. El resultado es `smoke_only`: no prueba precision Kaleido/Vigo.
 
 OCEL 2.0 Container Logistics demuestra process intelligence y relaciones; su
-grafo mejora test pero no fue seleccionado en validacion. JEPA y el antiguo
-benchmark de almacen permanecen como I+D/evidencia negativa, no como demo.
+grafo mejora test pero no fue seleccionado en validacion.
+
+El nuevo Port Call Deviation Twin encuentra el encaje específico para JEPA:
+dinámica física multihorizonte, no un segundo predictor tabular de ETA. En un
+holdout futuro limpio de 57 viajes, trajectory GBT obtiene 2,635 km MAE y el
+ensemble GBT + Phys-JEPA 2,326 km (mejora 11,72%; IC95% por viaje
+5,90%-17,13%). AUPRC de desviación sube 0,880 a 0,904 y 0/3 seeds colapsan.
+
+Esto se relaciona directamente con Shipping Board/Freight Intelligence:
+anticipar si la trayectoria observada se separa materialmente de la aproximación
+física y entregar una excepción auditable a Trace Port. No sustituye ETA: el
+probe escaso mejora solo 0,59%, y delay AUPRC retrocede. El core público es
+`claim_eligible`, pero el gate completo y el gate Kaleido permanecen cerrados.
 
 ## Lo que hace Kaleido
 

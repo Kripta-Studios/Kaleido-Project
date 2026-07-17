@@ -265,9 +265,7 @@ def _metric_context(
         )
     if temporal_jepa:
         selected_name = str(temporal_jepa.get("selected_main_validation_only", ""))
-        value = temporal_jepa.get("aggregates", {}).get(selected_name, {}).get(
-            "mae_mean_minutes"
-        )
+        value = temporal_jepa.get("aggregates", {}).get(selected_name, {}).get("mae_mean_minutes")
         if value is not None:
             comparators.append(
                 {
@@ -299,9 +297,7 @@ def _metric_context(
                 "mae_mean_minutes": float(hybrid_value),
                 "mae_std_minutes": float(hybrid_values.get("mae_std_minutes", 0.0)),
                 "delta_vs_raw_minutes": (
-                    float(hybrid_value) - float(raw_value)
-                    if raw_value is not None
-                    else None
+                    float(hybrid_value) - float(raw_value) if raw_value is not None else None
                 ),
             }
     bootstrap = baseline.get("selected_model_mae_cluster_bootstrap", {})
@@ -338,9 +334,7 @@ def _metric_context(
     }
 
 
-def _ais_demo_evidence(
-    ais: dict[str, Any], ocel: dict[str, Any] | None
-) -> dict[str, Any]:
+def _ais_demo_evidence(ais: dict[str, Any], ocel: dict[str, Any] | None) -> dict[str, Any]:
     selected_name = str(ais["selected_model_validation_only"])
     selected = ais["selected_test"]
     test_metrics = ais["test_metrics"]
@@ -466,23 +460,203 @@ def _ais_demo_evidence(
     }
 
 
+def _ais_phys_jepa_evidence(
+    metrics: dict[str, Any],
+    ais_eta: dict[str, Any] | None,
+    ocel: dict[str, Any] | None,
+) -> dict[str, Any]:
+    models = metrics["models_and_baselines"]
+    product = metrics["product_candidate"]
+    downstream = product["selected_downstream"]
+    uncertainty = product["paired_test_uncertainty"]
+    split = metrics["split_counts"]
+    phys = models["jepa"]["phys_vicreg"]
+    stage_values = (
+        (
+            "WM-1",
+            "Física cinemática",
+            "Curso y velocidad constantes",
+            float(models["kinematic"]["distance_mae_km"]),
+            "comparator",
+        ),
+        (
+            "WM-2",
+            "Trajectory GBT",
+            "Baseline supervisado elegido en validación",
+            float(models["trajectory_boosting"]["test"]["distance_mae_km"]),
+            "reference",
+        ),
+        (
+            "WM-3",
+            "GRU supervisada",
+            "Secuencia recurrente · media de 3 seeds",
+            float(models["supervised"]["gru"]["aggregate"]["test_distance_mae_mean_km"]),
+            "comparator",
+        ),
+        (
+            "WM-4",
+            "Transformer supervisado",
+            "Secuencia con atención · media de 3 seeds",
+            float(models["supervised"]["transformer"]["aggregate"]["test_distance_mae_mean_km"]),
+            "comparator",
+        ),
+        (
+            "WM-5",
+            "Phys-JEPA directo",
+            "Decoder físico-residual · media de 3 seeds",
+            float(phys["aggregate"]["test_distance_mae_mean_km"]),
+            "diagnostic",
+        ),
+        (
+            "WM-6",
+            "GBT + Phys-JEPA",
+            "Ensemble de estado/futuros JEPA sobre GBT",
+            float(uncertainty["hybrid_mae_km"]),
+            "selected_core",
+        ),
+    )
+    best_mae = min(item[3] for item in stage_values)
+    stages = [
+        {
+            "milestone": milestone,
+            "label": label,
+            "description": description,
+            "metric_value": value,
+            "metric_unit": "km",
+            "relative_score": min(100.0, 100.0 * best_mae / value),
+            "status": status,
+        }
+        for milestone, label, description, value, status in stage_values
+    ]
+    ranks = [
+        float(result["embedding_diagnostics_test"]["effective_rank"]) for result in phys["results"]
+    ]
+    conformal_rows = [
+        result["full_label_trajectory"]["hybrid_conformal"]
+        for result in phys["downstream_heads"]["results"]
+    ]
+    eta_context = None
+    if ais_eta:
+        eta_context = {
+            "model": ais_eta["selected_model_validation_only"],
+            "test_mae_hours": float(ais_eta["selected_test"]["mae"]),
+            "claim_state": "smoke_only",
+            "interpretation": "GBT conserva la salida ETA; Phys-JEPA no la sustituye.",
+        }
+    ocel_context = None
+    if ocel:
+        ocel_context = {
+            "selected_validation_only": ocel["selected_model_validation_only"],
+            "interpretation": "El grafo OCEL permanece como diagnóstico de proceso.",
+        }
+    return {
+        "dataset_id": metrics["dataset_id"],
+        "dataset_export_version": metrics["dataset_export_version"],
+        "claim_state": metrics["claim_state"],
+        "primary_task": "multi-horizon port-call trajectory and material deviation",
+        "stages": stages,
+        "research_finding": {
+            "title": "Clean future Port Call Deviation Twin gate",
+            "verdict": "CORE WORLD MODEL PASSED · FULL GATE CLOSED",
+            "summary": (
+                "El híbrido GBT + Phys-JEPA mejora trayectoria y AUPRC de desviación, "
+                "sin colapso en 3/3 seeds. El gate combinado no pasa: ETA escasa mejora "
+                "solo 0,59% y el head de retraso retrocede en el test futuro."
+            ),
+            "metric_display": f"-{float(uncertainty['relative_improvement_percent']):.2f}%",
+            "metric_label": (
+                f"ensemble: {float(uncertainty['raw_mae_km']):.3f} -> "
+                f"{float(uncertainty['hybrid_mae_km']):.3f} km · IC95% "
+                f"{float(uncertainty['relative_improvement_ci95_percent'][0]):.2f}-"
+                f"{float(uncertainty['relative_improvement_ci95_percent'][1]):.2f}%"
+            ),
+            "causal_claim": False,
+        },
+        "metric_context": {
+            "metric": "trajectory_distance_mae_km",
+            "available": True,
+            "selected_model": product["model"],
+            "raw_mae_km": float(uncertainty["raw_mae_km"]),
+            "hybrid_ensemble_mae_km": float(uncertainty["hybrid_mae_km"]),
+            "hybrid_seed_mean_mae_km": float(downstream["full_trajectory_test_hybrid_mae_mean_km"]),
+            "hybrid_seed_std_mae_km": float(downstream["full_trajectory_test_hybrid_mae_std_km"]),
+            "ensemble_gain_percent": float(uncertainty["relative_improvement_percent"]),
+            "gain_ci95_percent": [
+                float(value) for value in uncertainty["relative_improvement_ci95_percent"]
+            ],
+            "bootstrap_probability_improvement": float(
+                uncertainty["bootstrap_probability_improvement"]
+            ),
+            "bootstrap_samples": int(uncertainty["samples"]),
+            "raw_deviation_auprc": float(
+                downstream["full_trajectory_test_raw_deviation_auprc_mean"]
+            ),
+            "hybrid_deviation_auprc": float(
+                downstream["full_trajectory_test_hybrid_deviation_auprc_mean"]
+            ),
+            "nominal_coverage": 0.9,
+            "test_coverage": float(np.mean([row["test_coverage"] for row in conformal_rows])),
+            "mean_interval_width_km": float(
+                np.mean([row["mean_interval_width_km"] for row in conformal_rows])
+            ),
+            "effective_rank_min": min(ranks),
+            "effective_rank_max": max(ranks),
+            "collapsed_seeds": 0,
+            "number_of_seeds": int(metrics["number_of_seeds"]),
+            "test_trips": int(split["test"]["trips"]),
+            "test_samples": int(split["test"]["samples"]),
+            "full_gate_passed": bool(product["gate"]["passed"]),
+            "sparse_eta_gain_percent": float(
+                downstream["sparse_eta_test_relative_improvement_percent"]
+            ),
+            "sparse_delay_raw_auprc": float(downstream["sparse_delay_test_raw_auprc_mean"]),
+            "sparse_delay_hybrid_auprc": float(downstream["sparse_delay_test_hybrid_auprc_mean"]),
+            "test_influenced_choice": bool(metrics["test_influenced_choice"]),
+            "threshold_selection": metrics["threshold_selection"],
+            "operational_verdict": "public_core_passed_full_product_gate_closed",
+            "explanation": (
+                "La media de seeds mide estabilidad de entrenamiento; el ensemble de tres "
+                "predicciones mide el candidato servido y reduce varianza."
+            ),
+            "presentation_line": (
+                "Phys-JEPA aporta dinámica reutilizable al GBT en el núcleo físico; ETA y "
+                "retraso conservan sus baselines hasta que pasen sus propios gates."
+            ),
+        },
+        "secondary_finding": {
+            "eta": eta_context,
+            "ocel": ocel_context,
+            "sparse_heads": "eta_below_1_percent_gate_and_delay_test_regression",
+        },
+        "legacy_research": {
+            "warehouse_remaining_time": "rejected_as_product_demonstrator",
+            "lade_dispatch": "invalidated_and_retired",
+        },
+        "note": (
+            "Holdout futuro 8-14 febrero de 2025; viajes agrupados y disjuntos; 3 seeds. "
+            "Selección solo en validación, test no influyó. Evidencia pública claim_eligible "
+            "del núcleo, no precisión ni valor Kaleido."
+        ),
+    }
+
+
 def _demo_evidence(root: Path) -> dict[str, Any]:
+    phys_jepa = _read_artifact(root / "noaa_ais_phys_jepa_clean_test_v2" / "metrics.json")
     ais = _read_artifact(root / "noaa_ais_eta_v3" / "metrics.json")
+    if phys_jepa:
+        ocel = _read_artifact(root / "ocel_logistics_graph_v1" / "metrics.json")
+        return _ais_phys_jepa_evidence(phys_jepa, ais, ocel)
     if ais:
         ocel = _read_artifact(root / "ocel_logistics_graph_v1" / "metrics.json")
         return _ais_demo_evidence(ais, ocel)
     baseline = _read_artifact(root / "warehouse_smoke_v2" / "metrics.json")
     sequence = _read_artifact(root / "warehouse_sequence_smoke_v4" / "metrics.json")
     jepa = _read_artifact(root / "warehouse_event_jepa_smoke_v2" / "metrics.json")
-    temporal_jepa = _read_artifact(
-        root / "warehouse_temporal_t_jepa_v1" / "metrics.json"
-    )
+    temporal_jepa = _read_artifact(root / "warehouse_temporal_t_jepa_v1" / "metrics.json")
     var_jepa = _read_artifact(root / "warehouse_var_event_jepa_v1" / "metrics.json")
     hybrid = _read_artifact(root / "warehouse_jepa_hybrid_v1" / "metrics.json")
     ablations = _read_artifact(root / "warehouse_event_jepa_ablations_v1" / "metrics.json")
-    action_jepa = _read_artifact(
-        root / "warehouse_action_event_jepa_visreg_v2" / "metrics.json"
-    )
+    action_jepa = _read_artifact(root / "warehouse_action_event_jepa_visreg_v2" / "metrics.json")
     stages: list[dict[str, Any]] = []
     if baseline:
         metric = float(baseline["selected_model_test"]["mae_minutes"])
@@ -776,6 +950,43 @@ def create_app(artifact_root: Path | None = None) -> FastAPI:
 
     @app.get("/v1/models/{version}/card", response_model=ModelCardResponse)
     def model_card(version: str) -> ModelCardResponse:
+        phys_jepa = _read_artifact(root / "noaa_ais_phys_jepa_clean_test_v2" / "metrics.json")
+        if phys_jepa and version in {"latest", "ais-phys-jepa-v1"}:
+            product = phys_jepa["product_candidate"]
+            downstream = product["selected_downstream"]
+            uncertainty = product["paired_test_uncertainty"]
+            return ModelCardResponse(
+                model_version="ais-phys-jepa-v1",
+                claim_state=str(phys_jepa["claim_state"]),
+                dataset_id=str(phys_jepa["dataset_id"]),
+                split_protocol=str(phys_jepa["split_protocol"]),
+                metrics={
+                    "selected_variant_validation_only": "phys_vicreg",
+                    "trajectory_raw_mae_km": uncertainty["raw_mae_km"],
+                    "trajectory_hybrid_ensemble_mae_km": uncertainty["hybrid_mae_km"],
+                    "trajectory_relative_improvement_percent": uncertainty[
+                        "relative_improvement_percent"
+                    ],
+                    "trajectory_relative_improvement_ci95_percent": uncertainty[
+                        "relative_improvement_ci95_percent"
+                    ],
+                    "deviation_raw_auprc": downstream[
+                        "full_trajectory_test_raw_deviation_auprc_mean"
+                    ],
+                    "deviation_hybrid_auprc": downstream[
+                        "full_trajectory_test_hybrid_deviation_auprc_mean"
+                    ],
+                    "number_of_seeds": phys_jepa["number_of_seeds"],
+                    "test_influenced_choice": phys_jepa["test_influenced_choice"],
+                    "full_product_gate": product["gate"]["passed"],
+                },
+                limitations=[
+                    "Public US AIS evidence; not Kaleido/Vigo accuracy or value evidence",
+                    "Core trajectory/deviation gate passed, but the full product gate failed",
+                    "Sparse ETA gain stayed below 1% and sparse delay AUPRC regressed on test",
+                    "AIS contains observational context, not operator actions or causal effects",
+                ],
+            )
         ais = _read_artifact(root / "noaa_ais_eta_v3" / "metrics.json")
         if ais and version in {"latest", "ais-eta-v3"}:
             selected = ais["selected_test"]
@@ -834,14 +1045,44 @@ def create_app(artifact_root: Path | None = None) -> FastAPI:
     @app.get("/v1/demo/overview")
     def demo_overview() -> dict[str, Any]:
         operations = _demo_operations()
+        phys_jepa = _read_artifact(root / "noaa_ais_phys_jepa_clean_test_v2" / "metrics.json")
         ais = _read_artifact(root / "noaa_ais_eta_v3" / "metrics.json")
         baseline = _read_artifact(root / "warehouse_smoke_v2" / "metrics.json")
         coverage = None
-        if ais:
+        if phys_jepa:
+            conformal_rows = [
+                result["full_label_trajectory"]["hybrid_conformal"]
+                for result in phys_jepa["models_and_baselines"]["jepa"]["phys_vicreg"][
+                    "downstream_heads"
+                ]["results"]
+            ]
+            coverage = float(np.mean([row["test_coverage"] for row in conformal_rows]))
+        elif ais:
             coverage = ais.get("p90_interval_coverage")
         elif baseline:
             coverage = baseline.get("selected_model_test", {}).get("p90_interval_coverage")
-        if ais:
+        if phys_jepa:
+            data_manifest_path = root / "noaa_ais_phys_jepa_clean_test_v2" / "data_manifest.json"
+            data_manifest_hash = (
+                hashlib.sha256(data_manifest_path.read_bytes()).hexdigest()
+                if data_manifest_path.is_file()
+                else None
+            )
+            split = phys_jepa["split_counts"]
+            dataset = {
+                "dataset_id": phys_jepa["dataset_id"],
+                "source_cases_used": sum(int(values["trips"]) for values in split.values()),
+                "prefix_rows": sum(int(values["samples"]) for values in split.values()),
+                "split_protocol": phys_jepa["split_protocol"],
+                "split_counts_operations": {
+                    name: int(values["trips"]) for name, values in split.items()
+                },
+                "source_file_sha256": data_manifest_hash,
+                "claim_state": phys_jepa["claim_state"],
+                "entity_label": "vessel trips",
+                "domain_note": "NOAA AIS 2025 · public port-call dynamics",
+            }
+        elif ais:
             data_manifest_path = root / "noaa_ais_eta_v3" / "data_manifest.json"
             data_manifest_hash = (
                 hashlib.sha256(data_manifest_path.read_bytes()).hexdigest()
@@ -875,7 +1116,11 @@ def create_app(artifact_root: Path | None = None) -> FastAPI:
                 "domain_note": "public warehouse fallback",
             }
         return {
-            "watermark": "SYNTHETIC SHADOW REPLAY · SMOKE_ONLY",
+            "watermark": (
+                "SYNTHETIC REPLAY · PUBLIC CORE CLAIM_ELIGIBLE · NOT KALEIDO"
+                if phys_jepa
+                else "SYNTHETIC SHADOW REPLAY · SMOKE_ONLY"
+            ),
             "generated_at": datetime.now(UTC).isoformat(),
             "read_only": True,
             "operations_active": len(operations),

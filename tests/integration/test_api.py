@@ -30,7 +30,7 @@ def test_health_and_demo_ui_are_read_only(tmp_path: Path) -> None:
     assert health.json()["source_write_capability"] is False
     page = client.get("/")
     assert page.status_code == 200
-    assert "Synthetic shadow replay" in page.text
+    assert "Synthetic operational replay" in page.text
 
 
 def test_batch_validation_does_not_persist(tmp_path: Path) -> None:
@@ -172,9 +172,7 @@ def test_demo_evidence_exposes_jepa_gate_from_generated_artifacts(
     ]
     assert payload["research_finding"]["verdict"] == "KEEP RAW BOOSTING"
     assert payload["research_finding"]["metric_display"] == "+2.20 min"
-    assert payload["metric_context"]["benchmark_verdict"] == (
-        "best_tested_mean_error_floor"
-    )
+    assert payload["metric_context"]["benchmark_verdict"] == ("best_tested_mean_error_floor")
     assert payload["metric_context"]["operational_verdict"] == (
         "unknown_without_kaleido_acceptance_threshold"
     )
@@ -238,3 +236,102 @@ def test_demo_evidence_prefers_future_ais_eta_artifacts(tmp_path: Path) -> None:
     card = client.get("/v1/models/latest/card").json()
     assert card["model_version"] == "ais-eta-v3"
     assert card["metrics"]["test_mae_hours"] == 1.88
+
+
+def test_demo_evidence_prefers_clean_phys_jepa_core_artifact(tmp_path: Path) -> None:
+    run = tmp_path / "noaa_ais_phys_jepa_clean_test_v2"
+    run.mkdir()
+    result_rows = [
+        {
+            "embedding_diagnostics_test": {
+                "effective_rank": rank,
+                "collapsed": False,
+            },
+            "full_label_trajectory": {
+                "hybrid_conformal": {
+                    "test_coverage": coverage,
+                    "mean_interval_width_km": width,
+                }
+            },
+        }
+        for rank, coverage, width in (
+            (11.4, 0.893, 11.9),
+            (12.5, 0.898, 11.9),
+            (12.2, 0.903, 12.2),
+        )
+    ]
+    downstream = {
+        "full_trajectory_test_hybrid_mae_mean_km": 2.587,
+        "full_trajectory_test_hybrid_mae_std_km": 0.053,
+        "full_trajectory_test_raw_deviation_auprc_mean": 0.880,
+        "full_trajectory_test_hybrid_deviation_auprc_mean": 0.904,
+        "sparse_eta_test_relative_improvement_percent": 0.587,
+        "sparse_delay_test_raw_auprc_mean": 0.619,
+        "sparse_delay_test_hybrid_auprc_mean": 0.606,
+    }
+    metrics = {
+        "claim_state": "claim_eligible",
+        "dataset_export_version": 1,
+        "dataset_id": "noaa-ais-phys-clean",
+        "split_protocol": "chronological_future_grouped_vessel_trip",
+        "split_counts": {
+            "train": {"trips": 341, "samples": 3778},
+            "validation": {"trips": 83, "samples": 976},
+            "test": {"trips": 57, "samples": 750},
+        },
+        "number_of_seeds": 3,
+        "test_influenced_choice": False,
+        "threshold_selection": "fixed physical 2h shortfall definition",
+        "models_and_baselines": {
+            "kinematic": {"distance_mae_km": 4.018},
+            "trajectory_boosting": {"test": {"distance_mae_km": 2.635}},
+            "supervised": {
+                "gru": {"aggregate": {"test_distance_mae_mean_km": 2.798}},
+                "transformer": {"aggregate": {"test_distance_mae_mean_km": 2.830}},
+            },
+            "jepa": {
+                "phys_vicreg": {
+                    "aggregate": {"test_distance_mae_mean_km": 3.036},
+                    "results": result_rows,
+                    "downstream_heads": {"results": result_rows},
+                }
+            },
+        },
+        "product_candidate": {
+            "model": "trajectory_boosting_plus_phys_vicreg",
+            "gate": {"passed": False},
+            "selected_downstream": downstream,
+            "paired_test_uncertainty": {
+                "raw_mae_km": 2.635,
+                "hybrid_mae_km": 2.326,
+                "relative_improvement_percent": 11.722,
+                "relative_improvement_ci95_percent": [5.901, 17.130],
+                "bootstrap_probability_improvement": 0.9995,
+                "samples": 2000,
+            },
+        },
+    }
+    (run / "metrics.json").write_text(json.dumps(metrics), encoding="utf-8")
+    (run / "data_manifest.json").write_text("{}", encoding="utf-8")
+
+    client = TestClient(create_app(tmp_path))
+    evidence = client.get("/v1/demo/evidence").json()
+    assert evidence["claim_state"] == "claim_eligible"
+    assert evidence["research_finding"]["verdict"] == ("CORE WORLD MODEL PASSED · FULL GATE CLOSED")
+    assert evidence["metric_context"]["hybrid_ensemble_mae_km"] == 2.326
+    assert evidence["metric_context"]["collapsed_seeds"] == 0
+    assert [stage["milestone"] for stage in evidence["stages"]] == [
+        "WM-1",
+        "WM-2",
+        "WM-3",
+        "WM-4",
+        "WM-5",
+        "WM-6",
+    ]
+    overview = client.get("/v1/demo/overview").json()
+    assert overview["dataset"]["split_counts_operations"]["test"] == 57
+    assert overview["p90_coverage"] == 0.898
+    card = client.get("/v1/models/latest/card").json()
+    assert card["model_version"] == "ais-phys-jepa-v1"
+    assert card["claim_state"] == "claim_eligible"
+    assert card["metrics"]["full_product_gate"] is False

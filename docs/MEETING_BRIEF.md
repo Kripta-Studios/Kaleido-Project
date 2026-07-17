@@ -7,20 +7,26 @@ si existe un producto rentable.
 
 ## La idea en una frase
 
-Complementar Shipping Board/Freight Intelligence con ETA y excepciones, y Trace
-Port/TWINPORTS con inteligencia de proceso y prediccion auditable, sin tomar el
-control de la operacion.
+Complementar Shipping Board/Freight Intelligence con un Port Call Deviation
+Twin y ETA, y Trace Port/TWINPORTS con inteligencia de proceso y prediccion
+auditable, sin tomar el control de la operacion.
 
 ## Evidencia que se enseña
 
-El demostrador principal usa 38 dias de NOAA AIS y un test futuro de 85 viajes.
+El baseline ETA usa 38 dias de NOAA AIS y un test futuro de 85 viajes.
 Boosting ETA obtiene 1.88 h de MAE, IC95 % 1.70-2.08 h, 60.6 % dentro de +/-2 h
 y mejora a los baselines fisico (7.79 h) e historico (2.73 h). Pasa 6/6 gates
 predeclarados. Es `smoke_only`: no es una cifra de Kaleido.
 
 La limitacion se dice inmediatamente: intervalo P90 ancho (9.04 h) y 87.6 % de
-los prefijos test en Nueva Orleans. OCEL muestra process intelligence; JEPA queda
-en I+D. El antiguo resultado de ~734 min se rechazo como demostrador.
+los prefijos test en Nueva Orleans.
+
+El resultado de investigación central usa un holdout posterior prehasheado de
+57 viajes. GBT + Phys-JEPA mejora trayectoria ensemble de 2,635 a 2,326 km
+(11,72%; IC95% 5,90%-17,13%) y AUPRC de desviación de 0,880 a 0,904, sin colapso
+en 3/3 seeds. Es `claim_eligible` solo para ese core público. El gate completo
+queda cerrado: ETA escasa mejora 0,59% y delay AUPRC retrocede. Se presenta como
+shadow técnico, no como precisión Kaleido.
 
 ## El mensaje que debe quedar
 
@@ -37,11 +43,13 @@ datos suficientes para entrenar un modelo profundo.
 ## Apertura de 60 segundos
 
 > Hemos probado una idea concreta cercana a Shipping Board y Freight
-> Intelligence: una ETA AIS que mejora dos comparadores y pasa seis criterios en
-> futuro no visto. No afirmamos que esa precision se transfiera a Kaleido. La
+> Intelligence: un gemelo de desviación portuaria que combina un GBT fuerte con
+> Phys-JEPA y mejora la trayectoria en futuro no visto. No afirmamos que esa
+> precision se transfiera a Kaleido. La
 > propuesta es conectar el mismo contrato read-only con una operacion o viaje
 > real, acordar la tolerancia antes de medir y conservar Trace Port/TWINPORTS como
-> superficies de trabajo. JEPA solo entra si aporta valor incremental. No
+> superficies de trabajo. JEPA entra solo en el core donde ya aporta valor
+> incremental; no desplaza ETA ni retraso donde no pasa sus gates. No
 > prometemos un gemelo autonomo; proponemos una decision medible sobre producto,
 > datos y retorno.
 

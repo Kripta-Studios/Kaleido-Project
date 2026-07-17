@@ -10,11 +10,12 @@ Archivos:
   estudiar; contiene el texto, tiempos, transiciones, demo y respuestas.
 - `../output/pdf/Kaleido_FlowTwin_MVP_Informe_Tecnico.pdf`: respaldo técnico.
 
-La historia principal es ETA AIS: 1,88 h de MAE sobre 85 viajes futuros, IC95 %
-1,70-2,08 h, 60,6 % dentro de +/-2 h y 6/6 gates aprobados. El resultado es
-`smoke_only`, no precisión Kaleido. OCEL muestra process intelligence y JEPA queda
-como I+D. Los ~734 min del experimento de almacén sólo aparecen como negativo
-histórico rechazado.
+La historia principal es el Port Call Deviation Twin: el ensemble GBT + Phys-JEPA
+reduce el MAE de trayectoria de 2,635 a 2,326 km (11,72 %) en 57 viajes futuros,
+con IC95 % emparejado de mejora 5,90 %-17,13 %. El core público es
+`claim_eligible`; no demuestra precisión Kaleido. ETA GBT y OCEL son capacidades
+complementarias. Los heads ETA/delay de Phys-JEPA y el experimento de almacén se
+mantienen como resultados rechazados, no se ocultan.
 
 Dashboard local:
 
@@ -23,8 +24,9 @@ uv run flowtwin serve --host 127.0.0.1 --port 8001 --artifact-root outputs
 Start-Process "http://127.0.0.1:8001/"
 ```
 
-Recorrido: evidencia ETA -> comparadores -> tolerancias -> 6/6 gates -> intervalo y
-concentración por puerto -> procedencia/model card -> separación ETA/OCEL/JEPA.
+Recorrido: encaje Kaleido -> holdout limpio -> ETA/OCEL complementarios ->
+anticolapso -> mejora Phys-JEPA -> gates independientes -> producto shadow ->
+arquitectura, dashboard y petición de piloto.
 
 Regenerar fuentes y compilar:
 

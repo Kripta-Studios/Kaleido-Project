@@ -21,6 +21,23 @@ solicitar un volcado masivo ni acceso productivo.
 Formatos aceptables: CSV, XLSX, JSON, Parquet o export de API. No se necesita
 base de datos ni credenciales para el scan.
 
+## Extensión mínima para Port Call Deviation Twin
+
+Si Kaleido prioriza Shipping Board/Freight Intelligence, solicitar además para
+20-50 escalas o viajes futuros disjuntos cuando sea viable:
+
+- ID estable de viaje/buque/puerto seudonimizado;
+- posiciones o milestones con `event_time` e `ingest_time`;
+- ETA original y cada revisión con `valid_from`;
+- geofence/terminal/muelle y definición de llegada;
+- excepción material y cuándo la conoció el operador;
+- fuente de cada posición/ETA y huecos de cobertura;
+- decisión tomada ante la excepción, separada del contexto.
+
+El primer replay compara GBT-only con GBT + Phys-JEPA a 0,5/1/2 h. No se pide
+una acción para entrenar el core observacional. Ningún ranking causal se activa
+sin decisiones timestamped variadas y soporte suficiente.
+
 ## Seudonimizacion
 
 Kaleido puede sustituir:
@@ -79,4 +96,3 @@ EVOCON devolvera:
 - todos los productos a la vez;
 - anos de datos sin saber la estructura;
 - aprobacion para controlar operaciones.
-

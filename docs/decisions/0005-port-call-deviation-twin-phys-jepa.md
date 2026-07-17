@@ -1,7 +1,7 @@
 # Decision 0005: move JEPA from tabular ETA to port-call dynamics
 
 Date: 2026-07-17  
-Status: validation selection complete; public clean-test evidence pending
+Status: superseded by clean result in Decision 0007
 
 ## Hypothesis
 
@@ -121,3 +121,11 @@ AIS contains observations and context, not Kaleido operator decisions.
    hash-freeze commit containing this decision.
 4. Run the frozen three-seed protocol once from a clean worktree.
 5. Reject promotion if the clean future interval does not pass the gates.
+
+## Resolution
+
+The protocol ran once from the frozen clean commit. The trajectory/deviation
+core passed, while the sparse ETA and delay gates failed; therefore the full
+product gate remains closed. Exact hashes, metrics, uncertainty and the shadow
+product boundary are recorded in
+`docs/decisions/0007-phys-jepa-clean-holdout-result.md`.

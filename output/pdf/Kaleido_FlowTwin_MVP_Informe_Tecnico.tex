@@ -3,43 +3,74 @@
 \usepackage[a4paper,margin=2.2cm]{geometry}\usepackage{graphicx,booktabs,longtable,tabularx,array,xcolor,hyperref,fancyhdr,microtype}
 \definecolor{Ink}{HTML}{10272F}\definecolor{Teal}{HTML}{18A999}\definecolor{Blue}{HTML}{2F6BFF}\definecolor{Gold}{HTML}{F2B134}\definecolor{Red}{HTML}{D85C5C}\definecolor{Paper}{HTML}{F5F7F5}\definecolor{Muted}{HTML}{61747B}
 \hypersetup{colorlinks=true,linkcolor=Blue,urlcolor=Blue}\graphicspath{{../../presentacion/assets/}}
-\pagestyle{fancy}\fancyhf{}\setlength{\headheight}{14pt}\lhead{Kaleido FlowTwin}\rhead{MVP técnico -- smoke\_only}\cfoot{\thepage}
+\pagestyle{fancy}\fancyhf{}\setlength{\headheight}{14pt}\lhead{Kaleido FlowTwin}\rhead{Phys-JEPA core -- claim\_eligible público}\cfoot{\thepage}
 \newcommand{\claimbox}[1]{\begin{center}\fcolorbox{Gold}{Gold!18}{\parbox{.92\linewidth}{\textbf{#1}}}\end{center}}
-\title{\textbf{Kaleido FlowTwin}\\Informe técnico y ejecutivo del MVP}\author{EVOCON Solutions -- Álvaro Schwiedop Souto}\date{2026-07-16}
+\title{\textbf{Kaleido FlowTwin}\\Informe técnico y ejecutivo del MVP}\author{EVOCON Solutions -- Álvaro Schwiedop Souto}\date{2026-07-17}
 \begin{document}\maketitle
-\claimbox{Estado de toda la evidencia: \texttt{smoke\_only}. Los datos públicos y sintéticos demuestran competencia técnica del pipeline; no demuestran precisión, valor, causalidad, ahorro ni despliegue para Kaleido.}
+\claimbox{Estado mixto y acotado: el core Phys-JEPA limpio es \texttt{claim\_eligible} sobre NOAA AIS público; ETA/OCEL históricos son \texttt{smoke\_only}. El gate completo y Kaleido siguen cerrados. No se demuestra ROI, causalidad ni despliegue.}
 \section*{Resumen ejecutivo}
-Se implementó y ejecutó una capa read-only de inteligencia operativa con ETA, incertidumbre, OCEL/process mining, baselines, modelos secuenciales, Event-JEPA, Temporal T-JEPA, Var-Event-JEPA, API y dashboard. El demostrador principal usa 38 días de NOAA MarineCadastre AIS y predice entrada en una geofence portuaria. \textbf{Boosting ETA}, elegido solo en validación, obtiene 1.88 horas de MAE en 85 viajes futuros del 1 al 7 de febrero de 2025, con bootstrap por viaje IC95\% 1.70--2.08.
+Se implementó y ejecutó un \textbf{Port Call Deviation Twin} read-only para Shipping Board/Freight Intelligence. El sistema predice estado físico a 0,5/1/2 horas y combina un trajectory GBT fuerte con estado/futuros Phys-JEPA. El clean test usa 57 viajes futuros del 8 al 14 de febrero de 2025, congelados y hasheados antes de construir targets.
+
+Trajectory GBT obtiene 2.635 km MAE. El híbrido individual, media de tres seeds, obtiene 2.587 $\pm$ 0.053 km y gana al raw GBT en 3/3 seeds. El ensemble de tres modelos obtiene \textbf{2.326 km}, mejora 11.72\%; bootstrap emparejado por viaje IC95\% 5.90--17.13\%, $P(\mathrm{mejora})=0.9995$. La AUPRC de desviación cambia 0.880 a 0.904.
+
+El resultado no arrastra otros outputs. ETA con 10\% de viajes etiquetados cambia 1.133 a 1.127 h, solo 0.59\%, bajo el gate del 1\%. Delay AUPRC retrocede 0.619 a 0.606. Por ello el core trayectoria/desviación se conserva shadow, ETA permanece GBT-only y el head de delay se rechaza. El gate completo, producción y Kaleido permanecen cerrados.
+
+Como baseline complementario, \textbf{Boosting ETA} obtiene 1.88 horas MAE en 85 viajes futuros del 1 al 7 de febrero, con IC95\% 1.70--2.08 y estado \texttt{smoke\_only}.
 
 La mediana del error es 1.37 horas; 42.0\% de los puntos queda dentro de $\pm$1 hora, 60.6\% dentro de $\pm$2 y 87.3\% dentro de $\pm$4. Mejora 75.9\% a una ETA distancia/velocidad y 31.2\% a la mediana puerto-distancia. Pasa los seis gates predeclarados del nuevo holdout. La cobertura P90 es 94.5\%, pero su anchura media de 9.04 horas obliga a mostrar incertidumbre y abstención.
 
 El segundo dataset, OCEL 2.0 Container Logistics, prueba contratos objeto-céntricos y revisiones de plan. El grafo correcto reduce el MAE de test de 88.17 a 86.64 horas, pero validación seleccionó la traza plana; el gate del grafo permanece cerrado. Este resultado se usa para process intelligence y como diagnóstico de I+D, no como claim predictivo.
 
-Temporal T-JEPA incorpora futuros disjuntos, teacher EMA y selección de regularización solo en validación. Mejora al Event-JEPA anterior con 759.38 $\pm$ 1.15, pero no a raw boosting. Var-Event-JEPA obtiene 760.41 $\pm$ 6.25 y su incertidumbre latente no sigue el error en todas las seeds. El mejor híbrido elegible, raw + Var-JEPA, obtiene 738.98 $\pm$ 0.60, 4.60 minutos peor que raw; el gate de promoción queda cerrado.
+Los antiguos Event-JEPA, T-JEPA, Var-JEPA, Action-JEPA, Warehouse y LaDe se mantienen para explicar invalidaciones, colapso y selección de caso. No se usan como demostrador comercial.
 
-La recomendación es demostrar ETA y ventanas dentro de Shipping Board/Freight Intelligence, llevar process intelligence a Trace Port/TWINPORTS y mantener JEPA como módulo shadow sujeto a gates. Ningún resultado público prueba precisión o valor para Kaleido.
+La recomendación es demostrar el core físico y ETA dentro de Shipping Board/Freight Intelligence, llevar process intelligence a Trace Port/TWINPORTS y ejecutar el mismo gate sobre un export Kaleido futuro. Ningún resultado público prueba precisión o valor para Kaleido.
 
 \section{Hipótesis y encaje con Kaleido}
-\textbf{Hipótesis principal.} A partir de posiciones AIS y prefijos causales de eventos, el sistema puede estimar ETA/tiempo restante con incertidumbre y, con datos Kaleido, riesgo de desviación material con lead time accionable.
+\textbf{Hipótesis principal.} Un estado Phys-JEPA preentrenado sin outcomes puede aportar dinámica multihorizonte a un GBT de trayectoria cuando las labels son escasas, sin sustituir los baselines que ganen ETA o riesgo.
 
 Shipping Board y Freight Intelligence aportan la superficie natural para ETA y excepciones. Trace Port declara eventos, turnos, equipos, packing lists, incidencias, histórico y API; TWINPORTS desarrolla estado físico y espacial. FlowTwin no debe competir con ellos: debe consumir posiciones/eventos versionados y devolver salidas read-only dentro de los productos existentes.
 
 \section{Datos, provenance y protocolo}
 \noindent\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.6cm}X@{}}\toprule
-Dataset principal & NOAA MarineCadastre AIS 2025, 38 días, 6.92 GB comprimidos \\
+Dataset principal & NOAA MarineCadastre AIS 2025, desarrollo 1 enero--7 febrero y clean holdout 8--14 febrero \\
 Dominio & Cargueros/petroleros en Nueva York, Houston, Los Ángeles y Nueva Orleans \\
-Task & Horas hasta entrada en geofence circular, con prefijos entre 12 h y 15 min \\
-Split & Futuro fijo por viaje: 303 / 73 / 85 viajes \\
-Test & 1--7 febrero 2025; 1,780 puntos; MMSI excluido del modelo \\
+Task & Estado físico y shortfall a 0,5/1/2 h; ETA como probe separado \\
+Split & Futuro fijo por viaje: 341 / 83 / 57 viajes \\
+Test & 8--14 febrero 2025; 750 muestras; viajes disjuntos \\
+Hashes & prefijos \texttt{4f1c7bce92f6...}; métricas \texttt{99b4162f7b40...} \\
 Dataset secundario & OCEL 2.0 Container Logistics, 1,966 contenedores y 12,184 prefijos \\
-Selección & Variantes y gates con validación; el test futuro no eligió modelo ni umbral \\
-Seeds & 3 (41, 42, 43) para los benchmarks alineados \\
-Claim state & \texttt{smoke\_only} \\
+Selección & Arquitectura, regularizador, heads y umbral solo con desarrollo/validación; test no influyó \\
+Seeds & 3 (11, 42, 73) \\
+Claim state & \texttt{claim\_eligible} para core público; gate completo/Kaleido cerrado \\
 \bottomrule\end{tabularx}
 
-El primer AIS test se invalidó como evidencia de presentación por contener solo 25 viajes. El segundo test de 73 viajes falló el gate subhorario predeclarado. Ambos se preservaron; el protocolo final mantuvo puertos/features/modelos, convirtió enero en desarrollo/validación y reservó febrero como nuevo futuro intacto. También se conservan tres runs históricos invalidados por fuga o selección con test.
+Los siete ficheros holdout (1.431.169.298 bytes) se descargaron como contenido opaco y sus hashes se versionaron antes de construir targets. El primer build falló cerrado por confundir el hash del input v2 con el output v3; se corrigió en un commit separado antes de abrir el holdout. El primer clean run no entrenó por faltar el extra PyTorch y no produjo métricas; el segundo ejecutó el protocolo congelado en worktree limpio, commit \texttt{cdae9b7}, \texttt{dirty=false}.
 
-\section{Resultado principal: ETA AIS}
+\section{Resultado principal: Port Call Deviation Twin}
+\begin{center}\includegraphics[width=.93\linewidth]{phys_jepa_clean.pdf}\end{center}
+\begin{tabularx}{\linewidth}{XrrX}\toprule
+Modelo & Seeds & MAE km & Lectura \\
+\midrule
+Cinemática de curso constante & -- & 4.018 & física sin aprendizaje \\
+Trajectory GBT & 1 & 2.635 & floor supervisado \\
+GRU / Transformer & 3 & 2.798 / 2.830 & baselines secuenciales \\
+Phys-JEPA directo & 3 & 3.036 & decoder residual sin GBT \\
+GBT + Phys-JEPA & 3 & 2.587 $\pm$ 0.053 & gana raw en 3/3 seeds \\
+GBT + Phys-JEPA ensemble & 3 & \textbf{2.326} & candidato shadow \\
+\bottomrule\end{tabularx}
+
+El ensemble reduce MAE 11.72\%, con bootstrap emparejado por 57 viajes y 2.000 resamples: IC95\% 5.90--17.13\%, $P(\mathrm{mejora})=0.9995$. La media de seeds (2.587 km) mide estabilidad de entrenamiento; el ensemble (2.326 km) mide el candidato servido y su reducción de varianza. No deben confundirse.
+
+La AUPRC de shortfall físico cambia 0.880 a 0.904. La cobertura conformal nominal 90\% alcanza 89.79\% con 12.00 km de ancho medio. El rango efectivo test es 11.42--12.46 y 0/3 representaciones colapsan.
+
+\subsection{VISReg, SIGReg y otros controles de colapso}
+\begin{center}\includegraphics[width=.93\linewidth]{phys_jepa_regularizers.pdf}\end{center}
+En desarrollo, el MAE híbrido de validación fue 3.124 km con VICReg, 3.129 sin regularizador, 3.143 con VISReg, 3.204 con SIGReg y 3.313 para JEPA sin física + VISReg. Ninguna variante colapsó. VICReg se seleccionó porque ganó el criterio predeclarado; el resultado sugiere que la inductive bias física aporta más que la diferencia entre losses anticolapso.
+
+\subsection{Gate completo cerrado}
+ETA escasa cambia 1.133 a 1.127 h (0.59\%), por debajo del mínimo del 1\%. Delay AUPRC cambia 0.619 a 0.606, una regresión. Por tanto el core físico pasa, pero el gate combinado y las promociones pública completa y Kaleido permanecen cerrados.
+
+\section{Baseline complementario: ETA AIS}
 \begin{center}\includegraphics[width=.93\linewidth]{model_comparison.pdf}\end{center}
 \begin{tabularx}{\linewidth}{Xrrrrl}\toprule
 Modelo & MAE h & Mediana AE & $\pm$1 h & $\pm$2 h & Decisión \\
@@ -111,7 +142,7 @@ Las actividades públicas no se relabelaron como acciones. Se generó un overlay
 VISReg obtiene 725.75 $\pm$ 3.20 minutos con acción correcta frente a 740.43 con acción barajada y 731.45 con prefijo solo. Correct gana en 3/3 seeds y mejora 14.67 minutos de media frente a shuffled. Sin embargo, aunque el rango efectivo sube a 15.41--16.16, la desviación media por dimensión permanece 0.020--0.023, bajo el umbral. El resultado prueba recuperación de señal inyectada, no un world model operativo estable.
 
 \section{Serving y producto recomendado}
-La entrada demostrable es un panel ETA/ventanas embebible en Shipping Board o Freight Intelligence. Trace Port/TWINPORTS reciben process intelligence y, cuando exista export Kaleido, tiempo restante de operación. Cada salida expone cutoff, geofence/plan visible, P50/P90, confianza/abstención, razones y fuente. El sistema continúa read-only y los escenarios permanecen separados y etiquetados como simulación.
+La entrada demostrable es un Port Call Deviation Twin shadow embebible en Shipping Board o Freight Intelligence. Expone futuro físico 0,5/1/2 h, shortfall, AUPRC/score, latent surprise, intervalo conformal y procedencia. ETA continúa con su GBT separado. Trace Port/TWINPORTS reciben la excepción y process intelligence. Cada salida expone cutoff, geofence/plan visible, gate, confianza/abstención, razones y fuente. El sistema continúa read-only y los escenarios permanecen separados y etiquetados como simulación.
 
 \section{Seguridad, límites y gates de piloto}
 \begin{itemize}
@@ -128,11 +159,11 @@ La entrada demostrable es un panel ETA/ventanas embebible en Shipping Board o Fr
 Sesión de 90 minutos para elegir una operación repetible, usuario/buyer, desviación material, acción disponible y coste de intervenir. Solicitar esquema y 3--5 operaciones pseudonimizadas para validar semántica; después un histórico suficiente con plan original y revisiones, outcomes y acciones timestamped. Ejecutar replay shadow 4--8 semanas con gates preacordados de cobertura, falsas alertas, lead time, peor grupo y utilidad del operador.
 
 \section*{Cierre de tarea}
-\textbf{Hipótesis:} una capa predictiva sobre posiciones y eventos puede ampliar Shipping Board, Freight Intelligence, Trace Port y TWINPORTS.\\
-\textbf{Cambios:} benchmark ETA AIS con holdout futuro, benchmark OCEL objeto-céntrico, pipeline causal, JEPA/ablations, API/dashboard e informes generados.\\
+\textbf{Hipótesis:} Phys-JEPA puede aportar dinámica multihorizonte a un GBT fuerte sin sustituir los heads donde no gana.\\
+\textbf{Cambios:} holdout futuro prehasheado, Phys-JEPA físico-residual, VISReg/SIGReg/VICReg/none, GBT/GRU/Transformer, bootstrap, conformal, API/dashboard e informes.\\
 \textbf{Tests:} suites unitarias/integración/adversariales, lint y typing; hashes de los runs citados verificados al generar este documento.\\
-\textbf{Evidencia:} ETA boosting pasa 6/6 gates en 85 viajes futuros; el grafo OCEL y JEPA no superan sus gates; VISReg recupera señal sintética sin validar causalidad.\\
-\textbf{Limitaciones:} dominio AIS de EE. UU. concentrado en Nueva Orleans; OCEL simulado; no hay datos Kaleido, outcomes materiales ni acciones reales.\\
+\textbf{Evidencia:} core GBT + Phys-JEPA 2.635 a 2.326 km, IC95\% de mejora 5.90--17.13; AUPRC 0.880 a 0.904; gate completo cerrado por ETA/delay.\\
+\textbf{Limitaciones:} AIS de EE. UU., 57 viajes, proxy físico e intervalo de 12.00 km; no hay datos Kaleido, outcomes materiales ni acciones reales.\\
 \textbf{Siguiente paso falsable:} replay sobre export Kaleido congelado y revisión operativa.
 
 \section*{Fuentes primarias y corporativas}
@@ -145,6 +176,7 @@ Sesión de 90 minutos para elegir una operación repetible, usuario/buyer, desvi
 \item \href{https://doi.org/10.6084/m9.figshare.29500898}{Warehouse Outbound Event Log -- DOI}
 \item \href{https://arxiv.org/abs/2511.08544}{LeJEPA}; \href{https://arxiv.org/abs/2603.19312}{LeWorldModel}
 \item \href{https://arxiv.org/abs/2606.02572}{VISReg}; \href{https://haiyuwu.github.io/visreg/}{proyecto oficial}
+\item \href{https://arxiv.org/abs/2301.08243}{I-JEPA}; \href{https://arxiv.org/abs/2606.16076}{Phys-JEPA}; \href{https://arxiv.org/abs/2506.09985}{V-JEPA 2}
 \item \href{https://arxiv.org/abs/2410.05016}{T-JEPA}; \href{https://arxiv.org/abs/2603.20111}{Var-JEPA}
 \end{itemize}
 \end{document}

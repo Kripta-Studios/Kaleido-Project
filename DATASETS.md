@@ -142,9 +142,9 @@ representa Vigo. Manifest: `data/manifests/noaa_ais_2025_jan_feb.yaml`.
 
 #### Holdout Phys-JEPA predeclarado
 
-El Port Call Deviation Twin usa esos 38 dias solo para desarrollo y seleccion
-de arquitectura. El intervalo 2025-02-08 a 2025-02-14 queda reservado como
-holdout futuro. Antes de descargarlo deben estar versionados:
+El Port Call Deviation Twin usó los primeros 38 días solo para desarrollo y
+selección de arquitectura. El intervalo 2025-02-08 a 2025-02-14 se congeló como
+holdout futuro. Antes de descargarlo quedaron versionados:
 
 - arquitectura Phys-JEPA y regularizador;
 - horizontes 0,5/1/2 h;
@@ -152,14 +152,26 @@ holdout futuro. Antes de descargarlo deben estar versionados:
 - fraccion etiquetada del 10 % por viaje;
 - gates de distancia, ETA escasa, AUPRC y no-colapso.
 
-La seleccion de desarrollo eligio Phys-JEPA + VICReg: el GBT hibrido redujo el
-MAE de trayectoria de validacion de 3,336 a 3,124 km. El intervalo reservado
-sigue sin descargarse; este numero no es evidencia de test limpio.
+La selección de desarrollo eligió Phys-JEPA + VICReg: el GBT híbrido redujo el
+MAE de trayectoria de validación de 3,336 a 3,124 km. VISReg, SIGReg, VICReg y
+ausencia de regularizador no colapsaron; la física residual aportó más que la
+diferencia entre regularizadores.
 
 Manifest de protocolo:
 `data/manifests/noaa_ais_2025_phys_jepa_holdout.yaml`. Los siete ficheros
 (1.431.169.298 bytes) se descargaron sin inspeccionar contenido y sus SHA-256
 quedaron congelados en un segundo commit antes de construir los targets.
+
+Resultado limpio: 3.778/976/750 muestras y 341/83/57 viajes para
+train/validación/test. El prefijo procesado tiene SHA-256
+`4f1c7bce92f6567599b3e1ebb66678f631c1a884adc2f4540a6bca0489ef382d`.
+El GBT de trayectoria obtiene 2,635 km MAE; el híbrido GBT + Phys-JEPA obtiene
+2,587 ± 0,053 km como media de tres seeds y 2,326 km como ensemble. El bootstrap
+emparejado por viaje estima una mejora de 11,72%, IC95% 5,90%-17,13%. El core
+de trayectoria/desviación pasa; el gate completo falla por ETA escasa inferior
+al 1% y regresión del head de retraso. Estado `claim_eligible` limitado al core
+público; no evidencia Kaleido. Data card:
+`docs/data_cards/noaa_ais_phys_jepa_holdout.md`.
 
 ### LaDe delivery Jilin (diagnostico de seleccion de caso)
 

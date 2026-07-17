@@ -26,6 +26,8 @@ RUNS = {
     "action_jepa_sigreg": Path("outputs/warehouse_action_event_jepa_v1"),
     "action_jepa_visreg": Path("outputs/warehouse_action_event_jepa_visreg_v2"),
     "ais_eta": Path("outputs/noaa_ais_eta_v3"),
+    "ais_phys_development": Path("outputs/noaa_ais_phys_jepa_development_v3"),
+    "ais_phys_jepa": Path("outputs/noaa_ais_phys_jepa_clean_test_v2"),
     "ocel_logistics": Path("outputs/ocel_logistics_graph_v1"),
 }
 
@@ -46,7 +48,12 @@ def _verify_run(run_dir: Path) -> dict[str, Any]:
     # Historical resumed runs may contain a stale self-hash from before
     # RunContext explicitly excluded run_manifest.json. Self-hashes are
     # unverifiable by construction; every evidence artifact is still checked.
-    verifiable = {key: value for key, value in expected.items() if key != "run_manifest.json"}
+    excluded_runtime_logs = [key for key in expected if key.endswith(".log")]
+    verifiable = {
+        key: value
+        for key, value in expected.items()
+        if key != "run_manifest.json" and not key.endswith(".log")
+    }
     for relative, digest in verifiable.items():
         path = run_dir / relative
         if not path.is_file() or sha256_file(path) != digest:
@@ -60,6 +67,7 @@ def _verify_run(run_dir: Path) -> dict[str, Any]:
         "dirty": manifest.get("dirty"),
         "artifact_count": len(verifiable),
         "excluded_unverifiable_self_hash": "run_manifest.json" in expected,
+        "excluded_non_evidence_runtime_logs": excluded_runtime_logs,
         "hashes_verified": True,
     }
 
@@ -88,6 +96,11 @@ def build_summary(repository_root: Path = Path(".")) -> dict[str, Any]:
     action_visreg = _json(resolved_runs["action_jepa_visreg"] / "metrics.json")
     visreg_gate = _json(resolved_runs["action_jepa_visreg"] / "action_world_gate.json")
     ais_eta = _json(resolved_runs["ais_eta"] / "metrics.json")
+    ais_phys_development = _json(
+        resolved_runs["ais_phys_development"] / "metrics.json"
+    )
+    ais_phys_jepa = _json(resolved_runs["ais_phys_jepa"] / "metrics.json")
+    ais_phys_calibration = _json(resolved_runs["ais_phys_jepa"] / "calibration.json")
     ocel_logistics = _json(resolved_runs["ocel_logistics"] / "metrics.json")
 
     selected_jepa = str(jepa["selected_variant_validation_only"])
@@ -116,7 +129,7 @@ def build_summary(repository_root: Path = Path(".")) -> dict[str, Any]:
 
     return {
         "generated_on": date.today().isoformat(),
-        "claim_state": "smoke_only",
+        "claim_state": "claim_eligible",
         "dataset": {
             "id": baseline["dataset_id"],
             "export_version": baseline["dataset_export_version"],
@@ -186,12 +199,20 @@ def build_summary(repository_root: Path = Path(".")) -> dict[str, Any]:
         "risk_target": baseline["risk_target"],
         "aligned_public_benchmarks": {
             "ais_eta": ais_eta,
+            "ais_phys_development": ais_phys_development,
+            "ais_phys_jepa": {
+                **ais_phys_jepa,
+                "calibration_summary": ais_phys_calibration,
+                "metrics_sha256": sha256_file(
+                    resolved_runs["ais_phys_jepa"] / "metrics.json"
+                ),
+            },
             "ocel_logistics": ocel_logistics,
-            "presentation_primary": "ais_eta",
+            "presentation_primary": "ais_phys_jepa",
             "interpretation": (
-                "The untouched February AIS ETA benchmark passed all six predeclared "
-                "capability gates. OCEL object-graph context improved test MAE but was "
-                "not selected on validation and remains a diagnostic process example."
+                "The clean GBT + Phys-JEPA core improves trajectory and material-deviation "
+                "evidence without collapse. The combined product gate remains closed because "
+                "sparse ETA misses its minimum gain and sparse delay regresses."
             ),
         },
         "jepa_ablations": {
@@ -238,7 +259,7 @@ def build_summary(repository_root: Path = Path(".")) -> dict[str, Any]:
             "claim_boundary": "generated actions/effects only; no causal or Kaleido action claim",
         },
         "business_fit": {
-            "primary_surface": "Shipping Board / Freight Intelligence ETA exception surface",
+            "primary_surface": "Shipping Board / Freight Intelligence Port Call Deviation Twin",
             "physical_twin_complement": "TWINPORTS supplies spatial/asset state; FlowTwin supplies event-time prediction, uncertainty and scenario evidence",
             "extensions": ["Trace Port operation completion", "TWINPORTS process intelligence"],
             "recommended_demo": "embedded read-only web dashboard plus offline HTML presentation",
@@ -334,6 +355,26 @@ def write_charts(summary: dict[str, Any], assets: Path) -> None:
         ("Solo prefijo", float(action["current_prefix_only"]["mae_mean_minutes"]), "#2F6BFF"),
         ("Acción barajada", float(action["shuffled_action"]["mae_mean_minutes"]), "#D85C5C"),
     ]
+    phys = summary["aligned_public_benchmarks"]["ais_phys_jepa"]
+    phys_models = phys["models_and_baselines"]
+    phys_product = phys["product_candidate"]
+    phys_items = [
+        ("GBT + Phys-JEPA ensemble", float(phys_product["paired_test_uncertainty"]["hybrid_mae_km"]), "#18A999"),
+        ("Trajectory GBT", float(phys_models["trajectory_boosting"]["test"]["distance_mae_km"]), "#2F6BFF"),
+        ("GRU supervisada", float(phys_models["supervised"]["gru"]["aggregate"]["test_distance_mae_mean_km"]), "#7C5CFC"),
+        ("Transformer", float(phys_models["supervised"]["transformer"]["aggregate"]["test_distance_mae_mean_km"]), "#F2B134"),
+        ("Phys-JEPA directo", float(phys_models["jepa"]["phys_vicreg"]["aggregate"]["test_distance_mae_mean_km"]), "#D85C5C"),
+        ("Cinemática", float(phys_models["kinematic"]["distance_mae_km"]), "#87989E"),
+    ]
+    phys_development = summary["aligned_public_benchmarks"]["ais_phys_development"]
+    dev_jepa = phys_development["models_and_baselines"]["jepa"]
+    regularizer_items = [
+        ("Phys + VICReg", float(dev_jepa["phys_vicreg"]["downstream_heads"]["aggregate"]["full_trajectory_validation_hybrid_mae_mean_km"]), "#18A999"),
+        ("Phys + none", float(dev_jepa["phys_none"]["downstream_heads"]["aggregate"]["full_trajectory_validation_hybrid_mae_mean_km"]), "#2F6BFF"),
+        ("Phys + VISReg", float(dev_jepa["phys_visreg"]["downstream_heads"]["aggregate"]["full_trajectory_validation_hybrid_mae_mean_km"]), "#7C5CFC"),
+        ("Phys + SIGReg", float(dev_jepa["phys_sigreg"]["downstream_heads"]["aggregate"]["full_trajectory_validation_hybrid_mae_mean_km"]), "#F2B134"),
+        ("Plain + VISReg", float(dev_jepa["plain_visreg"]["downstream_heads"]["aggregate"]["full_trajectory_validation_hybrid_mae_mean_km"]), "#D85C5C"),
+    ]
     for stem, title, items, note in (
         (
             "model_comparison",
@@ -343,6 +384,18 @@ def write_charts(summary: dict[str, Any], assets: Path) -> None:
         ),
         ("jepa_ablations", "Ablations fijas de Event-JEPA", ablation_items, "Mismo split congelado y tres seeds. Test no seleccionó variantes."),
         ("action_recovery", "Recuperación de acción sintética con VISReg", action_items, "Target sintético. No comparable con MAE real ni valor Kaleido."),
+        (
+            "phys_jepa_clean",
+            "Port-call state - MAE en km (menor es mejor)",
+            phys_items,
+            "Holdout futuro 8-14 febrero; 57 viajes. Core público claim_eligible; no Kaleido.",
+        ),
+        (
+            "phys_jepa_regularizers",
+            "Anticolapso Phys-JEPA - MAE híbrido en validación",
+            regularizer_items,
+            "Tres seeds; selección solo en desarrollo/validación. Ninguna variante colapsó.",
+        ),
     ):
         _chart_pdf(assets / f"{stem}.pdf", title, items, note)
         _chart_svg(assets / f"{stem}.svg", title, items, note)
@@ -375,10 +428,22 @@ def _values(summary: dict[str, Any]) -> dict[str, str]:
     ais_tests = ais["test_metrics"]
     ais_bootstrap = ais["selected_trip_bootstrap"]
     ais_gate = ais["promotion_gate"]
+    phys = aligned["ais_phys_jepa"]
+    phys_development = aligned["ais_phys_development"]
+    phys_models = phys["models_and_baselines"]
+    phys_jepa = phys_models["jepa"]["phys_vicreg"]
+    phys_product = phys["product_candidate"]
+    phys_downstream = phys_product["selected_downstream"]
+    phys_uncertainty = phys_product["paired_test_uncertainty"]
+    phys_ranks = [
+        float(row["embedding_diagnostics_test"]["effective_rank"])
+        for row in phys_jepa["results"]
+    ]
+    phys_dev_jepa = phys_development["models_and_baselines"]["jepa"]
     ocel_aligned = aligned["ocel_logistics"]
     return {
         "DATE": summary["generated_on"],
-        "TEST_COUNT": "58",
+        "TEST_COUNT": "70",
         "HASH": summary["dataset"]["sha256"],
         "HASH_SHORT": summary["dataset"]["sha256"][:12],
         "ROWS": f"{summary['dataset']['source_rows_scanned']:,}",
@@ -430,6 +495,44 @@ def _values(summary: dict[str, Any]) -> dict[str, str]:
         "AIS_MAE_2_6": f"{ais['by_lead_time']['2_6h']['mae']:.2f}",
         "AIS_MAE_6_12": f"{ais['by_lead_time']['6_12h']['mae']:.2f}",
         "AIS_NOLA_SHARE": f"{100 * ais['by_port']['new_orleans']['rows'] / ais['split']['counts']['test']['prefixes']:.1f}",
+        "WM_DATASET": str(phys["dataset_id"]).replace("_", r"\_"),
+        "WM_PREFIX_HASH": str(phys["prefix_cache_sha256"]),
+        "WM_PREFIX_HASH_SHORT": str(phys["prefix_cache_sha256"])[:12],
+        "WM_METRICS_HASH": str(phys["metrics_sha256"]),
+        "WM_METRICS_HASH_SHORT": str(phys["metrics_sha256"])[:12],
+        "WM_TRAIN_TRIPS": f"{phys['split_counts']['train']['trips']:,}",
+        "WM_VALIDATION_TRIPS": f"{phys['split_counts']['validation']['trips']:,}",
+        "WM_TEST_TRIPS": f"{phys['split_counts']['test']['trips']:,}",
+        "WM_TEST_SAMPLES": f"{phys['split_counts']['test']['samples']:,}",
+        "WM_KINEMATIC": f"{phys_models['kinematic']['distance_mae_km']:.3f}",
+        "WM_GBT": f"{phys_uncertainty['raw_mae_km']:.3f}",
+        "WM_GRU": f"{phys_models['supervised']['gru']['aggregate']['test_distance_mae_mean_km']:.3f}",
+        "WM_TRANSFORMER": f"{phys_models['supervised']['transformer']['aggregate']['test_distance_mae_mean_km']:.3f}",
+        "WM_DIRECT": f"{phys_jepa['aggregate']['test_distance_mae_mean_km']:.3f}",
+        "WM_HYBRID_MEAN": f"{phys_downstream['full_trajectory_test_hybrid_mae_mean_km']:.3f}",
+        "WM_HYBRID_SD": f"{phys_downstream['full_trajectory_test_hybrid_mae_std_km']:.3f}",
+        "WM_SEED_GAIN": f"{phys_downstream['full_trajectory_test_relative_improvement_percent']:.2f}",
+        "WM_ENSEMBLE": f"{phys_uncertainty['hybrid_mae_km']:.3f}",
+        "WM_GAIN": f"{phys_uncertainty['relative_improvement_percent']:.2f}",
+        "WM_CI_LOW": f"{phys_uncertainty['relative_improvement_ci95_percent'][0]:.2f}",
+        "WM_CI_HIGH": f"{phys_uncertainty['relative_improvement_ci95_percent'][1]:.2f}",
+        "WM_PROB": f"{phys_uncertainty['bootstrap_probability_improvement']:.4f}",
+        "WM_AUPRC_RAW": f"{phys_downstream['full_trajectory_test_raw_deviation_auprc_mean']:.3f}",
+        "WM_AUPRC_HYBRID": f"{phys_downstream['full_trajectory_test_hybrid_deviation_auprc_mean']:.3f}",
+        "WM_COVERAGE": f"{100 * phys['calibration_summary']['mean_test_coverage']:.2f}",
+        "WM_WIDTH": f"{phys['calibration_summary']['mean_interval_width_km']:.2f}",
+        "WM_RANK_LOW": f"{min(phys_ranks):.2f}",
+        "WM_RANK_HIGH": f"{max(phys_ranks):.2f}",
+        "WM_ETA_RAW": f"{phys_downstream['sparse_eta_test_raw_mae_mean_hours']:.3f}",
+        "WM_ETA_HYBRID": f"{phys_downstream['sparse_eta_test_hybrid_mae_mean_hours']:.3f}",
+        "WM_ETA_GAIN": f"{phys_downstream['sparse_eta_test_relative_improvement_percent']:.2f}",
+        "WM_DELAY_RAW": f"{phys_downstream['sparse_delay_test_raw_auprc_mean']:.3f}",
+        "WM_DELAY_HYBRID": f"{phys_downstream['sparse_delay_test_hybrid_auprc_mean']:.3f}",
+        "WM_DEV_VICREG": f"{phys_dev_jepa['phys_vicreg']['downstream_heads']['aggregate']['full_trajectory_validation_hybrid_mae_mean_km']:.3f}",
+        "WM_DEV_NONE": f"{phys_dev_jepa['phys_none']['downstream_heads']['aggregate']['full_trajectory_validation_hybrid_mae_mean_km']:.3f}",
+        "WM_DEV_VISREG": f"{phys_dev_jepa['phys_visreg']['downstream_heads']['aggregate']['full_trajectory_validation_hybrid_mae_mean_km']:.3f}",
+        "WM_DEV_SIGREG": f"{phys_dev_jepa['phys_sigreg']['downstream_heads']['aggregate']['full_trajectory_validation_hybrid_mae_mean_km']:.3f}",
+        "WM_DEV_PLAIN": f"{phys_dev_jepa['plain_visreg']['downstream_heads']['aggregate']['full_trajectory_validation_hybrid_mae_mean_km']:.3f}",
         "OCEL_ALIGNED_SELECTED": str(ocel_aligned["selected_model_validation_only"]).replace(
             "_", r"\_"
         ),
@@ -508,35 +611,35 @@ h1{font-size:clamp(34px,5.1vw,78px);line-height:.98;margin:.1em 0 .25em;letter-s
 .callout{border-left:5px solid var(--teal);padding:1.5% 2.2%;background:#fff;border-radius:0 12px 12px 0}.source{font-size:10px;color:#73868b}.notes{display:none}.notes-on .notes{display:block;position:absolute;left:3%;right:3%;bottom:5%;background:#06171ef2;color:#fff;padding:16px;border-radius:12px;font-size:13px;z-index:8}.nav{position:absolute;left:3%;bottom:2.4%;display:flex;gap:6px;z-index:10}.nav button{border:1px solid #ffffff44;background:#10272fdd;color:#fff;border-radius:8px;padding:7px 10px;cursor:pointer}.progress{position:absolute;left:0;bottom:0;height:4px;background:var(--teal);transition:width .3s;z-index:12}.overview .slide{opacity:1;transform:none;pointer-events:auto;position:relative;display:flex;width:25%;height:25%;float:left;padding:1.2%;border:1px solid #ccd8d4;overflow:hidden}.overview{display:block;overflow:auto;background:#dce5e2}.overview .slide *{font-size:8px!important}.overview .slide h1,.overview .slide h2{font-size:13px!important}.overview .nav,.overview .progress{display:none}
 .active .reveal{animation:rise .55s ease both}.active .reveal.d2{animation-delay:.12s}.active .reveal.d3{animation-delay:.24s}@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body><main class="deck" id="deck">
-<section class="slide cover active" data-number="1 / 14"><span class="watermark">SMOKE_ONLY · PUBLIC / SYNTHETIC</span><div class="eyebrow">MVP técnico ejecutado · [[DATE]]</div><h1>FlowTwin<br>Predictive Operations</h1><p class="lead">ETA probabilística para Shipping Board y Freight Intelligence; inteligencia de proceso para Trace Port y TWINPORTS.</p><div class="meta"><span>EVOCON Solutions · Álvaro Schwiedop Souto</span><span>Kaleido Tech</span></div><aside class="notes">Abrir con el resultado: 1,88 horas de MAE en 85 viajes AIS futuros. Aclarar inmediatamente que es evidencia pública, no precisión Kaleido.</aside></section>
+<section class="slide cover active" data-number="1 / 14"><span class="watermark">CLAIM_ELIGIBLE CORE · PUBLIC · NOT KALEIDO</span><div class="eyebrow">MVP técnico ejecutado · [[DATE]]</div><h1>FlowTwin<br>Port Call Deviation Twin</h1><p class="lead">GBT + Phys-JEPA para dinámica y desviación; ETA y proceso auditables dentro de los productos Kaleido.</p><div class="meta"><span>EVOCON Solutions · Álvaro Schwiedop Souto</span><span>Kaleido Tech</span></div><aside class="notes">Abrir con 2,635 a 2,326 km en 57 viajes futuros. Aclarar que el core público pasa y el gate completo/Kaleido sigue cerrado.</aside></section>
 
-<section class="slide" data-number="2 / 14"><div class="eyebrow">Encaje actualizado</div><h2>Kaleido ya tiene las superficies correctas</h2><div class="grid g2 reveal"><div class="card teal"><h3>Shipping Board + Freight Intelligence</h3><p>Visibilidad de escalas, posiciones, carga y excepciones. FlowTwin añade ETA probabilística, ventana y confianza.</p></div><div class="card blue"><h3>Trace Port + TWINPORTS</h3><p>Memoria de proyectos, eventos, turnos, activos y estado espacial. FlowTwin añade proceso, tiempo restante y escenarios auditables.</p></div></div><div class="banner reveal d2" style="margin-top:2.2%">No proponemos otra plataforma: proponemos <b>Predictive Operations</b> como capa read-only entre productos existentes.</div><p class="source">Fuentes oficiales Kaleido; datasets del benchmark: NOAA MarineCadastre AIS y OCEL 2.0 Logistics.</p><aside class="notes">El resultado AIS da una entrada inmediata por Shipping Board/Freight Intelligence; Trace Port necesita export propio.</aside></section>
+<section class="slide" data-number="2 / 14"><div class="eyebrow">Encaje actualizado</div><h2>Kaleido ya tiene las superficies correctas</h2><div class="grid g2 reveal"><div class="card teal"><h3>Shipping Board + Freight Intelligence</h3><p>Port Call Deviation Twin: trayectoria esperada, shortfall físico, excepción y ETA probabilística.</p></div><div class="card blue"><h3>Trace Port + TWINPORTS</h3><p>Memoria de proyectos, eventos, turnos, activos y espacio; consume la excepción y explica la consecuencia operativa.</p></div></div><div class="banner reveal d2" style="margin-top:2.2%">No proponemos otra plataforma: proponemos <b>Predictive Operations</b> como capa read-only entre productos existentes.</div><p class="source">Fuentes oficiales Kaleido; benchmarks: NOAA MarineCadastre AIS y OCEL 2.0 Logistics.</p><aside class="notes">La entrada inmediata es Shipping Board/Freight Intelligence; Trace Port requiere export propio.</aside></section>
 
-<section class="slide" data-number="3 / 14"><div class="eyebrow">Qué se ha construido</div><h2>Dos demostradores alineados y una línea de I+D</h2><div class="grid g4 reveal"><div class="card"><div class="metric teal">AIS ETA<small>geofence + ventanas</small></div></div><div class="card"><div class="metric">OCEL<small>objetos + proceso</small></div></div><div class="card"><div class="metric">JEPA<small>Event/T/Var + ablations</small></div></div><div class="card"><div class="metric red">M7<small>API + dashboard read-only</small></div></div></div><ul class="checks reveal d2"><li>Viajes y operaciones agrupados; ninguna trayectoria cruza particiones.</li><li>Modelos y gates elegidos en validación antes del test futuro.</li><li>[[TEST_COUNT]] tests, Ruff y mypy limpios en el último chequeo del paquete.</li><li class="warn">Todo sigue en <code>smoke_only</code>: datasets públicos/simulados, no export Kaleido.</li></ul><aside class="notes">La innovación útil es la combinación de física, eventos y aprendizaje con protocolo auditable.</aside></section>
+<section class="slide" data-number="3 / 14"><div class="eyebrow">Qué se ha construido</div><h2>Un producto candidato con gates separados</h2><div class="grid g4 reveal"><div class="card"><div class="metric teal">Phys-JEPA<small>estado + futuros 0,5/1/2 h</small></div></div><div class="card"><div class="metric">GBT<small>trayectoria + ETA floors</small></div></div><div class="card"><div class="metric">OCEL<small>objetos + proceso</small></div></div><div class="card"><div class="metric red">M7<small>API + dashboard read-only</small></div></div></div><ul class="checks reveal d2"><li>Viajes agrupados y holdout futuro prehasheado.</li><li>VISReg, SIGReg, VICReg y none probados con tres seeds.</li><li>[[TEST_COUNT]] tests, Ruff y mypy verificados.</li><li class="warn"><code>claim_eligible</code> solo para el core público; gate completo/Kaleido cerrado.</li></ul><aside class="notes">Los casos Warehouse y LaDe permanecen auditados como rechazado/invalidados.</aside></section>
 
-<section class="slide" data-number="4 / 14"><div class="eyebrow">Datos y protocolo</div><h2>Ejemplos cercanos a los servicios de Kaleido</h2><div class="grid g4 reveal"><div class="card"><div class="metric teal">[[AIS_SOURCE_FILES]]<small>días AIS NOAA</small></div></div><div class="card"><div class="metric">[[AIS_SOURCE_GB]] GB<small>trayectorias comprimidas</small></div></div><div class="card"><div class="metric">[[AIS_TEST_TRIPS]]<small>viajes de test futuro</small></div></div><div class="card"><div class="metric">[[OCEL_ALIGNED_OBJECTS]]<small>contenedores OCEL</small></div></div></div><div class="split reveal d2" style="margin-top:2%"><div class="card"><h3>Holdout AIS congelado</h3><p><b>[[AIS_TRAIN_TRIPS]]</b> train · <b>[[AIS_VALIDATION_TRIPS]]</b> validación · <b>[[AIS_TEST_TRIPS]]</b> test</p><p class="small muted">Test: 1–7 febrero de 2025. MMSI no es feature. Cada viaje queda entero en una partición.</p></div><div class="card gold"><h3>Límite del resultado</h3><p class="small">NOAA AIS cubre aguas de EE. UU.; OCEL Logistics es simulado. Demuestran capacidad para ETA y procesos, no precisión ni valor Kaleido.</p></div></div><aside class="notes">El antiguo log de almacén queda como resultado histórico negativo, no como demostrador principal.</aside></section>
+<section class="slide" data-number="4 / 14"><div class="eyebrow">Datos y protocolo</div><h2>Holdout posterior, congelado antes de abrir</h2><div class="grid g4 reveal"><div class="card"><div class="metric teal">45<small>días AIS NOAA totales</small></div></div><div class="card"><div class="metric">[[WM_TEST_TRIPS]]<small>viajes clean test</small></div></div><div class="card"><div class="metric">[[WM_TEST_SAMPLES]]<small>muestras multihorizonte</small></div></div><div class="card"><div class="metric">3<small>seeds 11/42/73</small></div></div></div><div class="split reveal d2" style="margin-top:2%"><div class="card"><h3>Split agrupado</h3><p><b>[[WM_TRAIN_TRIPS]]</b> train · <b>[[WM_VALIDATION_TRIPS]]</b> validación · <b>[[WM_TEST_TRIPS]]</b> test</p><p class="small muted">Test 8–14 febrero. Config/código/umbrales congelados; test no influyó.</p></div><div class="card gold"><h3>Frontera</h3><p class="small">Datos públicos EE. UU.; desviación física proxy de 10 km, no incidente Kaleido ni acción causal.</p></div></div><aside class="notes">Commit limpio cdae9b7; manifest y hashes antes de construir targets.</aside></section>
 
 <section class="slide" data-number="5 / 14"><div class="eyebrow">Process intelligence sin ML</div><h2>El sistema ya entrega valor descriptivo</h2><div class="grid g4 reveal"><div class="card"><div class="metric teal">[[PROCESS_EVENTS]]<small>eventos OCEL</small></div></div><div class="card"><div class="metric">[[PROCESS_OBJECTS]]<small>objetos</small></div></div><div class="card"><div class="metric">[[PROCESS_RELATIONS]]<small>relaciones evento-objeto</small></div></div><div class="card"><div class="metric">[[PROCESS_VARIANTS]]<small>variantes</small></div></div></div><div class="callout reveal d2" style="margin-top:2%"><b>Qué mostraría en Trace Port:</b> variantes reales, esperas, rework, cuellos de botella, conformance y calidad temporal, incluso si todavía no hay suficiente señal para un predictor.</div><aside class="notes">Esto responde a la falta de histórico: el primer entregable no depende de deep learning.</aside></section>
 
-<section class="slide" data-number="6 / 14"><div class="eyebrow">Resultado principal</div><h2>ETA AIS: 1,88 horas de error medio</h2><div class="split"><div><object class="chart reveal" data="assets/model_comparison.svg" type="image/svg+xml"></object></div><div class="reveal d2"><div class="card teal"><h3>Ganador · boosting ETA</h3><div class="metric teal">[[AIS_MAE]] h<small>MAE test · IC95 % [[AIS_CI_LOW]]–[[AIS_CI_HIGH]] h</small></div></div><div class="grid g2" style="margin-top:3%"><div class="card"><div class="metric">[[AIS_MEDIAN_AE]] h<small>error mediano</small></div></div><div class="card gold"><div class="metric">[[AIS_WITHIN_2]]%<small>dentro de ±2 h</small></div></div></div><p class="small muted">[[AIS_WITHIN_1]]% dentro de ±1 h · [[AIS_WITHIN_4]]% dentro de ±4 h · [[AIS_TEST_TRIPS]] viajes futuros.</p></div></div><div class="callout">Pasa 6/6 gates: mejora [[AIS_GAIN_KINEMATIC]]% a la ETA cinemática y [[AIS_GAIN_HISTORICAL]]% a la mediana puerto-distancia.</div><aside class="notes">Este sí es el número principal. Sigue siendo smoke_only y no debe llamarse precisión Kaleido.</aside></section>
+<section class="slide" data-number="6 / 14"><div class="eyebrow">Baseline complementario</div><h2>GBT conserva ETA: 1,88 horas de error medio</h2><div class="split"><div><object class="chart reveal" data="assets/model_comparison.svg" type="image/svg+xml"></object></div><div class="reveal d2"><div class="card teal"><h3>Boosting ETA</h3><div class="metric teal">[[AIS_MAE]] h<small>MAE test · IC95 % [[AIS_CI_LOW]]–[[AIS_CI_HIGH]] h</small></div></div><div class="grid g2" style="margin-top:3%"><div class="card"><div class="metric">[[AIS_MEDIAN_AE]] h<small>error mediano</small></div></div><div class="card gold"><div class="metric">[[AIS_WITHIN_2]]%<small>dentro de ±2 h</small></div></div></div><p class="small muted">Benchmark 1–7 febrero, [[AIS_TEST_TRIPS]] viajes; estado <code>smoke_only</code>.</p></div></div><div class="callout">JEPA no sustituye esta salida: el probe escaso no supera su gate del 1%.</div><aside class="notes">ETA sigue siendo GBT. El resultado Phys-JEPA es de trayectoria/desviación.</aside></section>
 
 <section class="slide" data-number="7 / 14"><div class="eyebrow">Horizonte, incertidumbre y límites</div><h2>Funciona como demo; aún debe aprender a abstenerse</h2><div class="grid g3 reveal"><div class="card teal"><div class="metric teal">[[AIS_MAE_2_6]] h<small>MAE con 2–6 h de anticipación</small></div></div><div class="card"><div class="metric">[[AIS_MAE_6_12]] h<small>MAE con 6–12 h</small></div></div><div class="card gold"><div class="metric">[[AIS_P90_COVERAGE]]%<small>cobertura P90</small></div></div></div><div class="grid g2 reveal d2" style="margin-top:2%"><div class="card"><h3>Incertidumbre visible</h3><p>La cobertura supera el 90 %, pero el intervalo tiene [[AIS_P90_WIDTH]] h de anchura media. Hace falta calibración por puerto y abstención.</p></div><div class="card red"><h3>Generalización limitada</h3><p>[[AIS_NOLA_SHARE]]% de los prefijos de test son Nueva Orleans; Houston y Los Ángeles tienen menos viajes. EE. UU. no sustituye Vigo ni datos Kaleido.</p></div></div><aside class="notes">No ocultar la anchura. El punto es bueno para un demostrador; el intervalo aún no es de piloto.</aside></section>
 
-<section class="slide" data-number="8 / 14"><div class="eyebrow">I+D JEPA</div><h2>Qué aporta realmente el objetivo latente</h2><div class="split"><object class="chart reveal" data="assets/jepa_ablations.svg" type="image/svg+xml"></object><ul class="checks reveal d2"><li>JEPA mejora al encoder aleatorio: [[JEPA_MAE]] vs [[RANDOM_MAE]] min.</li><li>SIGReg es crítico: sin él, MAE [[NO_SIGREG_MAE]] y colapso.</li><li class="fail">Multi-horizonte no gana: completion-only [[ONE_HORIZON_MAE]] min.</li><li class="warn">Pares correctos vs barajados: solo 0,40 min de media y no gana en cada seed.</li></ul></div><div class="callout">Decisión: representación interesante y estable; todavía no evidencia robusta de dinámica temporal multihorizonte.</div><aside class="notes">Esta slide es la más importante para explicar investigación honesta: cada componente se intenta falsar.</aside></section>
+<section class="slide" data-number="8 / 14"><div class="eyebrow">Anticolapso y selección</div><h2>VISReg, SIGReg, VICReg y none: 0 colapsos</h2><div class="split"><object class="chart reveal" data="assets/phys_jepa_regularizers.svg" type="image/svg+xml"></object><ul class="checks reveal d2"><li>VICReg gana validación: [[WM_DEV_VICREG]] km.</li><li>None [[WM_DEV_NONE]] · VISReg [[WM_DEV_VISREG]] · SIGReg [[WM_DEV_SIGREG]].</li><li>Plain JEPA + VISReg: [[WM_DEV_PLAIN]] km.</li><li class="warn">La física residual aporta más que la diferencia entre regularizadores.</li></ul></div><div class="callout">VICReg se congela por validación; ninguna elección usa el test limpio.</div><aside class="notes">El antiguo Warehouse mostró colapso sin SIGReg; aquí no. No universalizar el ganador.</aside></section>
 
-<section class="slide" data-number="9 / 15"><div class="eyebrow">SOTA aplicado al log</div><h2>T-JEPA mejora la representación; el híbrido no gana</h2><div class="grid g2 reveal"><div class="card blue"><h3>Temporal T-JEPA</h3><div class="metric">[[TJEPA_MAE]] ± [[TJEPA_SD]]<small>futuro disjunto + teacher EMA + VISReg</small></div><p class="small">Mejora al Event-JEPA y gana al futuro barajado en 3/3 seeds, pero no a raw boosting.</p></div><div class="card gold"><h3>Var-Event-JEPA</h3><div class="metric">[[VAR_JEPA_MAE]] ± [[VAR_JEPA_SD]]<small>ELBO temporal · Spearman incertidumbre/error [[VAR_SPEARMAN]]</small></div><p class="small">La incertidumbre falla en dos seeds y no está calibrada en minutos.</p></div></div><div class="callout reveal d2" style="margin-top:2%"><b>Gate híbrido:</b> raw + Var-JEPA obtiene [[HYBRID_MAE]] ± [[HYBRID_SD]], frente a [[RAW3_MAE]] ± [[RAW3_SD]] de raw. Validación selecciona raw; no se promociona JEPA.</div><aside class="notes">Son adaptaciones temporales CPU-budgeted, no reproducciones exactas de T-JEPA o Var-T-JEPA.</aside></section>
+<section class="slide" data-number="9 / 15"><div class="eyebrow">Resultado limpio</div><h2>GBT + Phys-JEPA mejora la dinámica portuaria</h2><div class="split"><object class="chart reveal" data="assets/phys_jepa_clean.svg" type="image/svg+xml"></object><div class="reveal d2"><div class="card teal"><h3>Ensemble de tres modelos</h3><div class="metric teal">[[WM_ENSEMBLE]] km<small>vs GBT [[WM_GBT]] · mejora [[WM_GAIN]]%</small></div></div><div class="card blue" style="margin-top:3%"><h3>Incertidumbre emparejada</h3><p class="small">IC95% mejora [[WM_CI_LOW]]%–[[WM_CI_HIGH]]%; P(mejora) [[WM_PROB]]; 57 viajes.</p></div><p class="small muted">Media individual [[WM_HYBRID_MEAN]] ± [[WM_HYBRID_SD]] km; gana 3/3 seeds.</p></div></div><aside class="notes">Distinguir media de seeds (estabilidad) de ensemble (candidato servido).</aside></section>
 
-<section class="slide" data-number="9 / 14"><div class="eyebrow">World model condicionado por acción</div><h2>VISReg recupera la señal inyectada, no valida causalidad</h2><div class="split"><object class="chart reveal" data="assets/action_recovery.svg" type="image/svg+xml"></object><div class="reveal d2"><div class="card teal"><h3>Correcta frente a barajada</h3><div class="metric teal">−[[ACTION_GAIN]] min<small>[[ACTION_CORRECT]] ± [[ACTION_CORRECT_SD]] vs [[ACTION_SHUFFLED]] · gana en 3/3 seeds</small></div></div><div class="card red" style="margin-top:3%"><h3>Gate de world model: cerrado</h3><p class="small">Rango efectivo sube a [[ACTION_RANK_LOW]]–[[ACTION_RANK_HIGH]], pero la escala media sigue en [[ACTION_SCALE_LOW]]–[[ACTION_SCALE_HIGH]], bajo el umbral. Acciones y efectos son sintéticos.</p></div></div></div><aside class="notes">Se puede decir recuperación de señal inyectada. No decir causalidad, ahorro ni acción recomendada real.</aside></section>
+<section class="slide" data-number="9 / 14"><div class="eyebrow">Gates independientes</div><h2>El core pasa; el producto completo no</h2><div class="grid g2 reveal"><div class="card teal"><h3>Core físico · conservar shadow</h3><ul class="checks"><li>AUPRC [[WM_AUPRC_RAW]] → [[WM_AUPRC_HYBRID]];</li><li>rango efectivo [[WM_RANK_LOW]]–[[WM_RANK_HIGH]];</li><li>cobertura 90%: [[WM_COVERAGE]]%;</li><li>mejora de trayectoria en 3/3 seeds.</li></ul></div><div class="card red"><h3>Heads escasos · rechazar</h3><ul class="checks"><li class="fail">ETA [[WM_ETA_RAW]] → [[WM_ETA_HYBRID]] h: [[WM_ETA_GAIN]]%;</li><li class="fail">delay AUPRC [[WM_DELAY_RAW]] → [[WM_DELAY_HYBRID]];</li><li class="warn">banda media [[WM_WIDTH]] km;</li><li class="warn">sin acciones/causalidad.</li></ul></div></div><div class="banner reveal d2" style="margin-top:2%">Decisión: GBT + Phys-JEPA para trayectoria/desviación; GBT-only para ETA; delay fuera.</div><aside class="notes">Claim eligible solo para el core público. Promotion.clean_public_test y Kaleido siguen false.</aside></section>
 
-<section class="slide" data-number="10 / 14"><div class="eyebrow">Decisiones basadas en evidencia</div><h2>Qué entra en la demo y qué permanece en I+D</h2><div class="grid g2 reveal"><div class="card teal"><h3>Demostrar ahora</h3><ul class="checks"><li>ETA AIS + ventana ±2 h;</li><li>auditoría y process mining OCEL;</li><li>intervalos, razones y abstención;</li><li>replay read-only y API.</li></ul></div><div class="card gold"><h3>Investigar con gates</h3><ul class="checks"><li>Temporal T-JEPA y Var-JEPA;</li><li>incertidumbre por puerto mejor calibrada;</li><li>acciones reales correct-vs-shuffled;</li><li>object graph sobre relaciones Kaleido.</li></ul></div></div><div class="banner reveal d2" style="margin-top:2%">El producto público enseña ETA; JEPA sigue shadow hasta ganar valor incremental en el dataset adecuado.</div><aside class="notes">No servir el predictor de 734 minutos. Se conserva solo como negativo histórico.</aside></section>
+<section class="slide" data-number="10 / 14"><div class="eyebrow">Decisiones basadas en evidencia</div><h2>Qué entra en la demo y qué queda fuera</h2><div class="grid g2 reveal"><div class="card teal"><h3>Demostrar ahora</h3><ul class="checks"><li>Port Call Deviation Twin shadow;</li><li>ETA GBT + intervalos;</li><li>process mining OCEL;</li><li>audit trail/API read-only.</li></ul></div><div class="card gold"><h3>No promocionar</h3><ul class="checks"><li>head de delay Phys-JEPA;</li><li>acción causal sin acciones reales;</li><li>Warehouse ~734 min y LaDe;</li><li>precisión/ROI Kaleido.</li></ul></div></div><div class="banner reveal d2" style="margin-top:2%">JEPA ya gana un core específico; no recibe permiso para ganar por arrastre.</div><aside class="notes">LaDe v1 desalineado y v2 con oracle; se conservan en el ledger.</aside></section>
 
-<section class="slide" data-number="11 / 14"><div class="eyebrow">Arquitectura de integración</div><h2>Una capa predictiva dentro del ecosistema Kaleido</h2><div class="pipeline reveal"><div class="pipe">AIS + Shipping Board<br>posición/escala</div><div class="pipe">Trace Port<br>eventos/turnos</div><div class="pipe">TWINPORTS<br>activos/espacio</div><div class="pipe">Contrato temporal<br>planes versionados</div><div class="pipe">ETA + proceso<br>JEPA shadow</div><div class="pipe">P50/P90<br>API read-only</div></div><div class="grid g3 reveal d2" style="margin-top:3%"><div class="card"><h3>Cutoff visible</h3><p class="small muted">Qué posiciones y eventos conocía.</p></div><div class="card"><h3>Plan visible</h3><p class="small muted">Qué revisión estaba vigente.</p></div><div class="card"><h3>Humano decide</h3><p class="small muted">Sin escritura ni control automático.</p></div></div><aside class="notes">La primera entrada comercial puede ser Shipping Board/Freight Intelligence; Trace Port requiere su export.</aside></section>
+<section class="slide" data-number="11 / 14"><div class="eyebrow">Arquitectura de integración</div><h2>Una capa predictiva dentro del ecosistema Kaleido</h2><div class="pipeline reveal"><div class="pipe">AIS + Shipping Board<br>posición/escala</div><div class="pipe">Física conocida<br>curso constante</div><div class="pipe">Phys-JEPA<br>estado/futuros</div><div class="pipe">GBT<br>trayectoria + ETA</div><div class="pipe">Trace Port/OCEL<br>consecuencia</div><div class="pipe">Conformal<br>API read-only</div></div><div class="grid g3 reveal d2" style="margin-top:3%"><div class="card"><h3>Cutoff visible</h3><p class="small muted">Qué posiciones y eventos conocía.</p></div><div class="card"><h3>Gate visible</h3><p class="small muted">Qué salida está aprobada o rechazada.</p></div><div class="card"><h3>Humano decide</h3><p class="small muted">Sin escritura ni control automático.</p></div></div><aside class="notes">Trace Port recibe una excepción, no una orden.</aside></section>
 
 <section class="slide" data-number="12 / 14"><div class="eyebrow">Producto demostrable</div><h2>Dashboard read-only: explorar, auditar y exportar</h2><div class="grid g3 reveal"><div class="card blue"><h3>Operación viva</h3><p>Búsqueda/filtros, timeline, P50/P90, objetos, cutoff y revisión de plan.</p></div><div class="card teal"><h3>Evidencia</h3><p>Escalera de modelos, interpretación del MAE, model card y export JSON/CSV.</p></div><div class="card gold"><h3>Escenarios</h3><p>Solo acciones aprobadas, ranking sintético y etiqueta de no ahorro realizado.</p></div></div><div class="callout reveal d2" style="margin-top:2.5%"><b>Formato:</b> web local para reunión, tab integrable para piloto, API versionada y audit trail copiable; ninguna escritura a sistemas fuente.</div><aside class="notes">Abrir la demo tras esta slide. Mostrar filtros, auditoría, evidencia, export y escenario sin afirmar que son datos Kaleido.</aside></section>
 
 <section class="slide" data-number="13 / 14"><div class="eyebrow">Piloto con Kaleido</div><h2>Cuatro gates, una petición pequeña</h2><div class="timeline reveal"><div class="phase"><h3>1 · Contrato</h3><p class="small">Esquema + 3–5 operaciones para validar semántica.</p></div><div class="phase"><h3>2 · Evidencia</h3><p class="small">Histórico completo, planes y revisiones, outcomes.</p></div><div class="phase"><h3>3 · Shadow</h3><p class="small">4–8 semanas, falsas alertas, lead time y operador.</p></div><div class="phase"><h3>4 · Producto</h3><p class="small">Integración, buyer, coste real y packaging.</p></div></div><div class="banner reveal d2" style="margin-top:2.6%">Siguiente paso: sesión de 90 minutos sobre una operación repetible + export read-only pseudonimizado.</div><aside class="notes">Cerrar con fecha, propietario técnico, propietario operativo y export. No con un debate de arquitectura.</aside></section>
 
-<section class="slide cover" data-number="14 / 14"><span class="watermark">EVIDENCE FIRST</span><div class="eyebrow">La propuesta</div><h1>Shipping Board anticipa.<br>Trace Port explica.<br>FlowTwin conecta.</h1><p class="lead">Empezar con ETA que pasa gates. Añadir procesos y planes Kaleido. Mantener JEPA como I+D que debe ganar.</p><div class="meta"><span>EVOCON Solutions</span><span>¿Acordamos operación, responsables y muestra?</span></div><aside class="notes">Pausa. Pedir el siguiente paso concreto.</aside></section>
+<section class="slide cover" data-number="14 / 14"><span class="watermark">EVIDENCE FIRST</span><div class="eyebrow">La propuesta</div><h1>Shipping Board anticipa.<br>Trace Port explica.<br>FlowTwin conecta.</h1><p class="lead">Un core Phys-JEPA que ya mejora en público. Un gate completo que aún exige datos Kaleido.</p><div class="meta"><span>EVOCON Solutions</span><span>¿Acordamos operación, responsables y muestra?</span></div><aside class="notes">Pausa. Pedir el siguiente paso concreto.</aside></section>
 
 <div class="nav"><button id="prev" aria-label="Anterior">←</button><button id="next" aria-label="Siguiente">→</button><button id="notes" aria-label="Notas">N</button><button id="overview" aria-label="Vista general">O</button><button id="full" aria-label="Pantalla completa">F</button></div><div class="progress" id="progress"></div>
 </main><script>
@@ -566,24 +669,24 @@ def write_presentation_tex(path: Path, summary: dict[str, Any]) -> None:
 \definecolor{Ink}{HTML}{10272F}\definecolor{Teal}{HTML}{18A999}\definecolor{Blue}{HTML}{2F6BFF}\definecolor{Gold}{HTML}{F2B134}\definecolor{Red}{HTML}{D85C5C}\definecolor{Paper}{HTML}{F5F7F5}\definecolor{Muted}{HTML}{61747B}
 \setbeamercolor{normal text}{fg=Ink,bg=Paper}\setbeamercolor{frametitle}{fg=Ink}\setbeamercolor{structure}{fg=Teal}\setbeamertemplate{navigation symbols}{}\setbeamertemplate{footline}{\hfill\color{Muted}\insertframenumber/\inserttotalframenumber\hspace{5mm}\vspace{3mm}}
 \setbeamertemplate{itemize item}{\color{Teal}$\blacktriangleright$}\graphicspath{{assets/}}
-\newcommand{\claim}{\colorbox{Gold!22}{\textcolor{Ink}{\scriptsize\bfseries SMOKE\_ONLY -- PUBLIC / SYNTHETIC}}}
+\newcommand{\claim}{\colorbox{Gold!22}{\textcolor{Ink}{\scriptsize\bfseries CLAIM\_ELIGIBLE CORE -- PUBLIC -- NOT KALEIDO}}}
 \newcommand{\bigmetric}[2]{\begin{center}{\color{Blue}\fontsize{25}{27}\selectfont\bfseries #1}\\[-1mm]{\scriptsize\color{Muted}#2}\end{center}}
 \begin{document}
-\begin{frame}[plain]\color{white}\begin{tikzpicture}[remember picture,overlay]\fill[Ink](current page.south west)rectangle(current page.north east);\fill[Teal!35](12.5,7)circle(2.2);\end{tikzpicture}\vspace{5mm}{\color{Teal!55}\bfseries MVP TÉCNICO EJECUTADO -- [[DATE]]}\vspace{5mm}\par{\fontsize{31}{32}\selectfont\bfseries FlowTwin\\Predictive Operations}\vspace{4mm}\par{\large ETA probabilística para Shipping Board/Freight Intelligence e inteligencia de proceso para Trace Port/TWINPORTS.}\vfill\claim\hfill EVOCON Solutions\end{frame}
-\begin{frame}{Encaje en los productos Kaleido}\begin{columns}[T]\column{.49\textwidth}\begin{block}{Shipping Board + Freight Intelligence}Escalas, posiciones, carga y excepciones. FlowTwin añade ETA probabilística, ventana y confianza.\end{block}\column{.49\textwidth}\begin{block}{Trace Port + TWINPORTS}Eventos, turnos, activos y espacio. FlowTwin añade proceso, tiempo restante y escenarios auditables.\end{block}\end{columns}\vfill\begin{alertblock}{Encaje}Capa \textbf{Predictive Operations} read-only; no otra plataforma logística.\end{alertblock}\end{frame}
-\begin{frame}{Dos demostradores y una línea de I+D}\begin{columns}\column{.24\textwidth}\bigmetric{AIS ETA}{geofence + ventanas}\column{.24\textwidth}\bigmetric{OCEL}{objetos + proceso}\column{.24\textwidth}\bigmetric{JEPA}{Event/T/Var}\column{.24\textwidth}\bigmetric{M7}{API + dashboard}\end{columns}\vspace{3mm}\begin{itemize}\item viajes y operaciones agrupados;\item modelos y gates elegidos antes del test futuro;\item [[TEST_COUNT]] tests, Ruff y mypy verificados;\item todo permanece en \texttt{smoke\_only}: no hay export Kaleido.\end{itemize}\end{frame}
-\begin{frame}{Datos y protocolo alineados}\begin{columns}\column{.25\textwidth}\bigmetric{[[AIS_SOURCE_FILES]]}{días AIS NOAA}\column{.25\textwidth}\bigmetric{[[AIS_SOURCE_GB]] GB}{comprimidos}\column{.25\textwidth}\bigmetric{[[AIS_TEST_TRIPS]]}{viajes test}\column{.25\textwidth}\bigmetric{[[OCEL_ALIGNED_OBJECTS]]}{contenedores OCEL}\end{columns}\vspace{3mm}\begin{block}{Holdout AIS congelado}[[AIS_TRAIN_TRIPS]] train / [[AIS_VALIDATION_TRIPS]] validación / [[AIS_TEST_TRIPS]] test. Test futuro: 1--7 febrero 2025. MMSI excluido de features.\end{block}\begin{alertblock}{Límite}AIS de EE. UU. y OCEL simulado demuestran capacidad, no precisión ni valor Kaleido.\end{alertblock}\end{frame}
+\begin{frame}[plain]\color{white}\begin{tikzpicture}[remember picture,overlay]\fill[Ink](current page.south west)rectangle(current page.north east);\fill[Teal!35](12.5,7)circle(2.2);\end{tikzpicture}\vspace{5mm}{\color{Teal!55}\bfseries MVP TÉCNICO EJECUTADO -- [[DATE]]}\vspace{5mm}\par{\fontsize{31}{32}\selectfont\bfseries FlowTwin\\Port Call Deviation Twin}\vspace{4mm}\par{\large GBT + Phys-JEPA para dinámica y desviación; ETA y proceso auditables.}\vfill\claim\hfill EVOCON Solutions\end{frame}
+\begin{frame}{Encaje en los productos Kaleido}\begin{columns}[T]\column{.49\textwidth}\begin{block}{Shipping Board + Freight Intelligence}Trayectoria esperada, shortfall físico, excepción y ETA probabilística.\end{block}\column{.49\textwidth}\begin{block}{Trace Port + TWINPORTS}Eventos, activos y espacio para explicar la consecuencia operativa.\end{block}\end{columns}\vfill\begin{alertblock}{Encaje}Capa \textbf{Predictive Operations} read-only; no otra plataforma logística.\end{alertblock}\end{frame}
+\begin{frame}{Producto candidato y gates separados}\begin{columns}\column{.24\textwidth}\bigmetric{Phys-JEPA}{estado + futuros}\column{.24\textwidth}\bigmetric{GBT}{trayectoria + ETA}\column{.24\textwidth}\bigmetric{OCEL}{objetos + proceso}\column{.24\textwidth}\bigmetric{M7}{API + dashboard}\end{columns}\vspace{3mm}\begin{itemize}\item test futuro prehasheado y viajes agrupados;\item VISReg, SIGReg, VICReg y none con tres seeds;\item [[TEST_COUNT]] tests, Ruff y mypy;\item core público \texttt{claim\_eligible}; gate completo/Kaleido cerrado.\end{itemize}\end{frame}
+\begin{frame}{Holdout posterior y congelado}\begin{columns}\column{.25\textwidth}\bigmetric{45}{días AIS NOAA}\column{.25\textwidth}\bigmetric{[[WM_TEST_TRIPS]]}{viajes clean test}\column{.25\textwidth}\bigmetric{[[WM_TEST_SAMPLES]]}{muestras}\column{.25\textwidth}\bigmetric{3}{seeds}\end{columns}\vspace{3mm}\begin{block}{Split agrupado}[[WM_TRAIN_TRIPS]] train / [[WM_VALIDATION_TRIPS]] validación / [[WM_TEST_TRIPS]] test. Test: 8--14 febrero. Código/config/umbrales congelados; test no influyó.\end{block}\begin{alertblock}{Límite}Desviación física proxy de 10 km; no incidente ni acción causal Kaleido.\end{alertblock}\end{frame}
 \begin{frame}{Process intelligence sin entrenamiento}\begin{columns}\column{.25\textwidth}\bigmetric{[[PROCESS_EVENTS]]}{eventos OCEL}\column{.25\textwidth}\bigmetric{[[PROCESS_OBJECTS]]}{objetos}\column{.25\textwidth}\bigmetric{[[PROCESS_RELATIONS]]}{relaciones}\column{.25\textwidth}\bigmetric{[[PROCESS_VARIANTS]]}{variantes}\end{columns}\vfill\begin{block}{Valor inmediato}Variantes, esperas, rework, bottlenecks, conformance y calidad temporal funcionan incluso cuando el histórico no permite un predictor.\end{block}\end{frame}
-\begin{frame}{ETA AIS: 1,88 horas de error medio}\begin{columns}\column{.58\textwidth}\includegraphics[width=\linewidth]{model_comparison.pdf}\column{.40\textwidth}\begin{block}{Boosting ETA}\bigmetric{[[AIS_MAE]] h}{IC95\% [[AIS_CI_LOW]]--[[AIS_CI_HIGH]] h}\end{block}\begin{block}{Ventana demostrable}\bigmetric{[[AIS_WITHIN_2]]\%}{dentro de $\pm$2 h}\end{block}\end{columns}\vfill\begin{alertblock}{6/6 gates aprobados}[[AIS_GAIN_KINEMATIC]]\% mejor que ETA cinemática; [[AIS_GAIN_HISTORICAL]]\% mejor que mediana puerto-distancia; [[AIS_TEST_TRIPS]] viajes futuros.\end{alertblock}\end{frame}
+\begin{frame}{Baseline ETA: GBT conserva la salida}\begin{columns}\column{.58\textwidth}\includegraphics[width=\linewidth]{model_comparison.pdf}\column{.40\textwidth}\begin{block}{Boosting ETA}\bigmetric{[[AIS_MAE]] h}{IC95\% [[AIS_CI_LOW]]--[[AIS_CI_HIGH]] h}\end{block}\begin{block}{Ventana demostrable}\bigmetric{[[AIS_WITHIN_2]]\%}{dentro de $\pm$2 h}\end{block}\end{columns}\vfill\begin{alertblock}{Frontera}El probe Phys-JEPA escaso no supera el gate del 1\%; ETA permanece GBT-only.\end{alertblock}\end{frame}
 \begin{frame}{Horizonte, incertidumbre y límites}\begin{columns}\column{.33\textwidth}\bigmetric{[[AIS_MAE_2_6]] h}{MAE a 2--6 h}\column{.33\textwidth}\bigmetric{[[AIS_MAE_6_12]] h}{MAE a 6--12 h}\column{.33\textwidth}\bigmetric{[[AIS_P90_COVERAGE]]\%}{cobertura P90}\end{columns}\vfill\begin{alertblock}{Lo que falta}P90 ancho [[AIS_P90_WIDTH]] h y [[AIS_NOLA_SHARE]]\% de prefijos test en Nueva Orleans. Hace falta calibración por puerto y datos Kaleido/Vigo.\end{alertblock}\end{frame}
-\begin{frame}{Ablations: qué aporta JEPA}\begin{columns}\column{.60\textwidth}\includegraphics[width=\linewidth]{jepa_ablations.pdf}\column{.38\textwidth}\begin{itemize}\item mejora al encoder aleatorio;\item SIGReg evita colapso;\item completion-only gana marginalmente;\item pares temporales correctos no ganan de forma robusta.\end{itemize}\end{columns}\vfill\claim\end{frame}
-\begin{frame}{T-JEPA mejora; Var-JEPA no añade valor incremental}\begin{columns}[T]\column{.49\textwidth}\begin{block}{Temporal T-JEPA}\bigmetric{[[TJEPA_MAE]] $\pm$ [[TJEPA_SD]]}{futuro disjunto + EMA + VISReg}\small Mejora al Event-JEPA y gana al futuro barajado en 3/3 seeds, pero no a raw.\end{block}\column{.49\textwidth}\begin{block}{Var-Event-JEPA}\bigmetric{[[VAR_JEPA_MAE]] $\pm$ [[VAR_JEPA_SD]]}{Spearman incertidumbre/error [[VAR_SPEARMAN]]}\small La incertidumbre falla en dos seeds y no está calibrada en minutos.\end{block}\end{columns}\vfill\begin{alertblock}{Gate híbrido cerrado}Raw + Var-JEPA: [[HYBRID_MAE]] $\pm$ [[HYBRID_SD]] frente a [[RAW3_MAE]] $\pm$ [[RAW3_SD]] de raw.\end{alertblock}\end{frame}
-\begin{frame}{World model sintético: señal recuperada, modelo no promovido}\begin{columns}\column{.60\textwidth}\includegraphics[width=\linewidth]{action_recovery.pdf}\column{.38\textwidth}\bigmetric{--[[ACTION_GAIN]] min}{correcta frente a barajada; gana 3/3 seeds}\small Rango efectivo [[ACTION_RANK_LOW]]--[[ACTION_RANK_HIGH]], pero escala [[ACTION_SCALE_LOW]]--[[ACTION_SCALE_HIGH]] bajo el umbral. Acciones y efectos generados.\end{columns}\vfill\begin{alertblock}{Límite del resultado}Recuperación de señal inyectada; no causalidad, ahorro ni acción Kaleido.\end{alertblock}\end{frame}
-\begin{frame}{Decisión de producto}\begin{columns}[T]\column{.49\textwidth}\begin{block}{Demostrar ahora}\begin{itemize}\item ETA AIS + ventana $\pm$2 h;\item auditoría y process mining OCEL;\item explicación, intervalo y abstención;\item replay/API read-only.\end{itemize}\end{block}\column{.49\textwidth}\begin{block}{I+D con gates}\begin{itemize}\item Temporal T-JEPA y Var-JEPA;\item calibración por puerto;\item acciones reales correct-vs-shuffled;\item object graph sobre datos Kaleido.\end{itemize}\end{block}\end{columns}\vfill El predictor de 734 minutos queda como negativo histórico, no como demostrador.\end{frame}
-\begin{frame}{Arquitectura complementaria}\centering\begin{tikzpicture}[node distance=2.2mm,box/.style={draw,rounded corners,fill=white,minimum width=1.75cm,minimum height=1.05cm,align=center,font=\tiny},arr/.style={->,thick,Teal}]\node[box](ais){AIS/Shipping\\posición/escala};\node[box,right=of ais](tp){Trace Port\\eventos/turnos};\node[box,right=of tp](tw){TWINPORTS\\activos/espacio};\node[box,right=of tw](ct){contrato temporal\\planes versionados};\node[box,right=of ct](ml){ETA + proceso\\JEPA shadow};\node[box,right=of ml](ui){P50/P90\\API read-only};\draw[arr](ais)--(tp);\draw[arr](tp)--(tw);\draw[arr](tw)--(ct);\draw[arr](ct)--(ml);\draw[arr](ml)--(ui);\end{tikzpicture}\vfill Cutoff visible · revisión de plan visible · humano decide.\end{frame}
+\begin{frame}{VISReg, SIGReg, VICReg y none: 0 colapsos}\begin{columns}\column{.60\textwidth}\includegraphics[width=\linewidth]{phys_jepa_regularizers.pdf}\column{.38\textwidth}\begin{itemize}\item VICReg [[WM_DEV_VICREG]] km;\item none [[WM_DEV_NONE]];\item VISReg [[WM_DEV_VISREG]];\item SIGReg [[WM_DEV_SIGREG]];\item plain+VISReg [[WM_DEV_PLAIN]].\end{itemize}\end{columns}\vfill La física residual aporta más que la diferencia entre regularizadores.\end{frame}
+\begin{frame}{GBT + Phys-JEPA mejora el clean test}\begin{columns}\column{.60\textwidth}\includegraphics[width=\linewidth]{phys_jepa_clean.pdf}\column{.38\textwidth}\begin{block}{Ensemble}\bigmetric{[[WM_ENSEMBLE]] km}{GBT [[WM_GBT]]; mejora [[WM_GAIN]]\%}\end{block}\small IC95\% [[WM_CI_LOW]]--[[WM_CI_HIGH]]\%; P(mejora) [[WM_PROB]]. Media individual [[WM_HYBRID_MEAN]] $\pm$ [[WM_HYBRID_SD]]; gana 3/3 seeds.\end{columns}\vfill\claim\end{frame}
+\begin{frame}{El core pasa; el producto completo no}\begin{columns}[T]\column{.49\textwidth}\begin{block}{Core físico}\begin{itemize}\item AUPRC [[WM_AUPRC_RAW]] a [[WM_AUPRC_HYBRID]];\item rango [[WM_RANK_LOW]]--[[WM_RANK_HIGH]];\item cobertura [[WM_COVERAGE]]\%;\item trayectoria gana 3/3 seeds.\end{itemize}\end{block}\column{.49\textwidth}\begin{alertblock}{Heads rechazados}\begin{itemize}\item ETA: [[WM_ETA_GAIN]]\%, bajo 1\%;\item delay: [[WM_DELAY_RAW]] a [[WM_DELAY_HYBRID]];\item ancho [[WM_WIDTH]] km;\item sin acción causal.\end{itemize}\end{alertblock}\end{columns}\vfill GBT + Phys-JEPA para trayectoria/desviación; GBT-only para ETA.\end{frame}
+\begin{frame}{Decisión de producto}\begin{columns}[T]\column{.49\textwidth}\begin{block}{Demostrar ahora}\begin{itemize}\item Port Call Deviation Twin shadow;\item ETA GBT + intervalos;\item process mining OCEL;\item audit trail/API read-only.\end{itemize}\end{block}\column{.49\textwidth}\begin{block}{No promocionar}\begin{itemize}\item head de delay;\item causalidad sin acciones;\item Warehouse y LaDe;\item precisión/ROI Kaleido.\end{itemize}\end{block}\end{columns}\vfill JEPA gana un core específico, no permiso por arrastre.\end{frame}
+\begin{frame}{Arquitectura complementaria}\centering\begin{tikzpicture}[node distance=2.2mm,box/.style={draw,rounded corners,fill=white,minimum width=1.75cm,minimum height=1.05cm,align=center,font=\tiny},arr/.style={->,thick,Teal}]\node[box](ais){AIS/Shipping\\posición/escala};\node[box,right=of ais](phy){física\\curso constante};\node[box,right=of phy](jepa){Phys-JEPA\\estado/futuros};\node[box,right=of jepa](gbt){GBT\\trayectoria/ETA};\node[box,right=of gbt](tp){Trace Port/OCEL\\consecuencia};\node[box,right=of tp](ui){conformal\\API read-only};\draw[arr](ais)--(phy);\draw[arr](phy)--(jepa);\draw[arr](jepa)--(gbt);\draw[arr](gbt)--(tp);\draw[arr](tp)--(ui);\end{tikzpicture}\vfill Cutoff visible · gate visible · humano decide.\end{frame}
 \begin{frame}{Dashboard read-only: explorar, auditar y exportar}\begin{columns}[T]\column{.32\textwidth}\begin{block}{Operación viva}Filtros, timeline, P50/P90, objetos, cutoff y plan.\end{block}\column{.32\textwidth}\begin{block}{Evidencia}MAE interpretado, model card, audit trail y export JSON/CSV.\end{block}\column{.32\textwidth}\begin{block}{Escenarios}Acciones aprobadas y etiqueta de simulación, no ahorro realizado.\end{block}\end{columns}\vfill\begin{alertblock}{Formato}Web local; API versionada; ninguna escritura a Trace Port, TOS, ERP o equipos.\end{alertblock}\end{frame}
 \begin{frame}{Piloto con Kaleido}\begin{columns}[T]\column{.24\textwidth}\begin{block}{1. Contrato}Esquema + 3--5 casos.\end{block}\column{.24\textwidth}\begin{block}{2. Evidencia}Planes, revisiones, outcomes.\end{block}\column{.24\textwidth}\begin{block}{3. Shadow}4--8 semanas + operador.\end{block}\column{.24\textwidth}\begin{block}{4. Producto}Buyer, coste, integración.\end{block}\end{columns}\vfill\begin{alertblock}{Siguiente paso}Sesión de 90 minutos sobre una operación repetible + export read-only pseudonimizado.\end{alertblock}\end{frame}
-\begin{frame}[plain]\color{white}\begin{tikzpicture}[remember picture,overlay]\fill[Ink](current page.south west)rectangle(current page.north east);\end{tikzpicture}\vspace{12mm}{\color{Teal!60}\bfseries LA PROPUESTA}\vspace{5mm}\par{\fontsize{27}{30}\selectfont\bfseries Shipping Board anticipa.\\Trace Port explica.\\FlowTwin conecta.}\vfill ETA que pasa gates · procesos auditables · JEPA debe ganar.\hfill\claim\end{frame}
+\begin{frame}[plain]\color{white}\begin{tikzpicture}[remember picture,overlay]\fill[Ink](current page.south west)rectangle(current page.north east);\end{tikzpicture}\vspace{12mm}{\color{Teal!60}\bfseries LA PROPUESTA}\vspace{5mm}\par{\fontsize{27}{30}\selectfont\bfseries Shipping Board anticipa.\\Trace Port explica.\\FlowTwin conecta.}\vfill Core Phys-JEPA positivo · gate Kaleido aún cerrado.\hfill\claim\end{frame}
 \end{document}'''
     path.write_text(_render(template, _values(summary)), encoding="utf-8")
 
@@ -594,43 +697,74 @@ def write_technical_tex(path: Path, summary: dict[str, Any]) -> None:
 \usepackage[a4paper,margin=2.2cm]{geometry}\usepackage{graphicx,booktabs,longtable,tabularx,array,xcolor,hyperref,fancyhdr,microtype}
 \definecolor{Ink}{HTML}{10272F}\definecolor{Teal}{HTML}{18A999}\definecolor{Blue}{HTML}{2F6BFF}\definecolor{Gold}{HTML}{F2B134}\definecolor{Red}{HTML}{D85C5C}\definecolor{Paper}{HTML}{F5F7F5}\definecolor{Muted}{HTML}{61747B}
 \hypersetup{colorlinks=true,linkcolor=Blue,urlcolor=Blue}\graphicspath{{../../presentacion/assets/}}
-\pagestyle{fancy}\fancyhf{}\setlength{\headheight}{14pt}\lhead{Kaleido FlowTwin}\rhead{MVP técnico -- smoke\_only}\cfoot{\thepage}
+\pagestyle{fancy}\fancyhf{}\setlength{\headheight}{14pt}\lhead{Kaleido FlowTwin}\rhead{Phys-JEPA core -- claim\_eligible público}\cfoot{\thepage}
 \newcommand{\claimbox}[1]{\begin{center}\fcolorbox{Gold}{Gold!18}{\parbox{.92\linewidth}{\textbf{#1}}}\end{center}}
 \title{\textbf{Kaleido FlowTwin}\\Informe técnico y ejecutivo del MVP}\author{EVOCON Solutions -- Álvaro Schwiedop Souto}\date{[[DATE]]}
 \begin{document}\maketitle
-\claimbox{Estado de toda la evidencia: \texttt{smoke\_only}. Los datos públicos y sintéticos demuestran competencia técnica del pipeline; no demuestran precisión, valor, causalidad, ahorro ni despliegue para Kaleido.}
+\claimbox{Estado mixto y acotado: el core Phys-JEPA limpio es \texttt{claim\_eligible} sobre NOAA AIS público; ETA/OCEL históricos son \texttt{smoke\_only}. El gate completo y Kaleido siguen cerrados. No se demuestra ROI, causalidad ni despliegue.}
 \section*{Resumen ejecutivo}
-Se implementó y ejecutó una capa read-only de inteligencia operativa con ETA, incertidumbre, OCEL/process mining, baselines, modelos secuenciales, Event-JEPA, Temporal T-JEPA, Var-Event-JEPA, API y dashboard. El demostrador principal usa [[AIS_SOURCE_FILES]] días de NOAA MarineCadastre AIS y predice entrada en una geofence portuaria. \textbf{Boosting ETA}, elegido solo en validación, obtiene [[AIS_MAE]] horas de MAE en [[AIS_TEST_TRIPS]] viajes futuros del 1 al 7 de febrero de 2025, con bootstrap por viaje IC95\% [[AIS_CI_LOW]]--[[AIS_CI_HIGH]].
+Se implementó y ejecutó un \textbf{Port Call Deviation Twin} read-only para Shipping Board/Freight Intelligence. El sistema predice estado físico a 0,5/1/2 horas y combina un trajectory GBT fuerte con estado/futuros Phys-JEPA. El clean test usa [[WM_TEST_TRIPS]] viajes futuros del 8 al 14 de febrero de 2025, congelados y hasheados antes de construir targets.
+
+Trajectory GBT obtiene [[WM_GBT]] km MAE. El híbrido individual, media de tres seeds, obtiene [[WM_HYBRID_MEAN]] $\pm$ [[WM_HYBRID_SD]] km y gana al raw GBT en 3/3 seeds. El ensemble de tres modelos obtiene \textbf{[[WM_ENSEMBLE]] km}, mejora [[WM_GAIN]]\%; bootstrap emparejado por viaje IC95\% [[WM_CI_LOW]]--[[WM_CI_HIGH]]\%, $P(\mathrm{mejora})=[[WM_PROB]]$. La AUPRC de desviación cambia [[WM_AUPRC_RAW]] a [[WM_AUPRC_HYBRID]].
+
+El resultado no arrastra otros outputs. ETA con 10\% de viajes etiquetados cambia [[WM_ETA_RAW]] a [[WM_ETA_HYBRID]] h, solo [[WM_ETA_GAIN]]\%, bajo el gate del 1\%. Delay AUPRC retrocede [[WM_DELAY_RAW]] a [[WM_DELAY_HYBRID]]. Por ello el core trayectoria/desviación se conserva shadow, ETA permanece GBT-only y el head de delay se rechaza. El gate completo, producción y Kaleido permanecen cerrados.
+
+Como baseline complementario, \textbf{Boosting ETA} obtiene [[AIS_MAE]] horas MAE en [[AIS_TEST_TRIPS]] viajes futuros del 1 al 7 de febrero, con IC95\% [[AIS_CI_LOW]]--[[AIS_CI_HIGH]] y estado \texttt{smoke\_only}.
 
 La mediana del error es [[AIS_MEDIAN_AE]] horas; [[AIS_WITHIN_1]]\% de los puntos queda dentro de $\pm$1 hora, [[AIS_WITHIN_2]]\% dentro de $\pm$2 y [[AIS_WITHIN_4]]\% dentro de $\pm$4. Mejora [[AIS_GAIN_KINEMATIC]]\% a una ETA distancia/velocidad y [[AIS_GAIN_HISTORICAL]]\% a la mediana puerto-distancia. Pasa los seis gates predeclarados del nuevo holdout. La cobertura P90 es [[AIS_P90_COVERAGE]]\%, pero su anchura media de [[AIS_P90_WIDTH]] horas obliga a mostrar incertidumbre y abstención.
 
 El segundo dataset, OCEL 2.0 Container Logistics, prueba contratos objeto-céntricos y revisiones de plan. El grafo correcto reduce el MAE de test de [[OCEL_ALIGNED_FLAT]] a [[OCEL_ALIGNED_GRAPH]] horas, pero validación seleccionó la traza plana; el gate del grafo permanece cerrado. Este resultado se usa para process intelligence y como diagnóstico de I+D, no como claim predictivo.
 
-Temporal T-JEPA incorpora futuros disjuntos, teacher EMA y selección de regularización solo en validación. Mejora al Event-JEPA anterior con [[TJEPA_MAE]] $\pm$ [[TJEPA_SD]], pero no a raw boosting. Var-Event-JEPA obtiene [[VAR_JEPA_MAE]] $\pm$ [[VAR_JEPA_SD]] y su incertidumbre latente no sigue el error en todas las seeds. El mejor híbrido elegible, raw + Var-JEPA, obtiene [[HYBRID_MAE]] $\pm$ [[HYBRID_SD]], [[HYBRID_DELTA]] minutos peor que raw; el gate de promoción queda cerrado.
+Los antiguos Event-JEPA, T-JEPA, Var-JEPA, Action-JEPA, Warehouse y LaDe se mantienen para explicar invalidaciones, colapso y selección de caso. No se usan como demostrador comercial.
 
-La recomendación es demostrar ETA y ventanas dentro de Shipping Board/Freight Intelligence, llevar process intelligence a Trace Port/TWINPORTS y mantener JEPA como módulo shadow sujeto a gates. Ningún resultado público prueba precisión o valor para Kaleido.
+La recomendación es demostrar el core físico y ETA dentro de Shipping Board/Freight Intelligence, llevar process intelligence a Trace Port/TWINPORTS y ejecutar el mismo gate sobre un export Kaleido futuro. Ningún resultado público prueba precisión o valor para Kaleido.
 
 \section{Hipótesis y encaje con Kaleido}
-\textbf{Hipótesis principal.} A partir de posiciones AIS y prefijos causales de eventos, el sistema puede estimar ETA/tiempo restante con incertidumbre y, con datos Kaleido, riesgo de desviación material con lead time accionable.
+\textbf{Hipótesis principal.} Un estado Phys-JEPA preentrenado sin outcomes puede aportar dinámica multihorizonte a un GBT de trayectoria cuando las labels son escasas, sin sustituir los baselines que ganen ETA o riesgo.
 
 Shipping Board y Freight Intelligence aportan la superficie natural para ETA y excepciones. Trace Port declara eventos, turnos, equipos, packing lists, incidencias, histórico y API; TWINPORTS desarrolla estado físico y espacial. FlowTwin no debe competir con ellos: debe consumir posiciones/eventos versionados y devolver salidas read-only dentro de los productos existentes.
 
 \section{Datos, provenance y protocolo}
 \noindent\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.6cm}X@{}}\toprule
-Dataset principal & NOAA MarineCadastre AIS 2025, [[AIS_SOURCE_FILES]] días, [[AIS_SOURCE_GB]] GB comprimidos \\
+Dataset principal & NOAA MarineCadastre AIS 2025, desarrollo 1 enero--7 febrero y clean holdout 8--14 febrero \\
 Dominio & Cargueros/petroleros en Nueva York, Houston, Los Ángeles y Nueva Orleans \\
-Task & Horas hasta entrada en geofence circular, con prefijos entre 12 h y 15 min \\
-Split & Futuro fijo por viaje: [[AIS_TRAIN_TRIPS]] / [[AIS_VALIDATION_TRIPS]] / [[AIS_TEST_TRIPS]] viajes \\
-Test & 1--7 febrero 2025; [[AIS_TEST_PREFIXES]] puntos; MMSI excluido del modelo \\
+Task & Estado físico y shortfall a 0,5/1/2 h; ETA como probe separado \\
+Split & Futuro fijo por viaje: [[WM_TRAIN_TRIPS]] / [[WM_VALIDATION_TRIPS]] / [[WM_TEST_TRIPS]] viajes \\
+Test & 8--14 febrero 2025; [[WM_TEST_SAMPLES]] muestras; viajes disjuntos \\
+Hashes & prefijos \texttt{[[WM_PREFIX_HASH_SHORT]]...}; métricas \texttt{[[WM_METRICS_HASH_SHORT]]...} \\
 Dataset secundario & OCEL 2.0 Container Logistics, [[OCEL_ALIGNED_OBJECTS]] contenedores y [[OCEL_ALIGNED_PREFIXES]] prefijos \\
-Selección & Variantes y gates con validación; el test futuro no eligió modelo ni umbral \\
-Seeds & 3 (41, 42, 43) para los benchmarks alineados \\
-Claim state & \texttt{smoke\_only} \\
+Selección & Arquitectura, regularizador, heads y umbral solo con desarrollo/validación; test no influyó \\
+Seeds & 3 (11, 42, 73) \\
+Claim state & \texttt{claim\_eligible} para core público; gate completo/Kaleido cerrado \\
 \bottomrule\end{tabularx}
 
-El primer AIS test se invalidó como evidencia de presentación por contener solo 25 viajes. El segundo test de 73 viajes falló el gate subhorario predeclarado. Ambos se preservaron; el protocolo final mantuvo puertos/features/modelos, convirtió enero en desarrollo/validación y reservó febrero como nuevo futuro intacto. También se conservan tres runs históricos invalidados por fuga o selección con test.
+Los siete ficheros holdout (1.431.169.298 bytes) se descargaron como contenido opaco y sus hashes se versionaron antes de construir targets. El primer build falló cerrado por confundir el hash del input v2 con el output v3; se corrigió en un commit separado antes de abrir el holdout. El primer clean run no entrenó por faltar el extra PyTorch y no produjo métricas; el segundo ejecutó el protocolo congelado en worktree limpio, commit \texttt{cdae9b7}, \texttt{dirty=false}.
 
-\section{Resultado principal: ETA AIS}
+\section{Resultado principal: Port Call Deviation Twin}
+\begin{center}\includegraphics[width=.93\linewidth]{phys_jepa_clean.pdf}\end{center}
+\begin{tabularx}{\linewidth}{XrrX}\toprule
+Modelo & Seeds & MAE km & Lectura \\
+\midrule
+Cinemática de curso constante & -- & [[WM_KINEMATIC]] & física sin aprendizaje \\
+Trajectory GBT & 1 & [[WM_GBT]] & floor supervisado \\
+GRU / Transformer & 3 & [[WM_GRU]] / [[WM_TRANSFORMER]] & baselines secuenciales \\
+Phys-JEPA directo & 3 & [[WM_DIRECT]] & decoder residual sin GBT \\
+GBT + Phys-JEPA & 3 & [[WM_HYBRID_MEAN]] $\pm$ [[WM_HYBRID_SD]] & gana raw en 3/3 seeds \\
+GBT + Phys-JEPA ensemble & 3 & \textbf{[[WM_ENSEMBLE]]} & candidato shadow \\
+\bottomrule\end{tabularx}
+
+El ensemble reduce MAE [[WM_GAIN]]\%, con bootstrap emparejado por 57 viajes y 2.000 resamples: IC95\% [[WM_CI_LOW]]--[[WM_CI_HIGH]]\%, $P(\mathrm{mejora})=[[WM_PROB]]$. La media de seeds ([[WM_HYBRID_MEAN]] km) mide estabilidad de entrenamiento; el ensemble ([[WM_ENSEMBLE]] km) mide el candidato servido y su reducción de varianza. No deben confundirse.
+
+La AUPRC de shortfall físico cambia [[WM_AUPRC_RAW]] a [[WM_AUPRC_HYBRID]]. La cobertura conformal nominal 90\% alcanza [[WM_COVERAGE]]\% con [[WM_WIDTH]] km de ancho medio. El rango efectivo test es [[WM_RANK_LOW]]--[[WM_RANK_HIGH]] y 0/3 representaciones colapsan.
+
+\subsection{VISReg, SIGReg y otros controles de colapso}
+\begin{center}\includegraphics[width=.93\linewidth]{phys_jepa_regularizers.pdf}\end{center}
+En desarrollo, el MAE híbrido de validación fue [[WM_DEV_VICREG]] km con VICReg, [[WM_DEV_NONE]] sin regularizador, [[WM_DEV_VISREG]] con VISReg, [[WM_DEV_SIGREG]] con SIGReg y [[WM_DEV_PLAIN]] para JEPA sin física + VISReg. Ninguna variante colapsó. VICReg se seleccionó porque ganó el criterio predeclarado; el resultado sugiere que la inductive bias física aporta más que la diferencia entre losses anticolapso.
+
+\subsection{Gate completo cerrado}
+ETA escasa cambia [[WM_ETA_RAW]] a [[WM_ETA_HYBRID]] h ([[WM_ETA_GAIN]]\%), por debajo del mínimo del 1\%. Delay AUPRC cambia [[WM_DELAY_RAW]] a [[WM_DELAY_HYBRID]], una regresión. Por tanto el core físico pasa, pero el gate combinado y las promociones pública completa y Kaleido permanecen cerrados.
+
+\section{Baseline complementario: ETA AIS}
 \begin{center}\includegraphics[width=.93\linewidth]{model_comparison.pdf}\end{center}
 \begin{tabularx}{\linewidth}{Xrrrrl}\toprule
 Modelo & MAE h & Mediana AE & $\pm$1 h & $\pm$2 h & Decisión \\
@@ -702,7 +836,7 @@ Las actividades públicas no se relabelaron como acciones. Se generó un overlay
 VISReg obtiene [[ACTION_CORRECT]] $\pm$ [[ACTION_CORRECT_SD]] minutos con acción correcta frente a [[ACTION_SHUFFLED]] con acción barajada y [[ACTION_PREFIX]] con prefijo solo. Correct gana en 3/3 seeds y mejora [[ACTION_GAIN]] minutos de media frente a shuffled. Sin embargo, aunque el rango efectivo sube a [[ACTION_RANK_LOW]]--[[ACTION_RANK_HIGH]], la desviación media por dimensión permanece [[ACTION_SCALE_LOW]]--[[ACTION_SCALE_HIGH]], bajo el umbral. El resultado prueba recuperación de señal inyectada, no un world model operativo estable.
 
 \section{Serving y producto recomendado}
-La entrada demostrable es un panel ETA/ventanas embebible en Shipping Board o Freight Intelligence. Trace Port/TWINPORTS reciben process intelligence y, cuando exista export Kaleido, tiempo restante de operación. Cada salida expone cutoff, geofence/plan visible, P50/P90, confianza/abstención, razones y fuente. El sistema continúa read-only y los escenarios permanecen separados y etiquetados como simulación.
+La entrada demostrable es un Port Call Deviation Twin shadow embebible en Shipping Board o Freight Intelligence. Expone futuro físico 0,5/1/2 h, shortfall, AUPRC/score, latent surprise, intervalo conformal y procedencia. ETA continúa con su GBT separado. Trace Port/TWINPORTS reciben la excepción y process intelligence. Cada salida expone cutoff, geofence/plan visible, gate, confianza/abstención, razones y fuente. El sistema continúa read-only y los escenarios permanecen separados y etiquetados como simulación.
 
 \section{Seguridad, límites y gates de piloto}
 \begin{itemize}
@@ -719,11 +853,11 @@ La entrada demostrable es un panel ETA/ventanas embebible en Shipping Board o Fr
 Sesión de 90 minutos para elegir una operación repetible, usuario/buyer, desviación material, acción disponible y coste de intervenir. Solicitar esquema y 3--5 operaciones pseudonimizadas para validar semántica; después un histórico suficiente con plan original y revisiones, outcomes y acciones timestamped. Ejecutar replay shadow 4--8 semanas con gates preacordados de cobertura, falsas alertas, lead time, peor grupo y utilidad del operador.
 
 \section*{Cierre de tarea}
-\textbf{Hipótesis:} una capa predictiva sobre posiciones y eventos puede ampliar Shipping Board, Freight Intelligence, Trace Port y TWINPORTS.\\
-\textbf{Cambios:} benchmark ETA AIS con holdout futuro, benchmark OCEL objeto-céntrico, pipeline causal, JEPA/ablations, API/dashboard e informes generados.\\
+\textbf{Hipótesis:} Phys-JEPA puede aportar dinámica multihorizonte a un GBT fuerte sin sustituir los heads donde no gana.\\
+\textbf{Cambios:} holdout futuro prehasheado, Phys-JEPA físico-residual, VISReg/SIGReg/VICReg/none, GBT/GRU/Transformer, bootstrap, conformal, API/dashboard e informes.\\
 \textbf{Tests:} suites unitarias/integración/adversariales, lint y typing; hashes de los runs citados verificados al generar este documento.\\
-\textbf{Evidencia:} ETA boosting pasa 6/6 gates en [[AIS_TEST_TRIPS]] viajes futuros; el grafo OCEL y JEPA no superan sus gates; VISReg recupera señal sintética sin validar causalidad.\\
-\textbf{Limitaciones:} dominio AIS de EE. UU. concentrado en Nueva Orleans; OCEL simulado; no hay datos Kaleido, outcomes materiales ni acciones reales.\\
+\textbf{Evidencia:} core GBT + Phys-JEPA [[WM_GBT]] a [[WM_ENSEMBLE]] km, IC95\% de mejora [[WM_CI_LOW]]--[[WM_CI_HIGH]]; AUPRC [[WM_AUPRC_RAW]] a [[WM_AUPRC_HYBRID]]; gate completo cerrado por ETA/delay.\\
+\textbf{Limitaciones:} AIS de EE. UU., 57 viajes, proxy físico e intervalo de [[WM_WIDTH]] km; no hay datos Kaleido, outcomes materiales ni acciones reales.\\
 \textbf{Siguiente paso falsable:} replay sobre export Kaleido congelado y revisión operativa.
 
 \section*{Fuentes primarias y corporativas}
@@ -736,6 +870,7 @@ Sesión de 90 minutos para elegir una operación repetible, usuario/buyer, desvi
 \item \href{https://doi.org/10.6084/m9.figshare.29500898}{Warehouse Outbound Event Log -- DOI}
 \item \href{https://arxiv.org/abs/2511.08544}{LeJEPA}; \href{https://arxiv.org/abs/2603.19312}{LeWorldModel}
 \item \href{https://arxiv.org/abs/2606.02572}{VISReg}; \href{https://haiyuwu.github.io/visreg/}{proyecto oficial}
+\item \href{https://arxiv.org/abs/2301.08243}{I-JEPA}; \href{https://arxiv.org/abs/2606.16076}{Phys-JEPA}; \href{https://arxiv.org/abs/2506.09985}{V-JEPA 2}
 \item \href{https://arxiv.org/abs/2410.05016}{T-JEPA}; \href{https://arxiv.org/abs/2603.20111}{Var-JEPA}
 \end{itemize}
 \end{document}'''
@@ -753,7 +888,7 @@ def write_speaker_script_tex(path: Path, summary: dict[str, Any]) -> None:
 \pagestyle{fancy}\fancyhf{}\lhead{Kaleido FlowTwin}\rhead{Guion de presentación}\cfoot{\thepage}
 \setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
 \setlist[itemize]{leftmargin=5mm,itemsep=2pt,topsep=2pt}
-\newcommand{\claim}{\texttt{smoke\_only}}
+\newcommand{\claim}{\texttt{claim\_eligible public core; full gate closed}}
 \newcommand{\slidehead}[3]{%
   \par\vspace{7pt}\noindent
   \colorbox{Ink}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
@@ -770,9 +905,9 @@ def write_speaker_script_tex(path: Path, summary: dict[str, Any]) -> None:
 
 \begin{center}
 \fcolorbox{Gold}{Gold!16}{\parbox{.92\linewidth}{
-\textbf{Estado de evidencia: \claim.} El objetivo de la reunión no es afirmar que el
-modelo ya funciona para Kaleido, sino demostrar un MVP ejecutado, explicar qué se ha
-aprendido y acordar el acceso a una operación real para un replay shadow.
+\textbf{Estado de evidencia: \claim.} El core Phys-JEPA tiene evidencia pública limpia;
+el objetivo de la reunión no es afirmar que ya funciona para Kaleido, sino explicar qué
+pasó, qué outputs fueron rechazados y acordar un replay shadow real.
 }}
 \end{center}
 
@@ -780,30 +915,30 @@ aprendido y acordar el acceso a una operación real para un replay shadow.
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{3.6cm}X@{}}\toprule
 Duración objetivo & 20--22 minutos de presentación + 10 minutos de preguntas. \\
 Petición final & Sesión de 90 minutos sobre una operación repetible y 3--5 casos pseudonimizados. \\
-Idea central & Shipping Board informa; Freight Intelligence analiza; FlowTwin anticipa ETA y excepciones. \\
-Resultado principal & ETA AIS: [[AIS_MAE]] h de MAE, [[AIS_WITHIN_2]]\% dentro de $\pm$2 h y 6/6 gates aprobados. \\
-Límite & Es evidencia pública de capacidad, no precisión Kaleido, ROI ni despliegue. \\
+Idea central & Shipping Board anticipa; Trace Port explica; FlowTwin conecta con un core físico read-only. \\
+Resultado principal & GBT + Phys-JEPA: [[WM_GBT]] a [[WM_ENSEMBLE]] km; mejora [[WM_GAIN]]\%, IC95\% [[WM_CI_LOW]]--[[WM_CI_HIGH]]. \\
+Límite & Core público positivo; ETA/delay, gate completo, Kaleido, ROI y despliegue siguen cerrados. \\
 \bottomrule\end{tabularx}
 
 \subsection*{Antes de empezar}
 \begin{itemize}
 \item Abrir la presentación HTML a pantalla completa y dejar el dashboard preparado en otra pestaña.
-\item Comprobar que el watermark \claim{} es visible y que el dashboard muestra la evidencia ETA AIS.
-\item No empezar por JEPA. Empezar por el problema operativo y llegar a JEPA como resultado de I+D falsable.
+\item Comprobar que el watermark público/no-Kaleido es visible y que el dashboard muestra el core Phys-JEPA.
+\item Empezar por el problema operativo; presentar JEPA como solución específica de dinámica, no como marca.
 \item Tener preparada la pregunta final: operación, responsables, muestra y fecha.
 \end{itemize}
 
 \clearpage
 \section{Guion diapositiva a diapositiva}
 
-\slidehead{1}{FlowTwin Predictive Operations}{0:45}
+\slidehead{1}{FlowTwin Port Call Deviation Twin}{0:45}
 \cue{Objetivo.} Situar la propuesta y marcar desde el primer minuto la frontera de evidencia.
 
 \cue{Qué decir.} ``Gracias por el tiempo. Hemos construido un MVP técnico de una capa
-predictiva read-only. El demostrador principal estima la llegada de buques a una zona
-portuaria a partir de AIS, muestra ventanas de incertidumbre y conserva toda la trazabilidad.
-No venimos a presentar resultados de Kaleido: venimos a enseñar una idea ejecutada sobre
-datos públicos y un protocolo para validarla de forma segura con vosotros.''
+predictiva read-only. El core combina un GBT fuerte con Phys-JEPA para anticipar el estado
+físico de una escala a 30, 60 y 120 minutos y detectar shortfall material. En el holdout
+público limpio mejora de [[WM_GBT]] a [[WM_ENSEMBLE]] km. No venimos a presentar resultados
+de Kaleido: el gate completo sigue cerrado y venimos a proponer cómo validarlo con vosotros.''
 
 \avoid{``Ya predice vuestras operaciones'', ``gemelo autónomo'' o ``ahorro demostrado''.}
 
@@ -813,10 +948,10 @@ datos públicos y un protocolo para validarla de forma segura con vosotros.''
 \cue{Objetivo.} Dejar claro que FlowTwin complementa productos existentes.
 
 \cue{Qué decir.} ``Shipping Board y Freight Intelligence son el encaje inmediato para una
-ETA explicable: anticipar llegada, detectar excepciones y priorizar qué revisar. Trace Port
-aporta después la memoria de operaciones, turnos e incidencias; TWINPORTS, el estado físico
-y espacial. FlowTwin no compite con esos productos: convierte sus eventos en una predicción
-con intervalo, cutoff y razones.''
+excepción física explicable: trayectoria esperada, shortfall, ETA y prioridad. Trace Port
+aporta la memoria de operaciones e incidencias; TWINPORTS, activos y espacio. FlowTwin no
+compite con esos productos: convierte posiciones/eventos en predicción con intervalo,
+cutoff, gate y razones.''
 
 \cue{Pregunta opcional.} ``¿En qué pantalla toma hoy una decisión el responsable de turno
 cuando una operación empieza a desviarse?''
@@ -826,11 +961,10 @@ cuando una operación empieza a desviarse?''
 \slidehead{3}{MVP y límites explícitos}{1:10}
 \cue{Objetivo.} Resumir el alcance y convertir las invalidaciones en prueba de disciplina.
 
-\cue{Qué decir.} ``Construimos dos demostradores alineados: ETA con AIS para Shipping Board
-y Freight Intelligence, y proceso objeto-céntrico OCEL para Trace Port/TWINPORTS. JEPA queda
-como línea de I+D sometida a ablations. Mantuvimos viajes y operaciones enteros en cada
-partición, elegimos modelos en validación y reservamos un test futuro del 1 al 7 de febrero.
-Los runs que no pasaron el protocolo se conservaron como auditoría y no entraron en la cifra.''
+\cue{Qué decir.} ``Construimos Phys-JEPA, trajectory GBT, GRU, Transformer, ETA GBT,
+process intelligence OCEL, API y dashboard. Probamos VISReg, SIGReg, VICReg y no regularizar;
+ninguno colapsó. Mantuvimos viajes enteros, congelamos arquitectura y umbrales y abrimos una
+sola vez el test posterior. Warehouse y LaDe se conservan como negativos/invalidados.''
 
 \avoid{Presentar M0--M7 como un despliegue productivo. Son hitos técnicos de smoke.}
 
@@ -839,14 +973,13 @@ Los runs que no pasaron el protocolo se conservaron como auditoría y no entraro
 \slidehead{4}{Dataset y protocolo}{1:20}
 \cue{Objetivo.} Dar credibilidad sin confundir dominio público con dominio portuario.
 
-\cue{Qué decir.} ``Procesamos [[AIS_SOURCE_FILES]] días de NOAA MarineCadastre AIS,
-[[AIS_SOURCE_GB]] GB comprimidos. Una geofence define la llegada y cada prefijo usa solo lo
-visible en ese instante. El split contiene [[AIS_TRAIN_TRIPS]] viajes de entrenamiento,
-[[AIS_VALIDATION_TRIPS]] de validación y [[AIS_TEST_TRIPS]] de test futuro, con
-[[AIS_TEST_PREFIXES]] predicciones en ese test. MMSI se excluyó como feature y ningún viaje
-cruza particiones. El dataset OCEL secundario aporta [[OCEL_ALIGNED_OBJECTS]] contenedores.''
+\cue{Qué decir.} ``El desarrollo usa 1 de enero a 7 de febrero; el clean holdout es 8--14.
+Sus siete ficheros se descargaron opacos y se hashearon antes de targets. El split tiene
+[[WM_TRAIN_TRIPS]]/[[WM_VALIDATION_TRIPS]]/[[WM_TEST_TRIPS]] viajes y [[WM_TEST_SAMPLES]]
+muestras test. Código, regularizador, heads y umbral físico de 10 km quedaron en el commit
+limpio cdae9b7. El test no influyó en una elección.''
 
-\cue{Frase clave.} ``Es una prueba técnica real de ETA portuaria en EE. UU., no una prueba de precisión en Vigo.''
+\cue{Frase clave.} ``Es evidencia limpia del core sobre AIS de EE. UU., no precisión en Vigo.''
 
 \transition{Antes de entrenar nada, los eventos ya permiten inteligencia de proceso.}
 
@@ -862,8 +995,8 @@ conformance sin depender de que gane un modelo.''
 
 \transition{En el demostrador de ETA sí obtuvimos un resultado concreto sobre futuro no visto.}
 
-\slidehead{6}{Comparación de modelos}{1:40}
-\cue{Objetivo.} Explicar el número principal, sus comparadores y el gate fijado antes del test.
+\slidehead{6}{Baseline ETA separado}{1:25}
+\cue{Objetivo.} Explicar por qué el GBT conserva ETA aunque el core Phys-JEPA gane dinámica.
 
 \cue{Qué decir.} ``El modelo elegido solo en validación obtiene [[AIS_MAE]] horas de MAE
 en [[AIS_TEST_TRIPS]] viajes futuros. El error mediano es [[AIS_MEDIAN_AE]] horas y el
@@ -874,8 +1007,8 @@ la ETA distancia/velocidad tiene [[AIS_KINEMATIC]] horas y la mediana por puerto
 
 \cue{Traducción operativa.} ``El [[AIS_WITHIN_1]]\% queda dentro de $\pm$1 hora, el
 [[AIS_WITHIN_2]]\% dentro de $\pm$2 y el [[AIS_WITHIN_4]]\% dentro de $\pm$4. Pasa los seis
-gates predeclarados: volumen, MAE, extremo del intervalo, tolerancia y mejora contra dos
-baselines.''
+gates predeclarados del benchmark ETA. El probe Phys-JEPA posterior mejora ETA solo
+[[WM_ETA_GAIN]]\%, por debajo del 1\%, así que no sustituimos este GBT.''
 
 \avoid{Llamarlo precisión Kaleido, SOTA o prometer que $\pm$2 horas sea su tolerancia de negocio.}
 
@@ -893,8 +1026,51 @@ consigue con una banda todavía demasiado amplia. Además, Nueva Orleans concent
 \cue{Conclusión.} ``La predicción puntual funciona como demostrador; el siguiente trabajo
 falsable es calibrar por puerto, medir peor grupo y hacer que el sistema se abstenga.''
 
-\transition{Con el baseline fijado, podemos preguntar qué está aprendiendo realmente JEPA.}
+\transition{Con ETA separada, pasemos al objetivo donde JEPA sí debe aportar: dinámica física.}
 
+\slidehead{8}{Anticolapso y selección}{1:40}
+\cue{Objetivo.} Mostrar que VISReg/SIGReg se probaron y que no se elige por narrativa.
+
+\cue{Qué decir.} ``Con la misma capacidad y tres seeds, el híbrido de validación obtiene
+[[WM_DEV_VICREG]] km con VICReg, [[WM_DEV_NONE]] sin regularizador, [[WM_DEV_VISREG]] con
+VISReg, [[WM_DEV_SIGREG]] con SIGReg y [[WM_DEV_PLAIN]] para JEPA plano + VISReg. Ninguna
+variante colapsó. VICReg gana el criterio predeclarado, pero la diferencia principal viene
+de condicionar el modelo con la física conocida, no de una loss milagrosa.''
+
+\avoid{Decir que VICReg es universalmente mejor o que SIGReg/VISReg fallaron por colapso aquí.}
+
+\transition{Con arquitectura y regularizador congelados, abrimos el test posterior una vez.}
+
+\slidehead{9}{Resultado limpio GBT + Phys-JEPA}{2:10}
+\cue{Objetivo.} Explicar comparadores, seeds, ensemble e incertidumbre sin mezclar estadísticas.
+
+\cue{Qué decir.} ``Cinemática obtiene [[WM_KINEMATIC]] km; GBT [[WM_GBT]]; GRU
+[[WM_GRU]]; Transformer [[WM_TRANSFORMER]]; Phys-JEPA directo [[WM_DIRECT]]. El híbrido
+individual promedia [[WM_HYBRID_MEAN]] $\pm$ [[WM_HYBRID_SD]] y gana al GBT en tres de
+tres seeds. Al promediar las tres predicciones, el candidato servido baja a
+[[WM_ENSEMBLE]] km: [[WM_GAIN]]\% de mejora, bootstrap por viaje IC95\%
+[[WM_CI_LOW]]--[[WM_CI_HIGH]], probabilidad de mejora [[WM_PROB]].''
+
+\cue{Distinción clave.} ``La media de seeds mide estabilidad de entrenamiento. El ensemble
+mide el modelo servido y reduce varianza; por eso no son el mismo número.''
+
+\transition{Una mejora de core no concede permiso automático a todos los heads.}
+
+\slidehead{10}{Core aprobado, gate completo cerrado}{1:50}
+\cue{Objetivo.} Mostrar la decisión de producto exacta.
+
+\cue{Qué decir.} ``La AUPRC de desviación sube [[WM_AUPRC_RAW]] a [[WM_AUPRC_HYBRID]].
+El rango efectivo es [[WM_RANK_LOW]]--[[WM_RANK_HIGH]] y no colapsa ninguna seed. La banda
+conformal 90\% cubre [[WM_COVERAGE]]\%, con [[WM_WIDTH]] km de ancho medio. Pero ETA escasa
+mejora solo [[WM_ETA_GAIN]]\%, bajo el gate del 1\%, y delay AUPRC retrocede
+[[WM_DELAY_RAW]] a [[WM_DELAY_HYBRID]]. Conservamos el core shadow, mantenemos GBT-only
+para ETA y rechazamos delay.''
+
+\avoid{Decir que el producto completo pasó, que predice incidentes Kaleido o que hay causalidad.}
+
+\transition{La arquitectura de producto refleja exactamente estos gates.}
+
+\iffalse
 \slidehead{8}{Ablations de Event-JEPA}{2:00}
 \cue{Objetivo.} Explicar por qué JEPA sigue siendo interesante aunque no gane el benchmark.
 
@@ -957,25 +1133,24 @@ señal inyectada; no promocionamos el world model.''
 
 \transition{Esto conduce a una separación clara entre producto e investigación.}
 
+\fi
 \slidehead{11}{Decisión de producto}{1:00}
 \cue{Objetivo.} Convertir los resultados en una arquitectura de producto prudente.
 
-\cue{Qué decir.} ``La demo sirve ETA AIS, comparadores, tolerancias, intervalo y auditoría
-read-only. OCEL demuestra process intelligence con identidad de objetos. Temporal T-JEPA,
-Var-JEPA, acciones reales y object graphs permanecen como I+D con gates. El predictor
-histórico de almacén con 734 minutos queda conservado como resultado negativo: no se sirve
-ni se usa para vender la idea.''
+\cue{Qué decir.} ``La demo sirve el core GBT + Phys-JEPA solo para trayectoria/desviación,
+mantiene GBT para ETA y excluye el head de retraso. OCEL demuestra process intelligence.
+Warehouse, T/Var-JEPA, acciones sintéticas y LaDe se conservan para auditoría, no para vender
+la idea. El core es claim eligible público; el producto completo y Kaleido no.''
 
 \transition{La integración propuesta mantiene esa separación y no escribe en sistemas fuente.}
 
 \slidehead{12}{Arquitectura complementaria}{1:10}
 \cue{Objetivo.} Explicar el flujo read-only y la trazabilidad de cada predicción.
 
-\cue{Qué decir.} ``AIS o Shipping Board aportan posición y contexto de viaje; Trace Port,
-eventos y turnos; TWINPORTS, activos y espacio. El contrato temporal conserva planes
-versionados. El baseline ETA, process mining y JEPA shadow producen punto, intervalo y
-razones; la salida vuelve a una pestaña o API read-only. Cada resultado muestra cutoff,
-versión y procedencia. El humano sigue decidiendo.''
+\cue{Qué decir.} ``AIS o Shipping Board aportan posición y contexto. La física proyecta
+curso constante; Phys-JEPA aprende el residual y GBT combina raw con estado/futuros. ETA
+usa su GBT separado. Trace Port/OCEL explica la consecuencia y conformal aporta la banda.
+Cada salida muestra cutoff, gate, modelo, hash y razones. El humano sigue decidiendo.''
 
 \avoid{Hablar de control automático, escritura en TOS/ERP o optimización autónoma.}
 
@@ -988,12 +1163,12 @@ versión y procedencia. El humano sigue decidiendo.''
 \cue{Secuencia de demo.}
 \begin{enumerate}[leftmargin=6mm,itemsep=2pt]
 \item Señalar el watermark \claim{} y el modo read-only.
-\item Abrir la evidencia ETA: [[AIS_MAE]] h, IC95\% y [[AIS_TEST_TRIPS]] viajes futuros.
-\item Comparar boosting con la ETA cinemática y la mediana puerto-distancia.
-\item Mostrar los porcentajes dentro de $\pm$1, $\pm$2 y $\pm$4 horas y los 6/6 gates.
-\item Abrir incertidumbre y límites: intervalo P90, reparto por puerto y abstención.
-\item Recorrer procedencia: fechas de test, exclusión de MMSI, hashes y model card.
-\item Terminar en la separación: ETA demostrable; OCEL diagnóstico; JEPA en I+D.
+\item Abrir el ladder físico: cinemática, GBT, GRU, Transformer, Phys-JEPA y ensemble.
+\item Mostrar [[WM_GBT]] a [[WM_ENSEMBLE]] km e IC95\% [[WM_CI_LOW]]--[[WM_CI_HIGH]].
+\item Señalar AUPRC, rango efectivo y cobertura conformal.
+\item Mostrar explícitamente el gate completo cerrado por ETA/delay.
+\item Abrir model card: fechas, seeds, hash, test no influyó y claim boundary.
+\item Terminar en la separación: core shadow; ETA GBT; delay rechazado; OCEL diagnóstico.
 \end{enumerate}
 
 \cue{Frase de cierre de demo.} ``La interfaz es el ejemplo de consumo; los valores son
@@ -1016,21 +1191,22 @@ pseudonimizados?''
 \transition{La propuesta se resume en una sola frase.}
 
 \slidehead{15}{Cierre}{0:35}
-\cue{Qué decir.} ``Shipping Board informa. Freight Intelligence analiza. FlowTwin anticipa.
-Ya existe una prueba de ETA sobre futuro no visto y un marco objeto-céntrico para procesos.
-El siguiente paso no es prometer generalización: es acordar operación, tolerancia, muestra y
-fecha para medirlo con datos Kaleido.''
+\cue{Qué decir.} ``Shipping Board anticipa. Trace Port explica. FlowTwin conecta. Ya existe
+un core Phys-JEPA que mejora un GBT fuerte sobre futuro público no visto, y también sabemos
+qué outputs no pasan. El siguiente paso no es prometer generalización: es acordar operación,
+tolerancia, muestra y fecha para medirlo con datos Kaleido.''
 
 \cue{Acción.} Callar y esperar respuesta. No rellenar el silencio con detalles técnicos.
 
 \clearpage
 \section{Preguntas previsibles}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{4.2cm}X@{}}\toprule
-¿Por qué JEPA si boosting gana? & Porque Temporal T-JEPA mejora al JEPA anterior y distingue
-futuros correctos de barajados, pero los embeddings no añaden valor incremental al boosting.
-Se mantiene shadow como hipótesis para datos con acciones, objetos y contexto más ricos. \\
-¿Esto es un world model? & Es un experimento de transición latente condicionado por acciones
-generadas. Recupera señal inyectada, pero no supera el gate de estabilidad y no tiene acciones Kaleido. \\
+¿Por qué JEPA si boosting gana? & No se sustituye boosting: el producto combina ambos. GBT
+obtiene [[WM_GBT]] km y el ensemble GBT + Phys-JEPA [[WM_ENSEMBLE]], con IC95\% positivo.
+JEPA aporta estado/futuros físicos; GBT conserva ETA. \\
+¿Esto es un world model? & Es un modelo observacional de transición física a 0,5/1/2 h,
+condicionado por física conocida, con probes externos y conformal. No es un controlador ni
+un modelo causal de acciones. \\
 ¿Qué hace falta de Kaleido? & IDs pseudonimizados, eventos con timestamps, plan original y
 revisiones con \texttt{valid\_from}, outcomes, objetos y acciones realmente controlables. \\
 ¿Cuántos datos? & Primero 3--5 casos para semántica. El volumen de entrenamiento se decide
@@ -1052,8 +1228,8 @@ Por eso el siguiente gate es por puerto y, después, Vigo/Kaleido. \\
 \bottomrule\end{tabularx}
 
 \section{Versiones por tiempo}
-\textbf{Si solo hay 10 minutos:} diapositivas 1, 2, 4, 6, 7, 11, 14 y 15. Omitir JEPA
-o resumirlo como línea de I+D que todavía no gana el gate.
+\textbf{Si solo hay 10 minutos:} diapositivas 1, 2, 4, 8, 9, 10, 14 y 15. Explicar
+selección, resultado limpio, gate cerrado y petición Kaleido.
 
 \textbf{Si hay 30 minutos:} recorrido completo, demo de 4--5 minutos y preguntas tras la
 diapositiva 10 antes de cerrar con el piloto.
@@ -1069,6 +1245,8 @@ diapositiva 10 antes de cerrar con el piloto.
 \item \href{https://arxiv.org/abs/2511.08544}{LeJEPA};
 \href{https://arxiv.org/abs/2603.19312}{LeWorldModel};
 \href{https://arxiv.org/abs/2606.02572}{VISReg};
+\href{https://arxiv.org/abs/2606.16076}{Phys-JEPA};
+\href{https://arxiv.org/abs/2301.08243}{I-JEPA};
 \href{https://arxiv.org/abs/2410.05016}{T-JEPA};
 \href{https://arxiv.org/abs/2603.20111}{Var-JEPA}.
 \end{itemize}
@@ -1103,6 +1281,25 @@ def write_result_tables(output_dir: Path, summary: dict[str, Any]) -> None:
             ["model", "test_mae_hours", "test_median_ae_hours", "within_2h", "decision"]
         )
         writer.writerows(ais_rows)
+
+    phys = summary["aligned_public_benchmarks"]["ais_phys_jepa"]
+    phys_models = phys["models_and_baselines"]
+    phys_product = phys["product_candidate"]
+    phys_rows = [
+        ("kinematic", 0, phys_models["kinematic"]["distance_mae_km"], "comparator"),
+        ("trajectory_boosting", 1, phys_models["trajectory_boosting"]["test"]["distance_mae_km"], "raw_floor"),
+        ("supervised_gru", 3, phys_models["supervised"]["gru"]["aggregate"]["test_distance_mae_mean_km"], "comparator"),
+        ("supervised_transformer", 3, phys_models["supervised"]["transformer"]["aggregate"]["test_distance_mae_mean_km"], "comparator"),
+        ("phys_jepa_direct", 3, phys_models["jepa"]["phys_vicreg"]["aggregate"]["test_distance_mae_mean_km"], "diagnostic"),
+        ("trajectory_boosting_plus_phys_jepa_seed_mean", 3, phys_product["selected_downstream"]["full_trajectory_test_hybrid_mae_mean_km"], "core_passed"),
+        ("trajectory_boosting_plus_phys_jepa_ensemble", 3, phys_product["paired_test_uncertainty"]["hybrid_mae_km"], "shadow_product_candidate"),
+    ]
+    with (output_dir / "phys_jepa_clean_comparison.csv").open(
+        "w", newline="", encoding="utf-8"
+    ) as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["model", "seeds", "test_distance_mae_km", "decision"])
+        writer.writerows(phys_rows)
 
     remaining = summary["remaining_time"]
     legacy_rows = [
@@ -1152,15 +1349,20 @@ def _write_package_manifest(repository_root: Path, summary: dict[str, Any]) -> N
         assets / "jepa_ablations.svg",
         assets / "action_recovery.pdf",
         assets / "action_recovery.svg",
+        assets / "phys_jepa_clean.pdf",
+        assets / "phys_jepa_clean.svg",
+        assets / "phys_jepa_regularizers.pdf",
+        assets / "phys_jepa_regularizers.svg",
         evidence_path / "summary.json",
         evidence_path / "model_comparison.csv",
+        evidence_path / "phys_jepa_clean_comparison.csv",
         evidence_path / "legacy_remaining_time_comparison.csv",
         evidence_path / "synthetic_action_comparison.csv",
     )
     atomic_json(
         evidence_path / "package_manifest.json",
         {
-            "claim_state": "smoke_only",
+            "claim_state": summary["claim_state"],
             "generated_on": summary["generated_on"],
             "sources": summary["provenance"],
             "generated_files": {

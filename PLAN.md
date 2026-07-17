@@ -26,6 +26,13 @@ del test futuro 1-7 febrero 2025, frente a 2.726 h del historico y 7.786 h de la
 cinematica; pasa 6/6 gates predeclarados. OCEL Logistics cubre proceso y objetos.
 Ambos permanecen `smoke_only` y no sustituyen las fases Kaleido descritas abajo.
 
+El Port Call Deviation Twin añade una evidencia separada `claim_eligible` del
+core público. En un holdout 8-14 febrero prehasheado, GBT + Phys-JEPA reduce el
+MAE de trayectoria ensemble de 2,635 a 2,326 km (11,72%; bootstrap por viaje
+IC95% 5,90%-17,13%) y eleva AUPRC de desviación de 0,880 a 0,904. No se promociona
+el sistema completo: ETA escasa mejora 0,59%, por debajo del gate, y delay AUPRC
+retrocede. GBT conserva ETA; Phys-JEPA queda como núcleo físico shadow.
+
 El benchmark historico de almacén (~734 min MAE) y JEPA se conservan como
 evidencia rechazada/I+D, no como predictor de producto.
 
@@ -257,7 +264,12 @@ Orden obligatorio:
 4. descargar y hashear 2025-02-08--14 sin inspeccionar outcomes;
 5. commit de manifest de datos;
 6. construir prefijos y abrir test una vez;
-7. integrar solo si el gate futuro pasa.
+7. integrar el core solo si sus gates pasan y mantener los heads fallidos fuera
+   del producto.
+
+Resultado: el core de trayectoria/desviación pasa en 3/3 seeds sin colapso; el
+gate combinado falla. Se integra en dashboard y materiales como módulo shadow,
+no como despliegue ni valor Kaleido. Véase `docs/decisions/0007-phys-jepa-clean-holdout-result.md`.
 
 Vease `docs/decisions/0005-port-call-deviation-twin-phys-jepa.md` y
 `docs/investigacion/JEPA_WORLD_MODEL_2026_AUDIT.md`.

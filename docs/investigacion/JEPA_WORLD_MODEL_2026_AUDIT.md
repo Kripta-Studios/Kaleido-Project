@@ -79,10 +79,22 @@ Public NOAA data proves only pipeline competence. Kaleido value requires an
 export or shadow feed with declared destination/plan revisions, AIS or zone
 events, outcome definitions and operator review.
 
-## Next falsifiable step
+## Clean result and next falsifiable step
 
 VICReg was selected over VISReg, SIGReg and no regularizer using only hybrid
 trajectory MAE on the already opened development validation split. Freeze that
 `Phys-JEPA + GBT` protocol and commit before downloading NOAA 2025-02-08 through
-2025-02-14. Open that interval once and reject promotion if any required
-clean-test gate fails.
+2025-02-14. That protocol has now run once from clean commit `cdae9b7a`.
+
+The core result is positive: raw trajectory GBT 2.635 km, GBT + Phys-JEPA
+three-seed ensemble 2.326 km, paired trip-bootstrap improvement 11.72% with
+IC95% 5.90%-17.13%, and deviation AUPRC 0.880 to 0.904. No selected seed
+collapsed. The full gate is still rejected because sparse ETA improved only
+0.59% and delay AUPRC regressed. See Decision 0007 for hashes and exact claim
+boundary.
+
+The next falsifiable step is transfer: freeze a Kaleido export and operator
+thresholds, then reject the module if it does not improve future grouped
+trajectory/deviation evidence with useful lead time and acceptable interval
+width. Actions remain out of scope until real, timestamped operator decisions
+are available.

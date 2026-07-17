@@ -287,6 +287,37 @@ async function selectOperation(operationId) {
 
 function metricContextMarkup(context) {
   if (!context || !context.available) return "";
+  if (context.metric === "trajectory_distance_mae_km") {
+    var ci = context.gain_ci95_percent;
+    return "<div class=\"metric-context\"><div class=\"metric-context-head\"><div><span>HOW TO READ THE WORLD-MODEL RESULT</span>" +
+      "<strong>" + Number(context.raw_mae_km).toFixed(3) + " → " +
+      Number(context.hybrid_ensemble_mae_km).toFixed(3) + " km</strong></div>" +
+      "<strong class=\"verdict\">core passed · full gate closed</strong></div>" +
+      "<div class=\"metric-comparators\"><div class=\"metric-row\"><span>Three-seed training mean</span><strong>" +
+      Number(context.hybrid_seed_mean_mae_km).toFixed(3) + " ± " +
+      Number(context.hybrid_seed_std_mae_km).toFixed(3) + " km</strong><strong>−" +
+      Number(context.ensemble_gain_percent).toFixed(2) + "% ensemble</strong></div>" +
+      "<div class=\"metric-row\"><span>Material-deviation AUPRC</span><strong>" +
+      Number(context.raw_deviation_auprc).toFixed(3) + " → " +
+      Number(context.hybrid_deviation_auprc).toFixed(3) + "</strong><strong>better</strong></div>" +
+      "<div class=\"metric-row\"><span>Collapse diagnostic</span><strong>rank " +
+      Number(context.effective_rank_min).toFixed(2) + "–" +
+      Number(context.effective_rank_max).toFixed(2) + "</strong><strong>0/" +
+      context.number_of_seeds + " collapsed</strong></div></div>" +
+      "<p class=\"metric-caveat\">Paired bootstrap by trip, " + context.bootstrap_samples +
+      " draws: IC95% improvement " + Number(ci[0]).toFixed(2) + "%–" +
+      Number(ci[1]).toFixed(2) + "%; P(improvement)=" +
+      Number(context.bootstrap_probability_improvement).toFixed(4) + ". Conformal " +
+      (context.nominal_coverage * 100).toFixed(0) + "% achieved " +
+      (context.test_coverage * 100).toFixed(1) + "% coverage with " +
+      Number(context.mean_interval_width_km).toFixed(2) + " km mean width. " +
+      escapeHtml(context.explanation) + "</p><div class=\"metric-question\">" +
+      escapeHtml(context.presentation_line) + " Test: " + context.test_trips +
+      " trips / " + Number(context.test_samples).toLocaleString("en-GB") +
+      " samples. Sparse ETA gain " + Number(context.sparse_eta_gain_percent).toFixed(2) +
+      "%; delay AUPRC " + Number(context.sparse_delay_raw_auprc).toFixed(3) + " → " +
+      Number(context.sparse_delay_hybrid_auprc).toFixed(3) + ".</div></div>";
+  }
   var comparators = context.comparators.map(function (item) {
     return "<div class=\"metric-row\"><span>" + escapeHtml(item.label) + "</span><strong>" +
       Number(item.mae_hours).toFixed(2) + " h</strong><strong>−" +
@@ -312,6 +343,7 @@ function metricContextMarkup(context) {
 function evidenceMetric(stage) {
   if (stage.metric_value == null && stage.mae_minutes == null) return "Pending";
   if (stage.metric_unit === "hours") return Number(stage.metric_value).toFixed(2) + " h";
+  if (stage.metric_unit === "km") return Number(stage.metric_value).toFixed(3) + " km";
   return Number(stage.mae_minutes).toFixed(2) + " min";
 }
 
@@ -347,7 +379,8 @@ function openEvidenceStage(index) {
     " · " + escapeHtml(stage.status) + "</span><strong>" +
     evidenceMetric(stage) + " MAE" +
     "</strong><p>" + escapeHtml(stage.description) +
-    ". Lower is better. This public test result is smoke_only and does not establish Kaleido value.</p></div>");
+    ". Lower is better. Claim state " + escapeHtml(state.evidence.claim_state) +
+    "; public evidence does not establish Kaleido value.</p></div>");
 }
 
 function bindEvidenceStages() {

@@ -3,11 +3,41 @@
 MVP read-only de inteligencia predictiva para complementar Shipping Board,
 Freight Intelligence, Trace Port y TWINPORTS. `FlowTwin` es un nombre provisional.
 
-Toda la evidencia es `smoke_only`: prueba que la idea y el pipeline se han
-ejecutado sobre datos públicos/simulados; no prueba precisión, ahorro, ROI ni
-despliegue en Kaleido.
+La evidencia pública tiene dos estados. Los demostradores ETA/OCEL históricos
+son `smoke_only`. El nuevo núcleo físico Phys-JEPA es `claim_eligible` porque se
+ejecutó desde un commit limpio sobre un holdout futuro prehasheado; aun así solo
+prueba capacidad pública. No prueba precisión, ahorro, ROI ni despliegue en
+Kaleido.
 
-## Resultado que se presenta
+## Resultado principal que se presenta
+
+El producto candidato es un **Port Call Deviation Twin** para Shipping Board y
+Freight Intelligence. A partir de una secuencia AIS predice el estado físico a
+0,5/1/2 horas y combina un GBT fuerte con estado/futuros Phys-JEPA:
+
+- holdout limpio 8-14 de febrero de 2025, 750 muestras y 57 viajes disjuntos;
+- trajectory GBT: 2,635 km MAE y AUPRC de desviación 0,880;
+- híbrido individual, media de tres seeds: 2,587 ± 0,053 km, mejora 1,84%,
+  gana al raw GBT en 3/3 seeds;
+- ensemble de tres Phys-JEPA: 2,326 km, mejora 11,72%; bootstrap emparejado por
+  viaje IC95 % 5,90%-17,13%, `P(mejora)=0,9995`;
+- AUPRC de desviación: 0,880 a 0,904;
+- cobertura conformal nominal 90%: 89,79%, ancho medio 12,00 km;
+- rango efectivo 11,42-12,46 y 0/3 seeds colapsadas.
+
+El **gate completo está cerrado**. Con solo el 10% de viajes etiquetados, ETA
+mejora 0,59%, por debajo del 1% exigido, y el head de retraso retrocede de 0,619
+a 0,606 AUPRC. La decisión de producto es servir GBT + Phys-JEPA solo como
+núcleo físico shadow; GBT conserva ETA y se rechaza el head de retraso.
+
+Dataset/export:
+`noaa_marinecadastre_ais_2025_phys_jepa_holdout_02_08_02_14`, v1; prefijos
+SHA-256 `4f1c7bce...9ef382d`; métricas SHA-256 `99b4162f...f8270ca`;
+split cronológico por viaje 341/83/57; tres seeds; umbral físico de 10 km fijado
+antes del test; el test no influyó en ninguna elección. Véase
+[Decision 0007](docs/decisions/0007-phys-jepa-clean-holdout-result.md).
+
+## Evidencia complementaria
 
 El demostrador principal predice la entrada de un buque en una geofence portuaria
 usando NOAA MarineCadastre AIS. El modelo `tabular_eta`, elegido exclusivamente en
@@ -29,9 +59,10 @@ El segundo ejemplo usa OCEL 2.0 Container Logistics para process intelligence y
 relaciones objeto-céntricas. El grafo correcto mejoró el test de 88,17 a 86,64 h,
 pero validación eligió la traza plana; el gate predictivo del grafo queda cerrado.
 
-Event-JEPA, Temporal T-JEPA, Var-JEPA y el experimento de acciones permanecen como
-I+D. El antiguo predictor de almacén con ~734 min de MAE se conserva como evidencia
-técnica rechazada, no como demostrador ni como historia comercial.
+Event-JEPA, Temporal T-JEPA, Var-JEPA y el experimento de acciones de almacén
+permanecen como I+D histórica. El predictor con ~734 min de MAE y el caso LaDe
+se conservan como evidencia técnica rechazada/invalidada, no como demostrador
+ni como historia comercial.
 
 ## Encaje con Kaleido
 
@@ -61,10 +92,10 @@ Estudia, en este orden:
    offline para proyectar.
 4. [Informe técnico](output/pdf/Kaleido_FlowTwin_MVP_Informe_Tecnico.pdf): protocolo,
    resultados, incertidumbre, JEPA y limitaciones.
-5. [Decisión del nuevo benchmark](docs/decisions/0004-aligned-public-benchmark-pivot.md):
-   por qué ETA AIS sustituye al caso de los minutos.
-6. [SOTA 2026](docs/investigacion/SOTA_2026.md) y
-   [decisión JEPA](docs/decisions/0003-temporal-tjepa-varjepa-hybrid-gate.md).
+5. [Resultado Phys-JEPA limpio](docs/decisions/0007-phys-jepa-clean-holdout-result.md)
+   y [model card](docs/model_cards/port_call_phys_jepa.md).
+6. [Auditoría de artículos JEPA](docs/investigacion/JEPA_WORLD_MODEL_2026_AUDIT.md)
+   y [SOTA 2026](docs/investigacion/SOTA_2026.md).
 7. [Petición de datos](DATA_REQUEST.md) y [brief](docs/MEETING_BRIEF.md).
 
 Fuentes editables: [presentación TeX](presentacion/Kaleido_FlowTwin_Presentacion.tex),
@@ -75,26 +106,27 @@ Fuentes editables: [presentación TeX](presentacion/Kaleido_FlowTwin_Presentacio
 
 | Diapositiva | Tiempo | Mensaje |
 |---|---:|---|
-| 1. FlowTwin | 0:45 | MVP ejecutado; no es un resultado Kaleido. |
-| 2. Encaje | 1:15 | ETA para Shipping/FI; proceso para Trace Port/TWINPORTS. |
-| 3. Trabajo construido | 1:10 | Dos demostradores alineados y JEPA como I+D falsable. |
-| 4. Datos/protocolo | 1:20 | 38 días AIS; viaje agrupado; modelo elegido en validación; test futuro. |
+| 1. FlowTwin | 0:45 | GBT + Phys-JEPA mejora dinámica; no es un resultado Kaleido. |
+| 2. Encaje | 1:15 | Deviation Twin para Shipping/FI; consecuencias en Trace Port/TWINPORTS. |
+| 3. Producto y gates | 1:10 | Core, ETA, OCEL, API y gates separados. |
+| 4. Datos/protocolo | 1:20 | 45 días AIS; holdout prehasheado; 57 viajes futuros; tres seeds. |
 | 5. Process intelligence | 1:00 | OCEL ya aporta objetos, variantes y diagnóstico sin forzar el gate predictivo. |
-| 6. Resultado ETA | 1:40 | 1,88 h, IC95 % 1,70–2,08; 60,6 % en ±2 h; 6/6 gates. |
-| 7. Incertidumbre | 1:15 | P90 cubre 94,5 %, pero ancho 9,04 h; test concentrado en Nueva Orleans. |
-| 8. Ablations JEPA | 2:00 | Aprende representación y necesita anticolapso, pero no gana el floor. |
-| 9. T/Var-JEPA | 2:15 | Mejoras de representación sin valor incremental al boosting. |
-| 10. Acciones | 2:00 | Se recupera señal inyectada; no hay claim causal o de acciones Kaleido. |
-| 11. Decisión | 1:00 | Demostrar ETA; OCEL como diagnóstico; JEPA en shadow. |
+| 6. ETA complementaria | 1:25 | GBT conserva ETA: 1,88 h; JEPA no desplaza el baseline. |
+| 7. Incertidumbre ETA | 1:10 | P90 cubre 94,5 %, pero ancho 9,04 h y dominio concentrado. |
+| 8. Anticolapso | 1:30 | VICReg, VISReg, SIGReg y none: 0 colapsos; la física aporta más. |
+| 9. Resultado limpio | 1:45 | 2,635 a 2,326 km; mejora 11,72 %, IC95 % 5,90 %-17,13 %. |
+| 10. Gate completo | 1:25 | Core pasa; ETA escasa no alcanza 1 % y delay empeora. |
+| 11. Decisión | 1:00 | Phys-JEPA shadow para trayectoria; GBT-only ETA; delay fuera. |
 | 12. Arquitectura | 1:10 | Integración read-only, versionada y auditable. |
-| 13. Dashboard | 2:30 | Comparadores, tolerancias, gates, intervalo, procedencia y límites. |
+| 13. Dashboard | 2:30 | Escalera de modelos, gates, model card, export y límites. |
 | 14. Piloto | 1:15 | Export congelado, tolerancia acordada y replay shadow. |
 | 15. Cierre | 0:35 | Pedir operación, responsables, 3–5 casos y fecha. |
 
-La explicación corta del resultado es: “El error medio de ETA es 1,88 horas. No
-lo juzgamos aislado: baja de 7,79 h con física directa y de 2,73 h con histórico;
-el 60,6 % queda en ±2 h y pasa los seis criterios predeclarados. Aún falta acordar
-qué tolerancia necesita cada decisión de Kaleido”.
+La explicación corta del resultado es: “En 57 viajes futuros, el ensemble
+GBT + Phys-JEPA baja el error de trayectoria de 2,635 a 2,326 km, una mejora del
+11,72 %. El bootstrap emparejado por viaje sitúa la mejora entre 5,90 % y 17,13 %.
+Pasa el gate del core físico, pero ETA y delay no; por eso solo proponemos shadow
+y necesitamos datos Kaleido antes de hablar de valor operativo”.
 
 Si preguntan por los ~734 minutos: eran 12,2 h de MAE en otro proceso largo de
 almacén. Ganaba por poco a comparadores débiles, pero no era una demostración
@@ -143,6 +175,11 @@ uv run flowtwin benchmark-ais-eta data/raw/public/noaa_ais_2025 `
 uv run flowtwin benchmark-ocel-logistics data/raw/public/ocel20_container_logistics.sqlite `
   --config configs/experiment/ocel_logistics_graph_smoke.yaml `
   --output outputs/ocel_logistics_graph_v1
+
+uv run flowtwin benchmark-ais-world-model `
+  --prefixes data/processed/noaa_ais_phys_jepa_holdout/prefixes.parquet `
+  --config configs/experiment/noaa_ais_phys_jepa_clean_test.yaml `
+  --output outputs/noaa_ais_phys_jepa_clean_test_v2
 
 uv run ruff check .
 uv run mypy src/flowtwin

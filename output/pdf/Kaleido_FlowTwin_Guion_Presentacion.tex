@@ -8,7 +8,7 @@
 \pagestyle{fancy}\fancyhf{}\lhead{Kaleido FlowTwin}\rhead{Guion de presentación}\cfoot{\thepage}
 \setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
 \setlist[itemize]{leftmargin=5mm,itemsep=2pt,topsep=2pt}
-\newcommand{\claim}{\texttt{smoke\_only}}
+\newcommand{\claim}{\texttt{claim\_eligible public core; full gate closed}}
 \newcommand{\slidehead}[3]{%
   \par\vspace{7pt}\noindent
   \colorbox{Ink}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
@@ -19,15 +19,15 @@
 \newcommand{\transition}[1]{\textcolor{Blue}{\textbf{Transición:}} \emph{``#1''}}
 \title{\textbf{Kaleido FlowTwin}\\Guion de la presentación del MVP}
 \author{EVOCON Solutions -- Álvaro Schwiedop Souto}
-\date{2026-07-16}
+\date{2026-07-17}
 \begin{document}
 \maketitle
 
 \begin{center}
 \fcolorbox{Gold}{Gold!16}{\parbox{.92\linewidth}{
-\textbf{Estado de evidencia: \claim.} El objetivo de la reunión no es afirmar que el
-modelo ya funciona para Kaleido, sino demostrar un MVP ejecutado, explicar qué se ha
-aprendido y acordar el acceso a una operación real para un replay shadow.
+\textbf{Estado de evidencia: \claim.} El core Phys-JEPA tiene evidencia pública limpia;
+el objetivo de la reunión no es afirmar que ya funciona para Kaleido, sino explicar qué
+pasó, qué outputs fueron rechazados y acordar un replay shadow real.
 }}
 \end{center}
 
@@ -35,30 +35,30 @@ aprendido y acordar el acceso a una operación real para un replay shadow.
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{3.6cm}X@{}}\toprule
 Duración objetivo & 20--22 minutos de presentación + 10 minutos de preguntas. \\
 Petición final & Sesión de 90 minutos sobre una operación repetible y 3--5 casos pseudonimizados. \\
-Idea central & Shipping Board informa; Freight Intelligence analiza; FlowTwin anticipa ETA y excepciones. \\
-Resultado principal & ETA AIS: 1.88 h de MAE, 60.6\% dentro de $\pm$2 h y 6/6 gates aprobados. \\
-Límite & Es evidencia pública de capacidad, no precisión Kaleido, ROI ni despliegue. \\
+Idea central & Shipping Board anticipa; Trace Port explica; FlowTwin conecta con un core físico read-only. \\
+Resultado principal & GBT + Phys-JEPA: 2.635 a 2.326 km; mejora 11.72\%, IC95\% 5.90--17.13. \\
+Límite & Core público positivo; ETA/delay, gate completo, Kaleido, ROI y despliegue siguen cerrados. \\
 \bottomrule\end{tabularx}
 
 \subsection*{Antes de empezar}
 \begin{itemize}
 \item Abrir la presentación HTML a pantalla completa y dejar el dashboard preparado en otra pestaña.
-\item Comprobar que el watermark \claim{} es visible y que el dashboard muestra la evidencia ETA AIS.
-\item No empezar por JEPA. Empezar por el problema operativo y llegar a JEPA como resultado de I+D falsable.
+\item Comprobar que el watermark público/no-Kaleido es visible y que el dashboard muestra el core Phys-JEPA.
+\item Empezar por el problema operativo; presentar JEPA como solución específica de dinámica, no como marca.
 \item Tener preparada la pregunta final: operación, responsables, muestra y fecha.
 \end{itemize}
 
 \clearpage
 \section{Guion diapositiva a diapositiva}
 
-\slidehead{1}{FlowTwin Predictive Operations}{0:45}
+\slidehead{1}{FlowTwin Port Call Deviation Twin}{0:45}
 \cue{Objetivo.} Situar la propuesta y marcar desde el primer minuto la frontera de evidencia.
 
 \cue{Qué decir.} ``Gracias por el tiempo. Hemos construido un MVP técnico de una capa
-predictiva read-only. El demostrador principal estima la llegada de buques a una zona
-portuaria a partir de AIS, muestra ventanas de incertidumbre y conserva toda la trazabilidad.
-No venimos a presentar resultados de Kaleido: venimos a enseñar una idea ejecutada sobre
-datos públicos y un protocolo para validarla de forma segura con vosotros.''
+predictiva read-only. El core combina un GBT fuerte con Phys-JEPA para anticipar el estado
+físico de una escala a 30, 60 y 120 minutos y detectar shortfall material. En el holdout
+público limpio mejora de 2.635 a 2.326 km. No venimos a presentar resultados
+de Kaleido: el gate completo sigue cerrado y venimos a proponer cómo validarlo con vosotros.''
 
 \avoid{``Ya predice vuestras operaciones'', ``gemelo autónomo'' o ``ahorro demostrado''.}
 
@@ -68,10 +68,10 @@ datos públicos y un protocolo para validarla de forma segura con vosotros.''
 \cue{Objetivo.} Dejar claro que FlowTwin complementa productos existentes.
 
 \cue{Qué decir.} ``Shipping Board y Freight Intelligence son el encaje inmediato para una
-ETA explicable: anticipar llegada, detectar excepciones y priorizar qué revisar. Trace Port
-aporta después la memoria de operaciones, turnos e incidencias; TWINPORTS, el estado físico
-y espacial. FlowTwin no compite con esos productos: convierte sus eventos en una predicción
-con intervalo, cutoff y razones.''
+excepción física explicable: trayectoria esperada, shortfall, ETA y prioridad. Trace Port
+aporta la memoria de operaciones e incidencias; TWINPORTS, activos y espacio. FlowTwin no
+compite con esos productos: convierte posiciones/eventos en predicción con intervalo,
+cutoff, gate y razones.''
 
 \cue{Pregunta opcional.} ``¿En qué pantalla toma hoy una decisión el responsable de turno
 cuando una operación empieza a desviarse?''
@@ -81,11 +81,10 @@ cuando una operación empieza a desviarse?''
 \slidehead{3}{MVP y límites explícitos}{1:10}
 \cue{Objetivo.} Resumir el alcance y convertir las invalidaciones en prueba de disciplina.
 
-\cue{Qué decir.} ``Construimos dos demostradores alineados: ETA con AIS para Shipping Board
-y Freight Intelligence, y proceso objeto-céntrico OCEL para Trace Port/TWINPORTS. JEPA queda
-como línea de I+D sometida a ablations. Mantuvimos viajes y operaciones enteros en cada
-partición, elegimos modelos en validación y reservamos un test futuro del 1 al 7 de febrero.
-Los runs que no pasaron el protocolo se conservaron como auditoría y no entraron en la cifra.''
+\cue{Qué decir.} ``Construimos Phys-JEPA, trajectory GBT, GRU, Transformer, ETA GBT,
+process intelligence OCEL, API y dashboard. Probamos VISReg, SIGReg, VICReg y no regularizar;
+ninguno colapsó. Mantuvimos viajes enteros, congelamos arquitectura y umbrales y abrimos una
+sola vez el test posterior. Warehouse y LaDe se conservan como negativos/invalidados.''
 
 \avoid{Presentar M0--M7 como un despliegue productivo. Son hitos técnicos de smoke.}
 
@@ -94,14 +93,13 @@ Los runs que no pasaron el protocolo se conservaron como auditoría y no entraro
 \slidehead{4}{Dataset y protocolo}{1:20}
 \cue{Objetivo.} Dar credibilidad sin confundir dominio público con dominio portuario.
 
-\cue{Qué decir.} ``Procesamos 38 días de NOAA MarineCadastre AIS,
-6.92 GB comprimidos. Una geofence define la llegada y cada prefijo usa solo lo
-visible en ese instante. El split contiene 303 viajes de entrenamiento,
-73 de validación y 85 de test futuro, con
-1,780 predicciones en ese test. MMSI se excluyó como feature y ningún viaje
-cruza particiones. El dataset OCEL secundario aporta 1,966 contenedores.''
+\cue{Qué decir.} ``El desarrollo usa 1 de enero a 7 de febrero; el clean holdout es 8--14.
+Sus siete ficheros se descargaron opacos y se hashearon antes de targets. El split tiene
+341/83/57 viajes y 750
+muestras test. Código, regularizador, heads y umbral físico de 10 km quedaron en el commit
+limpio cdae9b7. El test no influyó en una elección.''
 
-\cue{Frase clave.} ``Es una prueba técnica real de ETA portuaria en EE. UU., no una prueba de precisión en Vigo.''
+\cue{Frase clave.} ``Es evidencia limpia del core sobre AIS de EE. UU., no precisión en Vigo.''
 
 \transition{Antes de entrenar nada, los eventos ya permiten inteligencia de proceso.}
 
@@ -117,8 +115,8 @@ conformance sin depender de que gane un modelo.''
 
 \transition{En el demostrador de ETA sí obtuvimos un resultado concreto sobre futuro no visto.}
 
-\slidehead{6}{Comparación de modelos}{1:40}
-\cue{Objetivo.} Explicar el número principal, sus comparadores y el gate fijado antes del test.
+\slidehead{6}{Baseline ETA separado}{1:25}
+\cue{Objetivo.} Explicar por qué el GBT conserva ETA aunque el core Phys-JEPA gane dinámica.
 
 \cue{Qué decir.} ``El modelo elegido solo en validación obtiene 1.88 horas de MAE
 en 85 viajes futuros. El error mediano es 1.37 horas y el
@@ -129,8 +127,8 @@ la ETA distancia/velocidad tiene 7.79 horas y la mediana por puerto y distancia,
 
 \cue{Traducción operativa.} ``El 42.0\% queda dentro de $\pm$1 hora, el
 60.6\% dentro de $\pm$2 y el 87.3\% dentro de $\pm$4. Pasa los seis
-gates predeclarados: volumen, MAE, extremo del intervalo, tolerancia y mejora contra dos
-baselines.''
+gates predeclarados del benchmark ETA. El probe Phys-JEPA posterior mejora ETA solo
+0.59\%, por debajo del 1\%, así que no sustituimos este GBT.''
 
 \avoid{Llamarlo precisión Kaleido, SOTA o prometer que $\pm$2 horas sea su tolerancia de negocio.}
 
@@ -148,8 +146,51 @@ consigue con una banda todavía demasiado amplia. Además, Nueva Orleans concent
 \cue{Conclusión.} ``La predicción puntual funciona como demostrador; el siguiente trabajo
 falsable es calibrar por puerto, medir peor grupo y hacer que el sistema se abstenga.''
 
-\transition{Con el baseline fijado, podemos preguntar qué está aprendiendo realmente JEPA.}
+\transition{Con ETA separada, pasemos al objetivo donde JEPA sí debe aportar: dinámica física.}
 
+\slidehead{8}{Anticolapso y selección}{1:40}
+\cue{Objetivo.} Mostrar que VISReg/SIGReg se probaron y que no se elige por narrativa.
+
+\cue{Qué decir.} ``Con la misma capacidad y tres seeds, el híbrido de validación obtiene
+3.124 km con VICReg, 3.129 sin regularizador, 3.143 con
+VISReg, 3.204 con SIGReg y 3.313 para JEPA plano + VISReg. Ninguna
+variante colapsó. VICReg gana el criterio predeclarado, pero la diferencia principal viene
+de condicionar el modelo con la física conocida, no de una loss milagrosa.''
+
+\avoid{Decir que VICReg es universalmente mejor o que SIGReg/VISReg fallaron por colapso aquí.}
+
+\transition{Con arquitectura y regularizador congelados, abrimos el test posterior una vez.}
+
+\slidehead{9}{Resultado limpio GBT + Phys-JEPA}{2:10}
+\cue{Objetivo.} Explicar comparadores, seeds, ensemble e incertidumbre sin mezclar estadísticas.
+
+\cue{Qué decir.} ``Cinemática obtiene 4.018 km; GBT 2.635; GRU
+2.798; Transformer 2.830; Phys-JEPA directo 3.036. El híbrido
+individual promedia 2.587 $\pm$ 0.053 y gana al GBT en tres de
+tres seeds. Al promediar las tres predicciones, el candidato servido baja a
+2.326 km: 11.72\% de mejora, bootstrap por viaje IC95\%
+5.90--17.13, probabilidad de mejora 0.9995.''
+
+\cue{Distinción clave.} ``La media de seeds mide estabilidad de entrenamiento. El ensemble
+mide el modelo servido y reduce varianza; por eso no son el mismo número.''
+
+\transition{Una mejora de core no concede permiso automático a todos los heads.}
+
+\slidehead{10}{Core aprobado, gate completo cerrado}{1:50}
+\cue{Objetivo.} Mostrar la decisión de producto exacta.
+
+\cue{Qué decir.} ``La AUPRC de desviación sube 0.880 a 0.904.
+El rango efectivo es 11.42--12.46 y no colapsa ninguna seed. La banda
+conformal 90\% cubre 89.79\%, con 12.00 km de ancho medio. Pero ETA escasa
+mejora solo 0.59\%, bajo el gate del 1\%, y delay AUPRC retrocede
+0.619 a 0.606. Conservamos el core shadow, mantenemos GBT-only
+para ETA y rechazamos delay.''
+
+\avoid{Decir que el producto completo pasó, que predice incidentes Kaleido o que hay causalidad.}
+
+\transition{La arquitectura de producto refleja exactamente estos gates.}
+
+\iffalse
 \slidehead{8}{Ablations de Event-JEPA}{2:00}
 \cue{Objetivo.} Explicar por qué JEPA sigue siendo interesante aunque no gane el benchmark.
 
@@ -212,25 +253,24 @@ señal inyectada; no promocionamos el world model.''
 
 \transition{Esto conduce a una separación clara entre producto e investigación.}
 
+\fi
 \slidehead{11}{Decisión de producto}{1:00}
 \cue{Objetivo.} Convertir los resultados en una arquitectura de producto prudente.
 
-\cue{Qué decir.} ``La demo sirve ETA AIS, comparadores, tolerancias, intervalo y auditoría
-read-only. OCEL demuestra process intelligence con identidad de objetos. Temporal T-JEPA,
-Var-JEPA, acciones reales y object graphs permanecen como I+D con gates. El predictor
-histórico de almacén con 734 minutos queda conservado como resultado negativo: no se sirve
-ni se usa para vender la idea.''
+\cue{Qué decir.} ``La demo sirve el core GBT + Phys-JEPA solo para trayectoria/desviación,
+mantiene GBT para ETA y excluye el head de retraso. OCEL demuestra process intelligence.
+Warehouse, T/Var-JEPA, acciones sintéticas y LaDe se conservan para auditoría, no para vender
+la idea. El core es claim eligible público; el producto completo y Kaleido no.''
 
 \transition{La integración propuesta mantiene esa separación y no escribe en sistemas fuente.}
 
 \slidehead{12}{Arquitectura complementaria}{1:10}
 \cue{Objetivo.} Explicar el flujo read-only y la trazabilidad de cada predicción.
 
-\cue{Qué decir.} ``AIS o Shipping Board aportan posición y contexto de viaje; Trace Port,
-eventos y turnos; TWINPORTS, activos y espacio. El contrato temporal conserva planes
-versionados. El baseline ETA, process mining y JEPA shadow producen punto, intervalo y
-razones; la salida vuelve a una pestaña o API read-only. Cada resultado muestra cutoff,
-versión y procedencia. El humano sigue decidiendo.''
+\cue{Qué decir.} ``AIS o Shipping Board aportan posición y contexto. La física proyecta
+curso constante; Phys-JEPA aprende el residual y GBT combina raw con estado/futuros. ETA
+usa su GBT separado. Trace Port/OCEL explica la consecuencia y conformal aporta la banda.
+Cada salida muestra cutoff, gate, modelo, hash y razones. El humano sigue decidiendo.''
 
 \avoid{Hablar de control automático, escritura en TOS/ERP o optimización autónoma.}
 
@@ -243,12 +283,12 @@ versión y procedencia. El humano sigue decidiendo.''
 \cue{Secuencia de demo.}
 \begin{enumerate}[leftmargin=6mm,itemsep=2pt]
 \item Señalar el watermark \claim{} y el modo read-only.
-\item Abrir la evidencia ETA: 1.88 h, IC95\% y 85 viajes futuros.
-\item Comparar boosting con la ETA cinemática y la mediana puerto-distancia.
-\item Mostrar los porcentajes dentro de $\pm$1, $\pm$2 y $\pm$4 horas y los 6/6 gates.
-\item Abrir incertidumbre y límites: intervalo P90, reparto por puerto y abstención.
-\item Recorrer procedencia: fechas de test, exclusión de MMSI, hashes y model card.
-\item Terminar en la separación: ETA demostrable; OCEL diagnóstico; JEPA en I+D.
+\item Abrir el ladder físico: cinemática, GBT, GRU, Transformer, Phys-JEPA y ensemble.
+\item Mostrar 2.635 a 2.326 km e IC95\% 5.90--17.13.
+\item Señalar AUPRC, rango efectivo y cobertura conformal.
+\item Mostrar explícitamente el gate completo cerrado por ETA/delay.
+\item Abrir model card: fechas, seeds, hash, test no influyó y claim boundary.
+\item Terminar en la separación: core shadow; ETA GBT; delay rechazado; OCEL diagnóstico.
 \end{enumerate}
 
 \cue{Frase de cierre de demo.} ``La interfaz es el ejemplo de consumo; los valores son
@@ -271,21 +311,22 @@ pseudonimizados?''
 \transition{La propuesta se resume en una sola frase.}
 
 \slidehead{15}{Cierre}{0:35}
-\cue{Qué decir.} ``Shipping Board informa. Freight Intelligence analiza. FlowTwin anticipa.
-Ya existe una prueba de ETA sobre futuro no visto y un marco objeto-céntrico para procesos.
-El siguiente paso no es prometer generalización: es acordar operación, tolerancia, muestra y
-fecha para medirlo con datos Kaleido.''
+\cue{Qué decir.} ``Shipping Board anticipa. Trace Port explica. FlowTwin conecta. Ya existe
+un core Phys-JEPA que mejora un GBT fuerte sobre futuro público no visto, y también sabemos
+qué outputs no pasan. El siguiente paso no es prometer generalización: es acordar operación,
+tolerancia, muestra y fecha para medirlo con datos Kaleido.''
 
 \cue{Acción.} Callar y esperar respuesta. No rellenar el silencio con detalles técnicos.
 
 \clearpage
 \section{Preguntas previsibles}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{4.2cm}X@{}}\toprule
-¿Por qué JEPA si boosting gana? & Porque Temporal T-JEPA mejora al JEPA anterior y distingue
-futuros correctos de barajados, pero los embeddings no añaden valor incremental al boosting.
-Se mantiene shadow como hipótesis para datos con acciones, objetos y contexto más ricos. \\
-¿Esto es un world model? & Es un experimento de transición latente condicionado por acciones
-generadas. Recupera señal inyectada, pero no supera el gate de estabilidad y no tiene acciones Kaleido. \\
+¿Por qué JEPA si boosting gana? & No se sustituye boosting: el producto combina ambos. GBT
+obtiene 2.635 km y el ensemble GBT + Phys-JEPA 2.326, con IC95\% positivo.
+JEPA aporta estado/futuros físicos; GBT conserva ETA. \\
+¿Esto es un world model? & Es un modelo observacional de transición física a 0,5/1/2 h,
+condicionado por física conocida, con probes externos y conformal. No es un controlador ni
+un modelo causal de acciones. \\
 ¿Qué hace falta de Kaleido? & IDs pseudonimizados, eventos con timestamps, plan original y
 revisiones con \texttt{valid\_from}, outcomes, objetos y acciones realmente controlables. \\
 ¿Cuántos datos? & Primero 3--5 casos para semántica. El volumen de entrenamiento se decide
@@ -307,8 +348,8 @@ Por eso el siguiente gate es por puerto y, después, Vigo/Kaleido. \\
 \bottomrule\end{tabularx}
 
 \section{Versiones por tiempo}
-\textbf{Si solo hay 10 minutos:} diapositivas 1, 2, 4, 6, 7, 11, 14 y 15. Omitir JEPA
-o resumirlo como línea de I+D que todavía no gana el gate.
+\textbf{Si solo hay 10 minutos:} diapositivas 1, 2, 4, 8, 9, 10, 14 y 15. Explicar
+selección, resultado limpio, gate cerrado y petición Kaleido.
 
 \textbf{Si hay 30 minutos:} recorrido completo, demo de 4--5 minutos y preguntas tras la
 diapositiva 10 antes de cerrar con el piloto.
@@ -324,6 +365,8 @@ diapositiva 10 antes de cerrar con el piloto.
 \item \href{https://arxiv.org/abs/2511.08544}{LeJEPA};
 \href{https://arxiv.org/abs/2603.19312}{LeWorldModel};
 \href{https://arxiv.org/abs/2606.02572}{VISReg};
+\href{https://arxiv.org/abs/2606.16076}{Phys-JEPA};
+\href{https://arxiv.org/abs/2301.08243}{I-JEPA};
 \href{https://arxiv.org/abs/2410.05016}{T-JEPA};
 \href{https://arxiv.org/abs/2603.20111}{Var-JEPA}.
 \end{itemize}

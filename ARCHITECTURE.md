@@ -15,9 +15,12 @@
 7. **Uncertainty first.** Toda prediccion incluye intervalo, confianza o
    abstencion.
 
-La demo concreta usa la rama `AIS/Shipping Board -> ETA boosting + conformal` y
-la rama `OCEL/Trace Port -> process mining + object graph`. Event-JEPA permanece
-en shadow. El antiguo modelo de tiempo restante de almacén no se sirve.
+La demo concreta usa `AIS/Shipping Board -> trajectory GBT + Phys-JEPA +
+conformal`, conserva `ETA boosting` como floor y añade `OCEL/Trace Port ->
+process mining + object graph`. El núcleo físico JEPA es shadow read-only: su
+evidencia pública limpia es positiva, pero ETA escasa no supera el gate del 1%
+y el head de retraso queda rechazado. El antiguo modelo de tiempo restante de
+almacén no se sirve.
 
 ## Vista logica
 
@@ -37,14 +40,16 @@ Trace Port / Shipping Board / Freight Intelligence / CSV
         +-----------------+------------------+
         |                 |                  |
  process mining     predictive baselines   simulation
- conformance        boosting/survival      discrete-event
+ conformance        GBT/GRU/Transformer    discrete-event
         |                 |                  |
         +-----------------+------------------+
                           |
-              optional Event-JEPA module
-              future latent state by horizon
+       physical future + Phys-JEPA residual dynamics
+            state/forecast at 0.5 / 1 / 2 hours
                           |
-             calibration + value evaluation
+     GBT + JEPA trajectory/deviation | GBT-only ETA
+                          |
+        conformal calibration + frozen product gates
                           |
        dashboard / API / CSV / PDF / audit trail
 ```
@@ -232,6 +237,21 @@ Heads:
 - next-event distribution;
 - incident risk;
 - bottleneck/object attribution.
+
+Implementación pública seleccionada para AIS:
+
+```text
+observed AIS prefix --> context encoder -----------+
+constant-course future --> physical conditioning   |--> latent future
+future AIS state --> stopped target encoder --------+
+latent state/forecast + raw features --> trajectory GBT
+```
+
+La física conocida no se reconstruye: el decoder aprende el residual respecto
+al futuro cinemático. VICReg se eligió en validación tras comparar VISReg,
+SIGReg y ausencia de regularizador. Ninguna seed seleccionada colapsó. El
+ensemble híbrido pasa el gate de trayectoria/desviación; ETA y retraso conservan
+gates independientes y no se promocionan por arrastre.
 
 ### M4 - Escenarios
 
