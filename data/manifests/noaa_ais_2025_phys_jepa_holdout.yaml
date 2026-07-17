@@ -13,7 +13,32 @@ holdout_files:
   - ais-2025-02-12.csv.zst
   - ais-2025-02-13.csv.zst
   - ais-2025-02-14.csv.zst
-holdout_hashes: pending_download_without_content_inspection
+retrieved_at_utc: '2026-07-17T00:00:05Z'
+download_receipt_sha256: 95948657f9be6242dc617b5268264490476a908efa41090df21ce70a82e7f130
+content_inspected_before_hash_commit: false
+holdout_total_bytes: 1431169298
+holdout_hashes:
+  - file: ais-2025-02-08.csv.zst
+    bytes: 206909016
+    sha256: f8726b76330f25ae3ca0b621f7b33759889bb25d43a0b11a20ba91f126b7c6e4
+  - file: ais-2025-02-09.csv.zst
+    bytes: 203508681
+    sha256: 0d71d2a2b4da0af197e28f9745cace6adaf43c03e2156efb74f78c7eedb54c45
+  - file: ais-2025-02-10.csv.zst
+    bytes: 198932164
+    sha256: 5cc6af0f33f1b30f57a6dd35ae1b2f159099f9043fd550b587eea30638ea8800
+  - file: ais-2025-02-11.csv.zst
+    bytes: 190860999
+    sha256: 793a15ab3f160b5e8552f16d79e2b60e8cdb2a2166281dea51da8b3c76aa849e
+  - file: ais-2025-02-12.csv.zst
+    bytes: 229335990
+    sha256: 25da8c352c164acebf469bb32cb28c2bc595076d8f1a12de7cf7b69a098725b8
+  - file: ais-2025-02-13.csv.zst
+    bytes: 202230590
+    sha256: a5faefd4f78f19868a17fdf128ac8a1844134f7c3157d2ce2932864630088234
+  - file: ais-2025-02-14.csv.zst
+    bytes: 199391858
+    sha256: bc9716853570b02bddf1163e27a052e7272d5f79cbd60bbe59b2cd1be2265eb6
 ports: [new_york, houston, los_angeles, new_orleans]
 split:
   train_arrival_before: '2025-02-01T00:00:00Z'

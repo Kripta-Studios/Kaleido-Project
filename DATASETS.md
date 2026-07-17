@@ -157,9 +157,9 @@ MAE de trayectoria de validacion de 3,336 a 3,124 km. El intervalo reservado
 sigue sin descargarse; este numero no es evidencia de test limpio.
 
 Manifest de protocolo:
-`data/manifests/noaa_ais_2025_phys_jepa_holdout.yaml`. Los hashes se rellenan
-despues de descargar sin inspeccionar contenido y se hace un segundo commit
-limpio antes de construir los targets.
+`data/manifests/noaa_ais_2025_phys_jepa_holdout.yaml`. Los siete ficheros
+(1.431.169.298 bytes) se descargaron sin inspeccionar contenido y sus SHA-256
+quedaron congelados en un segundo commit antes de construir los targets.
 
 ### LaDe delivery Jilin (diagnostico de seleccion de caso)
 

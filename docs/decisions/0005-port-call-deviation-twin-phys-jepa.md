@@ -110,7 +110,9 @@ AIS contains observations and context, not Kaleido operator decisions.
 ## Next falsifiable step
 
 1. Freeze config, thresholds, code and commit.
-2. Download a new NOAA calendar interval without inspecting its outcomes.
-3. Commit its file hashes before target construction.
+2. Download a new NOAA calendar interval without inspecting its outcomes:
+   complete, seven files and 1,431,169,298 bytes.
+3. Commit its file hashes before target construction: complete in the
+   hash-freeze commit containing this decision.
 4. Run the frozen three-seed protocol once from a clean worktree.
 5. Reject promotion if the clean future interval does not pass the gates.

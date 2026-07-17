@@ -59,7 +59,8 @@ representation improved hybrid trajectory validation MAE from 3.336 to 3.124
 km (6.37%) without collapse. A validation-only compressed sparse probe improved
 ETA from 1.318 to 1.300 h and delay AUPRC from 0.754 to 0.761 using the same 10%
 of labelled train trips. These are diagnostic selection results; the new NOAA
-future week has not been downloaded or opened.
+future week was downloaded as seven opaque compressed files and hash-frozen; it
+has not yet been parsed or opened for target construction.
 
 ## Verification
 
